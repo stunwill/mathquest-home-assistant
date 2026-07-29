@@ -1,0 +1,57 @@
+name: Validate MathQuest
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend dependencies
+        run: pip install -r questmath/app/backend/requirements.txt
+      - name: Compile backend
+        run: python -m compileall -q questmath/app/backend/app
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install frontend dependencies
+        working-directory: questmath/app/frontend
+        run: npm install
+      - name: Build frontend
+        working-directory: questmath/app/frontend
+        run: npm run build
+
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install YAML parser
+        run: pip install pyyaml
+      - name: Validate YAML
+        run: |
+          python - <<'PY'
+          import pathlib
+          import yaml
+          for path in [pathlib.Path('repository.yaml'), pathlib.Path('questmath/config.yaml'), pathlib.Path('questmath/build.yaml')]:
+              with path.open() as handle:
+                  yaml.safe_load(handle)
+              print(f'validated {path}')
+          PY
