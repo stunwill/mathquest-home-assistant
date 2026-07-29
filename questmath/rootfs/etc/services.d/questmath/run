@@ -1,0 +1,24 @@
+#!/usr/bin/with-contenv bashio
+set -e
+
+export PARENT_USERNAME="$(bashio::config 'parent_username')"
+export PARENT_PASSWORD="$(bashio::config 'parent_password')"
+export STUDENT_USERNAME="$(bashio::config 'student_username')"
+export STUDENT_PASSWORD="$(bashio::config 'student_password')"
+export STUDENT_DISPLAY_NAME="$(bashio::config 'student_display_name')"
+export TZ="$(bashio::config 'timezone')"
+
+if bashio::config.has_value 'timezone'; then
+  ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime || true
+  echo "${TZ}" > /etc/timezone
+fi
+
+cd /app
+
+bashio::log.info "Starting MathQuest v0.3.1 on port 8080"
+exec /opt/questmath/bin/uvicorn app.main:app \
+  --app-dir /app \
+  --host 0.0.0.0 \
+  --port 8080 \
+  --proxy-headers \
+  --forwarded-allow-ips='*'
