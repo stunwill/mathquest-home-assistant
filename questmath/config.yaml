@@ -1,0 +1,40 @@
+name: MathQuest
+version: "0.3.1"
+slug: questmath
+description: Sienna’s Level 4 adaptive mathematics learning adventure.
+url: https://github.com/stunwill/mathquest-home-assistant
+arch:
+  - aarch64
+  - amd64
+  - armv7
+startup: application
+boot: auto
+init: false
+ingress: true
+ingress_port: 8080
+panel_icon: mdi:calculator-variant
+panel_title: MathQuest
+homeassistant_api: false
+hassio_api: false
+map:
+  - addon_config:rw
+ports:
+  8080/tcp: null
+ports_description:
+  8080/tcp: Direct web access (optional)
+options:
+  parent_username: parent
+  parent_password: ChangeMeParent!
+  student_username: student
+  student_password: ChangeMeStudent!
+  student_display_name: Math Explorer
+  timezone: Australia/Melbourne
+schema:
+  parent_username: str
+  parent_password: password
+  student_username: str
+  student_password: password
+  student_display_name: str
+  timezone: str
+backup_exclude:
+  - "*.log"
