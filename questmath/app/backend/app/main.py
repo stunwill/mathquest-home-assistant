@@ -109,6 +109,7 @@ class Worksheet(Base):
     last_active_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     elapsed_seconds: Mapped[float] = mapped_column(Float, default=0)
     status: Mapped[str] = mapped_column(String(20), default='in_progress')
+    selected_topic: Mapped[str] = mapped_column(String(40), default='mixed')
     questions: Mapped[list['Question']] = relationship(cascade='all, delete-orphan')
 
 class Question(Base):
@@ -145,9 +146,10 @@ engine=create_engine(f'sqlite:///{DB_PATH}', connect_args={'check_same_thread':F
 SessionLocal=sessionmaker(engine, expire_on_commit=False)
 pwd=CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2=OAuth2PasswordBearer(tokenUrl='api/auth/login')
-app=FastAPI(title='MathQuest', version='0.3.1')
+app=FastAPI(title='MathQuest', version='0.4.0')
 
 class AnswerIn(BaseModel): answer: Any; seconds: float = 0
+class WorksheetCreateIn(BaseModel): topic: str = 'mixed'
 class SettingsIn(BaseModel): question_count:int=20; adaptive_mode:bool=True; enabled_topics:list[str]; manual_levels:dict[str,int]={}; theme:str='aurora'
 class NavigateIn(BaseModel): elapsed_seconds: float = 0
 class CustomQuestionIn(BaseModel): topic:str; skill:str='custom'; level:int=1; prompt:str; answer_type:str='text'; payload:dict[str,Any]={}; correct_answer:str; working:str
@@ -174,7 +176,8 @@ def migrate_database():
         'worksheets': [
             ('current_question_id', 'INTEGER'), ('current_phase', "VARCHAR(20) DEFAULT 'main'"),
             ('last_active_at', 'DATETIME'), ('elapsed_seconds', 'FLOAT DEFAULT 0'),
-            ('status', "VARCHAR(20) DEFAULT 'in_progress'")
+            ('status', "VARCHAR(20) DEFAULT 'in_progress'"),
+            ('selected_topic', "VARCHAR(40) DEFAULT 'mixed'")
         ],
         'questions': [
             ('state', "VARCHAR(30) DEFAULT 'not_started'"), ('skipped_count', 'INTEGER DEFAULT 0'),
@@ -340,13 +343,19 @@ def weights(s,sid,topics):
     return out
 
 @app.post('/api/worksheets/today')
-def today_ws(u:User=Depends(current_user), s:Session=Depends(db)):
+def today_ws(selection:WorksheetCreateIn, u:User=Depends(current_user), s:Session=Depends(db)):
     if u.role!='student': raise HTTPException(403,'Student access required')
     existing=s.scalar(select(Worksheet).where(Worksheet.student_id==u.id,Worksheet.worksheet_date==date.today()))
     if existing: return worksheet_view(existing)
-    st=student_settings(s,u.id); topics=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
-    rng=random.Random(f'{u.id}:{date.today().isoformat()}:{random.SystemRandom().randint(1,10**9)}')
-    ws=Worksheet(student_id=u.id,worksheet_date=date.today(),total=st.question_count);s.add(ws);s.flush()
+    st=student_settings(s,u.id); enabled=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
+    selected=(selection.topic or 'mixed').lower()
+    if selected!='mixed' and selected not in LEVEL4_STRANDS:
+        raise HTTPException(400,'Unknown learning area')
+    if selected!='mixed' and selected not in enabled:
+        raise HTTPException(400,'This learning area is disabled by the parent')
+    topics=enabled if selected=='mixed' else [selected]
+    rng=random.Random(f'{u.id}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1,10**9)}')
+    ws=Worksheet(student_id=u.id,worksheet_date=date.today(),total=st.question_count,selected_topic=selected);s.add(ws);s.flush()
     w=weights(s,u.id,topics)
     for pos in range(st.question_count):
         topic=rng.choices(topics,weights=w,k=1)[0]
@@ -384,6 +393,7 @@ def worksheet_view(ws):
         'score':ws.score,'total':ws.total,'xp_earned':ws.xp_earned,
         'current_question_id':ws.current_question_id,'current_phase':ws.current_phase or 'main',
         'elapsed_seconds':ws.elapsed_seconds or 0,'status':ws.status or 'in_progress',
+        'selected_topic':getattr(ws,'selected_topic','mixed') or 'mixed',
         'counts':{
             'correct':sum(v=='correct' for v in statuses.values()),
             'incorrect':sum(v=='incorrect' for v in statuses.values()),

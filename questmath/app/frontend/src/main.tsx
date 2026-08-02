@@ -7,7 +7,7 @@ import {
 import './styles.css';
 
 const API = 'api';
-const VERSION = '0.3.1';
+const VERSION = '0.4.0';
 
 type User = { id:number; username:string; role:string; display_name:string; xp:number; level:number; highest_level:number };
 type QuestionStatus = 'not_started'|'current'|'skipped'|'correct'|'incorrect'|'retry_available';
@@ -18,7 +18,7 @@ type Question = {
 };
 type WorksheetData = {
   id:number; date:string; completed_at:string|null; score:number; total:number; xp_earned:number;
-  current_question_id:number|null; current_phase:'main'|'skipped'; elapsed_seconds:number; status:string;
+  current_question_id:number|null; current_phase:'main'|'skipped'; elapsed_seconds:number; status:string; selected_topic:string;
   counts:{correct:number;incorrect:number;skipped:number;remaining:number}; questions:Question[];
 };
 
@@ -80,23 +80,46 @@ function Student({user,logout}:{user:User;logout:()=>void}){
   const[worksheet,setWorksheet]=useState<WorksheetData|null>(null);
   const[summary,setSummary]=useState<any>(null);
   const[working,setWorking]=useState(false);
+  const[choosing,setChoosing]=useState(false);
   const load=()=>{req('/dashboard/student').then(setDashboard);req('/worksheets/today').then(setWorksheet)};
   useEffect(load,[]);
   if(!dashboard)return <div className="splash">Loading your quest…</div>;
   if(working&&worksheet&&!worksheet.completed_at&&!summary)return <Worksheet ws={worksheet} onUpdate={setWorksheet} onExit={()=>{setWorking(false);load()}} onDone={x=>{setSummary(x);setWorking(false);load()}}/>;
   if(summary)return <Result data={summary} back={()=>{setSummary(null);load()}}/>;
+  if(choosing&&!worksheet)return <QuestCategoryPicker cancel={()=>setChoosing(false)} start={async topic=>{const next=await req('/worksheets/today',{method:'POST',body:JSON.stringify({topic})});setWorksheet(next);setChoosing(false);setWorking(true)}}/>;
   const hasProgress=worksheet&&!worksheet.completed_at;
   return <><Header user={user} logout={logout}/><main className="page">
     <section className="hero"><div><p className="eyebrow">TODAY’S ADVENTURE</p><h1>{hasProgress?'Your quest is waiting':'Ready to power up your maths?'}</h1>
       <p>{hasProgress?`${worksheet.counts.correct+worksheet.counts.incorrect} of ${worksheet.total} questions completed. Your progress is saved.`:'Complete one worksheet, strengthen weak spots and keep your streak alive.'}</p>
-      <button className="primary" disabled={!!worksheet?.completed_at} onClick={async()=>{
-        const next=worksheet||await req('/worksheets/today',{method:'POST'});setWorksheet(next);setWorking(true)
+      <button className="primary" disabled={!!worksheet?.completed_at} onClick={()=>{
+        if(worksheet){setWorking(true)}else{setChoosing(true)}
       }}><Play size={20}/>{worksheet?.completed_at?'Today complete':hasProgress?'Continue Today’s Quest':'Begin Today’s Adventure'}</button>
     </div><div className="level-orb"><small>LEVEL</small><strong>{dashboard.user.level}</strong><span>{dashboard.user.xp%250}/250 XP</span></div></section>
     <section className="cards"><Metric icon={<Flame/>} label="Daily streak" value={`${dashboard.streak} days`}/><Metric icon={<CheckCircle2/>} label="Accuracy" value={`${dashboard.accuracy}%`}/><Metric icon={<Star/>} label="Questions" value={dashboard.questions_answered}/><Metric icon={<Trophy/>} label="Highest level" value={dashboard.user.highest_level}/></section>
     <section className="panel"><h2>Skill map</h2><div className="skills">{dashboard.skills.map((s:any)=><div className="skill" key={s.topic}><div><b>{s.topic}</b><span>Level {s.level}</span></div><div className="bar"><i style={{width:`${s.accuracy}%`}}/></div><small>{s.accuracy}% accuracy</small></div>)}</div></section>
     <section className="grid2"><div className="panel"><h2>Completion calendar</h2><Calendar items={dashboard.calendar}/></div><div className="panel"><h2>Badges</h2><div className="badges">{dashboard.badges.length?dashboard.badges.map((b:string)=><span key={b}>⭐ {b}</span>):<p>Your first badge is waiting.</p>}</div></div></section>
   </main></>;
+}
+
+
+const QUEST_CATEGORIES=[
+  {id:'measurement',icon:'📏',name:'Measurement',description:'Length, area, perimeter, time, temperature and angles'},
+  {id:'algebra',icon:'🧩',name:'Algebra',description:'Unknown values, patterns and number facts'},
+  {id:'probability',icon:'🎲',name:'Probability',description:'Chance, likelihood and repeated experiments'},
+  {id:'number',icon:'🔢',name:'Number',description:'Place value, fractions, operations, money and estimation'},
+  {id:'space',icon:'⬡',name:'Space',description:'Shapes, grids, symmetry and position'},
+  {id:'statistics',icon:'📊',name:'Statistics',description:'Data, graphs, surveys and investigations'},
+  {id:'mixed',icon:'✨',name:'Mixed Adventure',description:'A balanced quest across all learning areas'}
+];
+
+function QuestCategoryPicker({start,cancel}:{start:(topic:string)=>Promise<void>;cancel:()=>void}){
+  const[selected,setSelected]=useState('mixed');
+  const[busy,setBusy]=useState(false);
+  return <main className="category-page"><section className="category-card">
+    <p className="eyebrow">CHOOSE TODAY’S QUEST</p><h1>What would you like to practise?</h1><p>Pick one Victorian Curriculum learning area, or choose a mixed adventure.</p>
+    <div className="category-grid">{QUEST_CATEGORIES.map(c=><button type="button" key={c.id} className={'category-option '+(selected===c.id?'selected':'')} onClick={()=>setSelected(c.id)}><span>{c.icon}</span><b>{c.name}</b><small>{c.description}</small></button>)}</div>
+    <div className="category-actions"><button onClick={cancel}>Back</button><button className="primary" disabled={busy} onClick={async()=>{setBusy(true);try{await start(selected)}finally{setBusy(false)}}}><Play size={20}/>{busy?'Building your quest…':'Start this quest'}</button></div>
+  </section></main>;
 }
 
 function Metric({icon,label,value}:any){return <div className="metric">{icon&&<i>{icon}</i>}<div><small>{label}</small><strong>{value}</strong></div></div>}
