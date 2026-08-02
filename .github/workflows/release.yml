@@ -1,0 +1,99 @@
+name: Publish MathQuest release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - questmath/config.yaml
+      - questmath/CHANGELOG.md
+      - .github/workflows/release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mathquest-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read and validate app version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(python - <<'PY'
+          import re
+          from pathlib import Path
+
+          text = Path('questmath/config.yaml').read_text(encoding='utf-8')
+          match = re.search(r'^version:\s*["\x27]?([^"\x27\s]+)["\x27]?\s*$', text, re.MULTILINE)
+          if not match:
+              raise SystemExit('Unable to read version from questmath/config.yaml')
+          print(match.group(1))
+          PY
+          )"
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid version: $VERSION"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether the tag already exists
+        id: existing
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release tag $TAG already exists. Nothing to publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract release notes
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          version = os.environ['VERSION']
+          changelog = Path('questmath/CHANGELOG.md').read_text(encoding='utf-8')
+          pattern = rf'^##\s+[^\n]*\b(?:v)?{re.escape(version)}\b[^\n]*\n(.*?)(?=^##\s+|\Z)'
+          match = re.search(pattern, changelog, re.MULTILINE | re.DOTALL | re.IGNORECASE)
+          notes = match.group(1).strip() if match else ''
+          if not notes:
+              notes = f'MathQuest {version} release.'
+          Path('/tmp/release-notes.md').write_text(notes + '\n', encoding='utf-8')
+          PY
+
+      - name: Create GitHub release
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "MathQuest $VERSION" \
+            --notes-file /tmp/release-notes.md
