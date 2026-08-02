@@ -1,3 +1,11 @@
+# MathQuest 0.4.0
+
+- Added a student learning-area selector before a new daily worksheet begins.
+- Added focused worksheets for Measurement, Algebra, Probability, Number, Space and Statistics.
+- Added a Mixed Adventure option spanning all enabled Level 4 strands.
+- Stored the selected learning area with each worksheet for future reporting.
+- Preserved parent topic controls, adaptive difficulty and resume behaviour.
+
 # MathQuest 0.3.1
 
 - Fixed typed-answer input handling so Check answer activates reliably on iPhone and iPad.
