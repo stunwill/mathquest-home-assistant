@@ -1,0 +1,72 @@
+name: Apply MathQuest answer fix
+
+on:
+  push:
+    branches:
+      - fix/answer-submission-sqlalchemy-func
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/answer-submission-sqlalchemy-func
+
+      - name: Import SQLAlchemy func
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('questmath/app/backend/app/main.py')
+          text = path.read_text()
+          old = 'from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, create_engine, select'
+          new = 'from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, create_engine, func, select'
+
+          if new in text:
+              print('SQLAlchemy func import is already present.')
+          elif old in text:
+              path.write_text(text.replace(old, new, 1))
+              print('Added SQLAlchemy func import.')
+          else:
+              raise SystemExit('Expected SQLAlchemy import was not found.')
+          PY
+
+      - name: Add regression test
+        shell: bash
+        run: |
+          mkdir -p questmath/app/backend/tests
+          cat > questmath/app/backend/tests/test_sqlalchemy_imports.py <<'PY'
+          import ast
+          from pathlib import Path
+
+
+          def test_main_imports_sqlalchemy_func():
+              source = Path(__file__).parents[1] / 'app' / 'main.py'
+              tree = ast.parse(source.read_text())
+              sqlalchemy_imports = {
+                  alias.name
+                  for node in tree.body
+                  if isinstance(node, ast.ImportFrom) and node.module == 'sqlalchemy'
+                  for alias in node.names
+              }
+              assert 'func' in sqlalchemy_imports
+          PY
+
+      - name: Remove temporary workflow
+        run: rm .github/workflows/apply-answer-fix.yml
+
+      - name: Commit fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add questmath/app/backend/app/main.py questmath/app/backend/tests/test_sqlalchemy_imports.py .github/workflows/apply-answer-fix.yml
+          git commit -m "fix: restore answer submission count query"
+          git push origin HEAD:fix/answer-submission-sqlalchemy-func
