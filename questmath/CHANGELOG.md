@@ -1,3 +1,14 @@
+# MathQuest 0.10.0
+
+- Added browser-based read-aloud support for questions using Australian English speech, including short descriptions of visual question content.
+- Added an on-screen scratchpad so students can keep working notes beside a question without affecting assessment or mastery signals.
+- Added interactive maths manipulatives selected for the current question, including fraction tiles, place-value blocks, rulers, grid tokens and grouping counters.
+- Added drag-and-drop modelling for fraction pieces, counters and place-value blocks, with touch-friendly supporting layouts.
+- Added a rolling seven-day parent learning report covering learning days, questions attempted, first-attempt accuracy, hints, XP, confidence and skill mastery.
+- Added plain-English weekly parent summaries highlighting the strongest current evidence and the most useful next focus.
+- Preserved v0.9 skill mastery, confidence-aware adaptation, Teaching Mode, misconception detection and Story Adventures.
+- Updated runtime, frontend and Home Assistant app metadata to 0.10.0.
+
 # MathQuest 0.9.0
 
 - Added skill-level mastery tracking across individual Victorian Curriculum outcomes rather than only broad learning areas.
