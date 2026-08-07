@@ -127,9 +127,11 @@ class Question(Base):
     position: Mapped[int] = mapped_column()
     state: Mapped[str] = mapped_column(String(30), default='not_started')
     skipped_count: Mapped[int] = mapped_column(default=0)
+    hint_count: Mapped[int] = mapped_column(default=0)
     first_viewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     answered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     attempts: Mapped[list['Attempt']] = relationship(cascade='all, delete-orphan')
+    hints: Mapped[list['HintEvent']] = relationship(cascade='all, delete-orphan')
 
 class Attempt(Base):
     __tablename__='attempts'
@@ -142,11 +144,21 @@ class Attempt(Base):
     seconds: Mapped[float] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
+class HintEvent(Base):
+    __tablename__='hint_events'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    question_id: Mapped[int] = mapped_column(ForeignKey('questions.id'), index=True)
+    student_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    topic: Mapped[str] = mapped_column(String(40), index=True)
+    hint_number: Mapped[int] = mapped_column(default=1)
+    hint_text: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
 engine=create_engine(f'sqlite:///{DB_PATH}', connect_args={'check_same_thread':False})
 SessionLocal=sessionmaker(engine, expire_on_commit=False)
 pwd=CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2=OAuth2PasswordBearer(tokenUrl='api/auth/login')
-app=FastAPI(title='MathQuest', version='0.4.0')
+app=FastAPI(title='MathQuest', version='0.5.0')
 
 class AnswerIn(BaseModel): answer: Any; seconds: float = 0
 class WorksheetCreateIn(BaseModel): topic: str = 'mixed'
@@ -171,7 +183,6 @@ def parent(u:User=Depends(current_user)):
     return u
 
 def migrate_database():
-    # SQLite create_all does not add columns to an existing database.
     additions = {
         'worksheets': [
             ('current_question_id', 'INTEGER'), ('current_phase', "VARCHAR(20) DEFAULT 'main'"),
@@ -181,7 +192,7 @@ def migrate_database():
         ],
         'questions': [
             ('state', "VARCHAR(30) DEFAULT 'not_started'"), ('skipped_count', 'INTEGER DEFAULT 0'),
-            ('first_viewed_at', 'DATETIME'), ('answered_at', 'DATETIME')
+            ('hint_count', 'INTEGER DEFAULT 0'), ('first_viewed_at', 'DATETIME'), ('answered_at', 'DATETIME')
         ]
     }
     with sqlite3.connect(DB_PATH) as conn:
@@ -203,14 +214,11 @@ def seed():
             student=User(username=os.getenv('STUDENT_USERNAME','student'),password_hash=pwd.hash(os.getenv('STUDENT_PASSWORD','ChangeMeStudent!')),role='student',display_name=os.getenv('STUDENT_DISPLAY_NAME','Math Explorer'))
             s.add(student); s.flush(); s.add(Setting(student_id=student.id))
             for t in LEVEL4_STRANDS: s.add(Skill(student_id=student.id,topic=t))
-        # Upgrade legacy topic settings and add missing Level 4 strand trackers.
         if student:
             st=s.scalar(select(Setting).where(Setting.student_id==student.id))
             if st:
-                try:
-                    current=json.loads(st.enabled_topics)
-                except Exception:
-                    current=[]
+                try: current=json.loads(st.enabled_topics)
+                except Exception: current=[]
                 if set(current).issubset({'multiplication','fractions','measurement'}) or not current:
                     st.enabled_topics=json.dumps(LEVEL4_STRANDS)
             existing={x.topic for x in s.scalars(select(Skill).where(Skill.student_id==student.id)).all()}
@@ -240,11 +248,6 @@ def q(code, skill, prompt, answer_type, payload, answer, working):
     return (f'{code}:{skill}', prompt, answer_type, payload, str(answer), working)
 
 def make_question(topic:str, level:int, rng:random.Random):
-    """Generate Victorian Curriculum F-10 Version 2.0 Level 4-aligned practice.
-
-    Questions sample the breadth of each content description. They support practice
-    and progress monitoring, but are not a substitute for teacher assessment.
-    """
     if topic == 'number':
         code = rng.choice(['VC2M4N01','VC2M4N02','VC2M4N03','VC2M4N04','VC2M4N05','VC2M4N06','VC2M4N07','VC2M4N08','VC2M4N09','VC2M4N10'])
         if code == 'VC2M4N01':
@@ -311,7 +314,7 @@ def make_question(topic:str, level:int, rng:random.Random):
         if code=='VC2M4SP03':
             col=rng.choice(['A','B','C','D','E']); row=rng.randint(1,6)
             return q(code,'grid_references',f'A treasure is at column {col}, row {row}. Write its grid reference.','text',{},f'{col}{row}',f'Grid references name the column first, then the row: {col}{row}.')
-        sides=rng.choice([3,4,5,6,8]); answer='yes' if sides in [3,4,5,6,8] else 'no'
+        sides=rng.choice([3,4,5,6,8]); answer='yes'
         return q(code,'rotational_symmetry',f'Does a regular {sides}-sided polygon have rotational symmetry?','choice',{'choices':['yes','no']},answer,'A regular polygon matches itself during a turn smaller than one full revolution.')
 
     if topic == 'statistics':
@@ -349,10 +352,8 @@ def today_ws(selection:WorksheetCreateIn, u:User=Depends(current_user), s:Sessio
     if existing: return worksheet_view(existing)
     st=student_settings(s,u.id); enabled=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
     selected=(selection.topic or 'mixed').lower()
-    if selected!='mixed' and selected not in LEVEL4_STRANDS:
-        raise HTTPException(400,'Unknown learning area')
-    if selected!='mixed' and selected not in enabled:
-        raise HTTPException(400,'This learning area is disabled by the parent')
+    if selected!='mixed' and selected not in LEVEL4_STRANDS: raise HTTPException(400,'Unknown learning area')
+    if selected!='mixed' and selected not in enabled: raise HTTPException(400,'This learning area is disabled by the parent')
     topics=enabled if selected=='mixed' else [selected]
     rng=random.Random(f'{u.id}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1,10**9)}')
     ws=Worksheet(student_id=u.id,worksheet_date=date.today(),total=st.question_count,selected_topic=selected);s.add(ws);s.flush()
@@ -363,12 +364,11 @@ def today_ws(selection:WorksheetCreateIn, u:User=Depends(current_user), s:Sessio
         lvl=(sk.level if sk else 1) if st.adaptive_mode else levels.get(topic,1)
         if rng.random()<.2: lvl=max(1,lvl-1)
         skill,prompt,atype,payload,ans,working=make_question(topic,min(4,lvl),rng)
-        q=Question(worksheet_id=ws.id,topic=topic,skill=skill,level=lvl,prompt=prompt,answer_type=atype,payload=json.dumps(payload),correct_answer=ans,working=working,position=pos)
-        s.add(q); s.flush()
+        item=Question(worksheet_id=ws.id,topic=topic,skill=skill,level=lvl,prompt=prompt,answer_type=atype,payload=json.dumps(payload),correct_answer=ans,working=working,position=pos)
+        s.add(item); s.flush()
         if pos == 0:
-            q.state='active'; q.first_viewed_at=datetime.utcnow(); ws.current_question_id=q.id
-    ws.last_active_at=datetime.utcnow()
-    s.commit();s.refresh(ws);return worksheet_view(ws)
+            item.state='active'; item.first_viewed_at=datetime.utcnow(); ws.current_question_id=item.id
+    ws.last_active_at=datetime.utcnow(); s.commit(); s.refresh(ws); return worksheet_view(ws)
 
 @app.get('/api/worksheets/today')
 def get_today(u:User=Depends(current_user),s:Session=Depends(db)):
@@ -388,28 +388,62 @@ def worksheet_view(ws):
     questions=sorted(ws.questions,key=lambda x:x.position)
     statuses={q.id:question_status(q) for q in questions}
     return {
-        'id':ws.id,'date':ws.worksheet_date.isoformat(),
-        'completed_at':ws.completed_at.isoformat() if ws.completed_at else None,
-        'score':ws.score,'total':ws.total,'xp_earned':ws.xp_earned,
-        'current_question_id':ws.current_question_id,'current_phase':ws.current_phase or 'main',
-        'elapsed_seconds':ws.elapsed_seconds or 0,'status':ws.status or 'in_progress',
+        'id':ws.id,'date':ws.worksheet_date.isoformat(),'completed_at':ws.completed_at.isoformat() if ws.completed_at else None,
+        'score':ws.score,'total':ws.total,'xp_earned':ws.xp_earned,'current_question_id':ws.current_question_id,
+        'current_phase':ws.current_phase or 'main','elapsed_seconds':ws.elapsed_seconds or 0,'status':ws.status or 'in_progress',
         'selected_topic':getattr(ws,'selected_topic','mixed') or 'mixed',
         'counts':{
-            'correct':sum(v=='correct' for v in statuses.values()),
-            'incorrect':sum(v=='incorrect' for v in statuses.values()),
+            'correct':sum(v=='correct' for v in statuses.values()),'incorrect':sum(v=='incorrect' for v in statuses.values()),
             'skipped':sum(v=='skipped' for v in statuses.values()),
-            'remaining':sum(v in ('not_started','current','retry_available','skipped') for v in statuses.values())
+            'remaining':sum(v in ('not_started','current','retry_available','skipped') for v in statuses.values()),
+            'hints':sum(getattr(q,'hint_count',0) or 0 for q in questions)
         },
         'questions':[{
             'id':q.id,'topic':q.topic,'skill':q.skill,'level':q.level,'prompt':q.prompt,
             'summary':q.prompt if len(q.prompt)<=55 else q.skill.replace('_',' ').title(),
             'answer_type':q.answer_type,'payload':json.loads(q.payload),'position':q.position,
-            'status':statuses[q.id],'skipped_count':q.skipped_count or 0,
+            'status':statuses[q.id],'skipped_count':q.skipped_count or 0,'hint_count':getattr(q,'hint_count',0) or 0,
+            'last_hint':sorted(q.hints,key=lambda h:h.hint_number)[-1].hint_text if q.hints else None,
             'attempts':[{'answer':a.answer,'correct':a.correct,'attempt_number':a.attempt_number} for a in sorted(q.attempts,key=lambda a:a.attempt_number)]
         } for q in questions]
     }
 
 def normalise(v): return str(v).strip().lower().replace('$','').replace(',','')
+
+def hint_text(q:Question, hint_number:int) -> str:
+    working=(q.working or '').strip()
+    first=working.split(';',1)[0].split('.',1)[0].strip()
+    if hint_number == 1:
+        if ':' in q.skill:
+            skill=q.skill.split(':',1)[1].replace('_',' ')
+            return f'Think about the {skill}. {first}.' if first else f'Think about the {skill} and identify the first operation or comparison you need.'
+        return first + '.' if first else 'Identify what the question is asking, then choose the first operation or comparison you need.'
+    if working:
+        safe=working
+        answer=str(q.correct_answer).strip()
+        if answer:
+            safe=safe.replace(answer,'the result')
+        return f'Break it into smaller steps: {safe}'
+    return 'Break the problem into smaller steps and check each step before moving to the next one.'
+
+@app.post('/api/questions/{qid}/hint')
+def request_hint(qid:int,u:User=Depends(current_user),s:Session=Depends(db)):
+    if u.role!='student': raise HTTPException(403,'Student access required')
+    q=s.get(Question,qid)
+    if not q: raise HTTPException(404,'Question not found')
+    ws=s.get(Worksheet,q.worksheet_id)
+    if not ws or ws.student_id!=u.id: raise HTTPException(403,'Question does not belong to this student')
+    if question_status(q) in ('correct','incorrect'): raise HTTPException(400,'Completed questions do not need hints')
+    next_number=(q.hint_count or 0)+1
+    if next_number>2:
+        last=sorted(q.hints,key=lambda h:h.hint_number)[-1] if q.hints else None
+        return {'hint':last.hint_text if last else hint_text(q,2),'hint_count':q.hint_count or 0,'more_available':False}
+    text=hint_text(q,next_number)
+    q.hint_count=next_number
+    s.add(HintEvent(question_id=q.id,student_id=u.id,topic=q.topic,hint_number=next_number,hint_text=text))
+    ws.last_active_at=datetime.utcnow(); s.commit()
+    return {'hint':text,'hint_count':next_number,'more_available':next_number<2}
+
 @app.post('/api/questions/{qid}/answer')
 def answer(qid:int,data:AnswerIn,u:User=Depends(current_user),s:Session=Depends(db)):
     q=s.get(Question,qid)
@@ -419,14 +453,12 @@ def answer(qid:int,data:AnswerIn,u:User=Depends(current_user),s:Session=Depends(
     count=s.scalar(select(func.count(Attempt.id)).where(Attempt.question_id==qid,Attempt.student_id==u.id)) or 0
     if count>=2: raise HTTPException(400,'No attempts remaining')
     correct=normalise(data.answer)==normalise(q.correct_answer)
-    a=Attempt(question_id=q.id,student_id=u.id,answer=str(data.answer),correct=correct,attempt_number=count+1,seconds=max(0,data.seconds));s.add(a)
+    s.add(Attempt(question_id=q.id,student_id=u.id,answer=str(data.answer),correct=correct,attempt_number=count+1,seconds=max(0,data.seconds)))
     reveal=correct or count+1>=2
     q.state='answered_correct' if correct else ('answered_incorrect' if reveal else 'active')
     if reveal: q.answered_at=datetime.utcnow()
-    ws.last_active_at=datetime.utcnow()
-    s.commit()
+    ws.last_active_at=datetime.utcnow(); s.commit()
     return {'correct':correct,'attempt_number':count+1,'retry_allowed':not reveal,'correct_answer':q.correct_answer if reveal else None,'working':q.working if reveal else None,'message':'Great job!' if correct else ('Not quite. Try once more.' if not reveal else 'Here is how to solve it.')}
-
 
 @app.post('/api/questions/{qid}/skip')
 def skip_question(qid:int,data:NavigateIn,u:User=Depends(current_user),s:Session=Depends(db)):
@@ -436,9 +468,7 @@ def skip_question(qid:int,data:NavigateIn,u:User=Depends(current_user),s:Session
     if not ws or ws.student_id!=u.id: raise HTTPException(403,'Question does not belong to this student')
     if question_status(q) in ('correct','incorrect'): raise HTTPException(400,'Completed questions cannot be skipped')
     q.state='skipped'; q.skipped_count=(q.skipped_count or 0)+1
-    ws.elapsed_seconds=max(ws.elapsed_seconds or 0,data.elapsed_seconds)
-    ws.last_active_at=datetime.utcnow()
-    s.commit()
+    ws.elapsed_seconds=max(ws.elapsed_seconds or 0,data.elapsed_seconds); ws.last_active_at=datetime.utcnow(); s.commit()
     return worksheet_view(ws)
 
 @app.post('/api/worksheets/{wid}/navigate/{qid}')
@@ -451,15 +481,13 @@ def navigate(wid:int,qid:int,data:NavigateIn,u:User=Depends(current_user),s:Sess
     if q.first_viewed_at is None: q.first_viewed_at=datetime.utcnow()
     q.state='active'; ws.current_question_id=q.id
     ws.current_phase='skipped' if all(question_status(x) in ('correct','incorrect','skipped') for x in ws.questions) else 'main'
-    ws.elapsed_seconds=max(ws.elapsed_seconds or 0,data.elapsed_seconds); ws.last_active_at=datetime.utcnow()
-    s.commit(); return worksheet_view(ws)
+    ws.elapsed_seconds=max(ws.elapsed_seconds or 0,data.elapsed_seconds); ws.last_active_at=datetime.utcnow(); s.commit(); return worksheet_view(ws)
 
 @app.post('/api/worksheets/{wid}/save')
 def save_progress(wid:int,data:NavigateIn,u:User=Depends(current_user),s:Session=Depends(db)):
     ws=s.get(Worksheet,wid)
     if not ws or ws.student_id!=u.id: raise HTTPException(404,'Worksheet not found')
-    ws.elapsed_seconds=max(ws.elapsed_seconds or 0,data.elapsed_seconds); ws.last_active_at=datetime.utcnow(); ws.status='in_progress'
-    s.commit(); return {'ok':True}
+    ws.elapsed_seconds=max(ws.elapsed_seconds or 0,data.elapsed_seconds); ws.last_active_at=datetime.utcnow(); ws.status='in_progress'; s.commit(); return {'ok':True}
 
 @app.post('/api/worksheets/{wid}/complete')
 def complete(wid:int,u:User=Depends(current_user),s:Session=Depends(db)):
@@ -470,19 +498,19 @@ def complete(wid:int,u:User=Depends(current_user),s:Session=Depends(db)):
     if unresolved: raise HTTPException(400,f'{len(unresolved)} questions still need to be completed')
     score=0; topic_results={}
     for q in ws.questions:
-        attempts=sorted(q.attempts,key=lambda a:a.attempt_number)
-        final_correct=any(a.correct for a in attempts)
+        attempts=sorted(q.attempts,key=lambda a:a.attempt_number); final_correct=any(a.correct for a in attempts)
         score+=int(final_correct); topic_results.setdefault(q.topic,[]).append(final_correct)
-    ws.score=score;ws.completed_at=datetime.utcnow();ws.status='completed';ws.current_question_id=None;ws.xp_earned=score*10+(50 if score==ws.total else 0);u.xp+=ws.xp_earned;u.highest_level=max(u.highest_level,u.xp//250+1)
-    for topic,vals in topic_results.items(): update_skill(s,u.id,topic)
-    s.commit();return summary(s,ws,u)
+    ws.score=score; ws.completed_at=datetime.utcnow(); ws.status='completed'; ws.current_question_id=None
+    ws.xp_earned=score*10+(50 if score==ws.total else 0); u.xp+=ws.xp_earned; u.highest_level=max(u.highest_level,u.xp//250+1)
+    for topic in topic_results: update_skill(s,u.id,topic)
+    s.commit(); return summary(s,ws,u)
 
 def update_skill(s,sid,topic):
     sk=s.scalar(select(Skill).where(Skill.student_id==sid,Skill.topic==topic))
     if not sk: sk=Skill(student_id=sid,topic=topic);s.add(sk);s.flush()
     rows=s.execute(select(Attempt.correct,Attempt.seconds).join(Question).join(Worksheet).where(Attempt.student_id==sid,Question.topic==topic).order_by(Attempt.created_at.desc()).limit(20)).all()
     if not rows:return
-    sk.attempts+=len(rows);sk.rolling_accuracy=sum(1 for r in rows if r.correct)/len(rows);sk.avg_seconds=sum(r.seconds for r in rows)/len(rows)
+    sk.attempts+=len(rows); sk.rolling_accuracy=sum(1 for r in rows if r.correct)/len(rows); sk.avg_seconds=sum(r.seconds for r in rows)/len(rows)
     if len(rows)>=12 and sk.rolling_accuracy>=.85: sk.level=min(8,sk.level+1)
     elif len(rows)>=8 and sk.rolling_accuracy<.70: sk.level=max(1,sk.level-1)
     sk.highest_level=max(sk.highest_level,sk.level)
@@ -491,7 +519,8 @@ def summary(s,ws,u):
     by={}
     for q in ws.questions: by.setdefault(q.topic,[]).append(any(a.correct for a in q.attempts))
     rates={k:sum(v)/len(v) for k,v in by.items()}; strongest=max(rates,key=rates.get) if rates else None; weakest=min(rates,key=rates.get) if rates else None
-    return {'score':ws.score,'total':ws.total,'accuracy':round(ws.score/ws.total*100) if ws.total else 0,'xp_earned':ws.xp_earned,'level':u.xp//250+1,'level_progress':u.xp%250,'strongest_topic':strongest,'weakest_topic':weakest,'perfect':ws.score==ws.total,'message':'Outstanding work!' if ws.score==ws.total else 'You are getting stronger every day.'}
+    hints=sum((q.hint_count or 0) for q in ws.questions)
+    return {'score':ws.score,'total':ws.total,'accuracy':round(ws.score/ws.total*100) if ws.total else 0,'xp_earned':ws.xp_earned,'level':u.xp//250+1,'level_progress':u.xp%250,'strongest_topic':strongest,'weakest_topic':weakest,'hints_used':hints,'perfect':ws.score==ws.total,'message':'Outstanding work!' if ws.score==ws.total else 'You are getting stronger every day.'}
 
 def streak(s,sid):
     dates=set(s.scalars(select(Worksheet.worksheet_date).where(Worksheet.student_id==sid,Worksheet.completed_at.is_not(None))).all());n=0;d=date.today()
@@ -506,27 +535,25 @@ def dashboard(s,sid):
     attempts=s.scalars(select(Attempt).where(Attempt.student_id==sid)).all()
     correct=sum(a.correct for a in attempts)
     skills=s.scalars(select(Skill).where(Skill.student_id==sid)).all()
-    calendar=[{'date':w.worksheet_date.isoformat(),'completed':bool(w.completed_at),'score':w.score,'total':w.total} for w in works]
+    hints=s.scalars(select(HintEvent).where(HintEvent.student_id==sid).order_by(HintEvent.created_at.desc())).all()
+    calendar=[{'date':w.worksheet_date.isoformat(),'completed':bool(w.completed_at),'score':w.score,'total':w.total,'hints':sum((q.hint_count or 0) for q in w.questions)} for w in works]
     badges=[]
     if correct>=10:badges.append('10 Correct Answers')
     if streak(s,sid)>=5:badges.append('5 Day Streak')
     if streak(s,sid)>=20:badges.append('20 Day Streak')
     if len(attempts)>=1000:badges.append('1000 Questions')
 
-    # Curriculum outcome evidence uses the latest 12 first attempts for each content description.
     curriculum=[]; concerns=[]
     for code,(strand,title) in LEVEL4_OUTCOMES.items():
         rows=s.execute(select(Attempt.correct,Attempt.seconds,Question.prompt,Attempt.answer,Question.correct_answer,Attempt.created_at)
             .join(Question).where(Attempt.student_id==sid,Question.skill.like(f'{code}:%'),Attempt.attempt_number==1)
             .order_by(Attempt.created_at.desc()).limit(12)).all()
         if rows:
-            accuracy=sum(1 for r in rows if r.correct)/len(rows)
-            avg=sum(r.seconds for r in rows)/len(rows)
+            accuracy=sum(1 for r in rows if r.correct)/len(rows); avg=sum(r.seconds for r in rows)/len(rows)
             if len(rows)>=5 and accuracy>=.85: status='secure'
             elif len(rows)>=3 and accuracy>=.70: status='developing'
             else: status='needs_support'
-        else:
-            accuracy=0;avg=0;status='not_assessed'
+        else: accuracy=0;avg=0;status='not_assessed'
         item={'code':code,'strand':strand,'title':title,'attempts':len(rows),'accuracy':round(accuracy*100),'avg_seconds':round(avg,1),'status':status}
         curriculum.append(item)
         if status=='needs_support': concerns.append(item)
@@ -539,7 +566,26 @@ def dashboard(s,sid):
         code=skill.split(':',1)[0] if ':' in skill else ''
         incorrect_items.append({'prompt':prompt,'code':code,'skill':skill.split(':',1)[-1].replace('_',' '),'student_answer':student_answer,'correct_answer':correct_answer,'working':working,'date':created_at.isoformat()})
 
-    return {'user':user_view(user),'streak':streak(s,sid),'completion_percent':round(len(completed)/max(1,len(works))*100),'questions_answered':len(attempts),'questions_correct':correct,'accuracy':round(correct/max(1,len(attempts))*100),'average_completion_minutes':round(sum(((w.completed_at-w.started_at).total_seconds()/60) for w in completed)/max(1,len(completed)),1),'calendar':calendar,'skills':[{'topic':x.topic,'level':x.level,'highest_level':x.highest_level,'accuracy':round(x.rolling_accuracy*100),'avg_seconds':round(x.avg_seconds,1)} for x in skills if x.topic in LEVEL4_STRANDS],'badges':badges,'curriculum':curriculum,'concerns':concerns[:8],'recent_incorrect':incorrect_items,'curriculum_summary':{'secure':sum(x['status']=='secure' for x in curriculum),'developing':sum(x['status']=='developing' for x in curriculum),'needs_support':sum(x['status']=='needs_support' for x in curriculum),'not_assessed':sum(x['status']=='not_assessed' for x in curriculum)}}
+    topic_hint_stats=[]
+    for topic in LEVEL4_STRANDS:
+        topic_questions=s.scalar(select(func.count(Question.id)).join(Worksheet).where(Worksheet.student_id==sid,Question.topic==topic)) or 0
+        hinted_questions=s.scalar(select(func.count(func.distinct(HintEvent.question_id))).where(HintEvent.student_id==sid,HintEvent.topic==topic)) or 0
+        topic_hints=sum(1 for h in hints if h.topic==topic)
+        topic_hint_stats.append({'topic':topic,'hints':topic_hints,'questions_with_hints':hinted_questions,'questions_seen':topic_questions,'hint_rate':round(hinted_questions/max(1,topic_questions)*100)})
+    recent_hints=[]
+    for h in hints[:10]:
+        q=s.get(Question,h.question_id)
+        recent_hints.append({'topic':h.topic,'hint_number':h.hint_number,'hint':h.hint_text,'prompt':q.prompt if q else 'Question','date':h.created_at.isoformat()})
+
+    return {
+        'user':user_view(user),'streak':streak(s,sid),'completion_percent':round(len(completed)/max(1,len(works))*100),
+        'questions_answered':len(attempts),'questions_correct':correct,'accuracy':round(correct/max(1,len(attempts))*100),
+        'average_completion_minutes':round(sum(((w.completed_at-w.started_at).total_seconds()/60) for w in completed)/max(1,len(completed)),1),
+        'calendar':calendar,'skills':[{'topic':x.topic,'level':x.level,'highest_level':x.highest_level,'accuracy':round(x.rolling_accuracy*100),'avg_seconds':round(x.avg_seconds,1)} for x in skills if x.topic in LEVEL4_STRANDS],
+        'badges':badges,'curriculum':curriculum,'concerns':concerns[:8],'recent_incorrect':incorrect_items,
+        'hint_summary':{'total_hints':len(hints),'questions_with_hints':len({h.question_id for h in hints}),'by_topic':topic_hint_stats,'recent':recent_hints},
+        'curriculum_summary':{'secure':sum(x['status']=='secure' for x in curriculum),'developing':sum(x['status']=='developing' for x in curriculum),'needs_support':sum(x['status']=='needs_support' for x in curriculum),'not_assessed':sum(x['status']=='not_assessed' for x in curriculum)}
+    }
 
 @app.get('/api/dashboard/student')
 def student_dash(u:User=Depends(current_user),s:Session=Depends(db)): return dashboard(s,u.id)
@@ -554,8 +600,7 @@ def put_settings(data:SettingsIn,_:User=Depends(parent),s:Session=Depends(db)):
     student=s.scalar(select(User).where(User.role=='student'));st=student_settings(s,student.id);st.question_count=max(5,min(50,data.question_count));st.adaptive_mode=data.adaptive_mode;st.enabled_topics=json.dumps(data.enabled_topics);st.manual_levels=json.dumps(data.manual_levels);st.theme=data.theme;s.commit();return {'ok':True}
 @app.post('/api/backups')
 def create_backup(_:User=Depends(parent)):
-    stamp=datetime.now().strftime('%Y%m%d-%H%M%S');dest=BACKUP_DIR/f'questmath-{stamp}.db'
-    src=sqlite3.connect(DB_PATH);dst=sqlite3.connect(dest);src.backup(dst);dst.close();src.close();return {'filename':dest.name,'size':dest.stat().st_size}
+    stamp=datetime.now().strftime('%Y%m%d-%H%M%S');dest=BACKUP_DIR/f'questmath-{stamp}.db';src=sqlite3.connect(DB_PATH);dst=sqlite3.connect(dest);src.backup(dst);dst.close();src.close();return {'filename':dest.name,'size':dest.stat().st_size}
 @app.get('/api/backups')
 def list_backups(_:User=Depends(parent)): return [{'filename':p.name,'size':p.stat().st_size,'modified':datetime.fromtimestamp(p.stat().st_mtime).isoformat()} for p in sorted(BACKUP_DIR.glob('*.db'),reverse=True)]
 @app.post('/api/backups/restore/{filename}')
@@ -565,13 +610,13 @@ def restore(filename:str,_:User=Depends(parent)):
     shutil.copy2(DB_PATH,BACKUP_DIR/f'pre-restore-{datetime.now():%Y%m%d-%H%M%S}.db');shutil.copy2(p,DB_PATH);return {'ok':True,'restart_required':True}
 @app.get('/api/reports/progress.csv')
 def csv_report(_:User=Depends(parent),s:Session=Depends(db)):
-    student=s.scalar(select(User).where(User.role=='student'));works=s.scalars(select(Worksheet).where(Worksheet.student_id==student.id).order_by(Worksheet.worksheet_date)).all();buf=io.StringIO();w=csv.writer(buf);w.writerow(['Date','Completed','Score','Total','Accuracy','XP'])
-    for x in works:w.writerow([x.worksheet_date,bool(x.completed_at),x.score,x.total,round(x.score/max(1,x.total)*100),x.xp_earned])
+    student=s.scalar(select(User).where(User.role=='student'));works=s.scalars(select(Worksheet).where(Worksheet.student_id==student.id).order_by(Worksheet.worksheet_date)).all();buf=io.StringIO();w=csv.writer(buf);w.writerow(['Date','Completed','Score','Total','Accuracy','XP','Hints'])
+    for x in works:w.writerow([x.worksheet_date,bool(x.completed_at),x.score,x.total,round(x.score/max(1,x.total)*100),x.xp_earned,sum((q.hint_count or 0) for q in x.questions)])
     return StreamingResponse(iter([buf.getvalue()]),media_type='text/csv',headers={'Content-Disposition':'attachment; filename=mathquest-progress.csv'})
 @app.get('/api/reports/progress.pdf')
 def pdf_report(_:User=Depends(parent),s:Session=Depends(db)):
     student=s.scalar(select(User).where(User.role=='student'));d=dashboard(s,student.id);path=BACKUP_DIR/'progress-report.pdf';c=canvas.Canvas(str(path),pagesize=A4);c.setFont('Helvetica-Bold',20);c.drawString(50,800,'MathQuest Progress Report');c.setFont('Helvetica',11);y=765
-    for label,val in [('Student',d['user']['display_name']),('Streak',f"{d['streak']} days"),('Questions answered',d['questions_answered']),('Accuracy',f"{d['accuracy']}%"),('Current level',d['user']['level'])]:c.drawString(50,y,f'{label}: {val}');y-=22
+    for label,val in [('Student',d['user']['display_name']),('Streak',f"{d['streak']} days"),('Questions answered',d['questions_answered']),('Accuracy',f"{d['accuracy']}%"),('Hints used',d['hint_summary']['total_hints']),('Current level',d['user']['level'])]:c.drawString(50,y,f'{label}: {val}');y-=22
     y-=10;c.setFont('Helvetica-Bold',14);c.drawString(50,y,'Topic performance');y-=24;c.setFont('Helvetica',11)
     for sk in d['skills']:c.drawString(60,y,f"{sk['topic'].title()}: Level {sk['level']}, accuracy {sk['accuracy']}%");y-=20
     c.save();return FileResponse(path,media_type='application/pdf',filename='mathquest-progress.pdf')
