@@ -1,3 +1,15 @@
+# MathQuest 0.6.0
+
+- Added hint-aware adaptive mastery so independent correct answers contribute 1.0 mastery, Hint 1 answers 0.7, Hint 2 answers 0.4 and incorrect answers 0.
+- Added automatic targeted practice that increases the likelihood of questions from learning areas and curriculum outcomes needing more support.
+- Added spaced revision using 1, 3, 7 and 14 day review intervals, with stronger emphasis on concepts that remain below mastery.
+- Added more contextual two-stage hints tailored to common Level 4 question types without revealing the final answer.
+- Added printable student worksheets from the quest selector and from an existing in-progress worksheet.
+- Printing a worksheet now starts that day's worksheet, marks it In Progress, stores its current position and preserves it for later continuation in MathQuest.
+- Printable worksheets include student name, date, selected quest, In Progress status, all questions and answer space, without answers or solution steps.
+- Kept existing parent hint analytics and scoring unchanged while using hint dependence internally to improve future adaptive question selection.
+- Updated runtime and application metadata to 0.6.0.
+
 # MathQuest 0.5.0
 
 - Added student-requested hints that guide the next step without revealing the answer.
