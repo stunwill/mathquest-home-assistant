@@ -1,3 +1,14 @@
+# MathQuest 0.8.0
+
+- Added a full parent Practice Quest builder with topic selection, question count and optional due dates.
+- Added assignment lifecycle tracking so quests can move through Assigned, In Progress, Overdue and Completed states.
+- Added support for creating targeted practice directly from MathQuest learning recommendations.
+- Added richer visual question formats including fraction comparisons, number lines, analogue clocks, angles, bar charts and grids.
+- Added story-based maths questions that place curriculum skills into everyday contexts such as sharing food, shopping, measurement and other real-world situations.
+- Added support for entering answers from printed worksheets back into MathQuest so paper work can still contribute to mastery tracking.
+- Added a question-format capability endpoint for validating which visual and storytelling formats are available.
+- Updated runtime, frontend and Home Assistant app metadata to 0.8.0.
+
 # MathQuest 0.7.0
 
 - Added parent learning insights that translate mastery, hint dependence and spaced revision into plain-English recommendations.
