@@ -1,3 +1,15 @@
+# MathQuest 0.9.0
+
+- Added skill-level mastery tracking across individual Victorian Curriculum outcomes rather than only broad learning areas.
+- Added student confidence tracking (I guessed, Pretty sure, I knew it) as an additional mastery signal.
+- Added dynamic in-quest difficulty adjustment, allowing remaining questions to move up or down after strong independent confidence or demonstrated difficulty.
+- Added Teaching Mode with short explanations, worked examples and step-by-step guidance when repeated difficulty is detected.
+- Added misconception detection for common fraction, perimeter/area, grid-reference and analogue-clock errors.
+- Added Story Adventures including Bakery Challenge, Camping Adventure, Space Mission and Animal Rescue, linking several questions into a shared narrative.
+- Added a v0.9 capability API and student/parent skill-mastery view.
+- Preserved v0.8 visual maths, parent Practice Quests, printable worksheet capture and adaptive spaced revision.
+- Updated runtime, frontend and Home Assistant app metadata to 0.9.0.
+
 # MathQuest 0.8.0
 
 - Added a full parent Practice Quest builder with topic selection, question count and optional due dates.
