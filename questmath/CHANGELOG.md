@@ -1,3 +1,14 @@
+# MathQuest 0.7.0
+
+- Added parent learning insights that translate mastery, hint dependence and spaced revision into plain-English recommendations.
+- Added 7, 30 and 90 day progress datasets covering accuracy, independent mastery, hint usage and completion time.
+- Added improved rewards for independent problem solving, streaks and learning breakthroughs.
+- Added Mastery Moments that recognise concepts completed independently after previously needing hints or correction.
+- Added parent-created Practice Quest assignments with selected learning areas, question counts and optional due dates.
+- Added a Home Assistant status API exposing today's completion, score, streak, accuracy, XP, hints, recommended topic and revision-due areas.
+- Updated the MathQuest by Stu visual identity to match the DinnerHub and MediaHub brand family, using a rounded emblem, bold wordmark and script-style by Stu treatment.
+- Updated runtime, frontend and Home Assistant app metadata to 0.7.0.
+
 # MathQuest 0.6.0
 
 - Added hint-aware adaptive mastery so independent correct answers contribute 1.0 mastery, Hint 1 answers 0.7, Hint 2 answers 0.4 and incorrect answers 0.
