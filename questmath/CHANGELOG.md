@@ -1,3 +1,14 @@
+# MathQuest 0.5.0
+
+- Added student-requested hints that guide the next step without revealing the answer.
+- Added per-question hint tracking and repeat-safe hint delivery.
+- Added parent hint analytics by learning area, including hint counts, questions using hints and hint rates.
+- Added recent hint activity so parents can see where support is being requested most often.
+- Added hint usage to worksheet summaries and progress reporting.
+- Added a MathQuest by Stu brand treatment aligned with MediaHub and DinnerHub, with a dedicated maths emblem.
+- Improved the parent dashboard with clearer learning-support signals alongside accuracy.
+- Updated runtime and displayed version metadata to 0.5.0.
+
 # MathQuest 0.4.0
 
 - Added a student learning-area selector before a new daily worksheet begins.
