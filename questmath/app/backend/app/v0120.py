@@ -207,3 +207,15 @@ def capabilities(_: legacy.User = Depends(legacy.current_user)):
         'parent_history': True,
         'consolidated_learner_resolution': True,
     }
+
+
+def _move_spa_fallback_to_end() -> None:
+    """Ensure every API route is evaluated before the SPA catch-all route."""
+    routes = app.router.routes
+    for index, route in enumerate(list(routes)):
+        if getattr(route, 'path', None) == '/{path:path}':
+            routes.append(routes.pop(index))
+            break
+
+
+_move_spa_fallback_to_end()
