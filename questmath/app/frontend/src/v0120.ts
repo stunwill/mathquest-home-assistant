@@ -20,7 +20,14 @@ window.fetch=async(input:RequestInfo|URL,init?:RequestInit)=>{
 const token=()=>localStorage.getItem('token');
 async function api(path:string,opts:RequestInit={}){
   const r=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json',...(token()?{Authorization:`Bearer ${token()}`}:{}) ,...(opts.headers||{})}});
-  if(!r.ok)throw new Error((await r.json().catch(()=>({detail:'Request failed'}))).detail||'Request failed');
+  const type=r.headers.get('content-type')||'';
+  if(!r.ok){
+    const detail=type.includes('json')?(await r.json().catch(()=>({detail:'Request failed'}))).detail:`Request failed (${r.status})`;
+    throw new Error(detail||'Request failed');
+  }
+  if(!type.includes('json')){
+    throw new Error(`MathQuest API ${path} returned ${type||'non-JSON content'} instead of JSON`);
+  }
   return r.json();
 }
 const label=(t:string)=>t==='mixed'?'Mixed Adventure':t.charAt(0).toUpperCase()+t.slice(1);
