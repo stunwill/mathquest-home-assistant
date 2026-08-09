@@ -11,7 +11,7 @@ from . import main as legacy
 from . import v060, v090, v0100
 
 app = legacy.app
-app.version = '0.11.0'
+app.version = '0.11.1'
 
 DASHBOARD_CATEGORIES = ('number', 'measurement', 'space', 'algebra', 'probability')
 
@@ -28,8 +28,6 @@ def _student_id(user: legacy.User, session: Session) -> int:
 def _iso(dt: datetime | None) -> str | None:
     if not dt:
         return None
-    # SQLite currently stores naive local datetimes. Preserve existing semantics while
-    # returning a valid ISO value. A configured HA host can parse this as a timestamp.
     return dt.isoformat()
 
 
@@ -48,15 +46,12 @@ def _accuracy(questions: list[legacy.Question]) -> float | None:
 
 
 def _category_stats(session: Session, sid: int, topic: str) -> dict[str, Any]:
-    # Reuse the adaptive engine's established recent-window metrics and mastery weighting.
     adaptive = v060._topic_metrics(session, sid, topic)
     rows = v060._topic_questions(session, sid, topic)
     accuracy = _accuracy(rows)
     skill = session.scalar(select(legacy.Skill).where(legacy.Skill.student_id == sid, legacy.Skill.topic == topic))
     progress = None
     if skill:
-        # Current curriculum difficulty is levels 1..8. This is a stable dashboard progress
-        # representation, while mastery remains the hint/confidence-aware learning measure.
         progress = round(max(0, min(8, skill.level)) / 8 * 100)
     return {
         'progress': progress,
@@ -84,7 +79,6 @@ def dashboard_stats(session: Session, sid: int) -> dict[str, Any]:
     learner = session.get(legacy.User, sid)
     if not learner:
         raise HTTPException(503, 'MathQuest learner is unavailable')
-
     today = date.today()
     week_start = today - timedelta(days=6)
     today_works = list(session.scalars(select(legacy.Worksheet).where(legacy.Worksheet.student_id == sid, legacy.Worksheet.worksheet_date == today)).all())
@@ -93,19 +87,16 @@ def dashboard_stats(session: Session, sid: int) -> dict[str, Any]:
     week_q = _answered_questions(week_works)
     today_correct = sum(1 for q in today_q if _question_correct(q))
     week_correct = sum(1 for q in week_q if _question_correct(q))
-
     adaptive = legacy.dashboard(session, sid).get('adaptive_learning', {})
     recommended = adaptive.get('recommended_topic')
     last_candidates = [x for w in week_works for x in (w.last_active_at, w.completed_at, w.started_at) if x]
     last_activity = max(last_candidates) if last_candidates else None
-
     categories: dict[str, Any] = {}
     for topic in DASHBOARD_CATEGORIES:
         try:
             categories[topic] = _category_stats(session, sid, topic)
         except Exception:
             categories[topic] = {'progress': None, 'accuracy': None, 'questions': 0, 'mastery': None}
-
     return {
         'available': True,
         'questions_today': len(today_q),
@@ -147,7 +138,7 @@ def ha_summary(user: legacy.User = Depends(legacy.current_user), session: Sessio
 @app.get('/api/v0110/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
     return {
-        'version': '0.11.0',
+        'version': '0.11.1',
         'home_assistant_dashboard_api': True,
         'stats_endpoint': '/api/ha/stats',
         'summary_endpoint': '/api/ha/summary',
