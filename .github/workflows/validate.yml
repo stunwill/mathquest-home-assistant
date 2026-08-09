@@ -18,9 +18,12 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install backend dependencies
-        run: pip install -r questmath/app/backend/requirements.txt
+        run: pip install -r questmath/app/backend/requirements.txt pytest
       - name: Compile backend
         run: python -m compileall -q questmath/app/backend/app
+      - name: Run backend tests
+        working-directory: questmath/app/backend
+        run: pytest -q
 
   frontend:
     runs-on: ubuntu-latest
