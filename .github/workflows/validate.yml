@@ -22,8 +22,7 @@ jobs:
       - name: Compile backend
         run: python -m compileall -q questmath/app/backend/app
       - name: Run backend tests
-        working-directory: questmath/app/backend
-        run: pytest -q
+        run: PYTHONPATH=questmath/app/backend pytest -q questmath/app/backend/tests
 
   frontend:
     runs-on: ubuntu-latest
