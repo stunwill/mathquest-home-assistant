@@ -68,3 +68,16 @@ def test_existing_active_worksheet_can_be_identified_independently_of_completed_
     session.add(active); session.commit()
     row = session.query(legacy.Worksheet).filter(legacy.Worksheet.student_id == student.id, legacy.Worksheet.completed_at.is_(None)).order_by(legacy.Worksheet.started_at.desc()).first()
     assert row.id == active.id
+
+
+def test_versioned_get_apis_are_registered_before_spa_fallback_when_present():
+    paths = [getattr(route, 'path', None) for route in v0120.app.router.routes]
+    api_paths = ('/api/worksheets/history', '/api/dashboard/parent-v0120', '/api/ha/stats', '/api/reports/weekly')
+    for path in api_paths:
+        assert path in paths
+    # CI has no /app/static directory, so main.py does not register the production
+    # catch-all there. In the built add-on it is present and must remain last.
+    if '/{path:path}' in paths:
+        fallback = paths.index('/{path:path}')
+        for path in api_paths:
+            assert paths.index(path) < fallback

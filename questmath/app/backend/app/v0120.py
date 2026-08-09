@@ -14,7 +14,7 @@ from . import main as legacy
 from . import v0100, v0110
 
 app = legacy.app
-app.version = '0.12.0'
+app.version = '0.12.1'
 
 
 class NewWorksheetIn(BaseModel):
@@ -22,13 +22,7 @@ class NewWorksheetIn(BaseModel):
 
 
 def resolve_learner(session: Session) -> legacy.User:
-    """Resolve the learner whose data parents and integrations should display.
-
-    Older releases could create more than one student account after username/config
-    changes. Prefer the student who owns the most recently active worksheet so a
-    parent sees the learner who is actually using MathQuest. Fall back to the
-    configured student username, then the first remaining student.
-    """
+    """Resolve the learner whose data parents and integrations should display."""
     latest = session.scalar(
         select(legacy.Worksheet)
         .join(legacy.User, legacy.User.id == legacy.Worksheet.student_id)
@@ -94,11 +88,7 @@ def create_worksheet(session: Session, sid: int, selected: str) -> legacy.Worksh
         if rng.random() < .2:
             level = max(1, level - 1)
         skill, prompt, answer_type, payload, answer, working = legacy.make_question(topic, min(4, level), rng)
-        item = legacy.Question(
-            worksheet_id=ws.id, topic=topic, skill=skill, level=level, prompt=prompt,
-            answer_type=answer_type, payload=json.dumps(payload), correct_answer=answer,
-            working=working, position=pos,
-        )
+        item = legacy.Question(worksheet_id=ws.id, topic=topic, skill=skill, level=level, prompt=prompt, answer_type=answer_type, payload=json.dumps(payload), correct_answer=answer, working=working, position=pos)
         session.add(item)
         session.flush()
         if pos == 0:
@@ -115,11 +105,7 @@ def create_worksheet(session: Session, sid: int, selected: str) -> legacy.Worksh
 def parent_dashboard_v0120(_: legacy.User = Depends(legacy.parent), session: Session = Depends(legacy.db)):
     learner = resolve_learner(session)
     data = legacy.dashboard(session, learner.id)
-    today = list(session.scalars(
-        select(legacy.Worksheet)
-        .where(legacy.Worksheet.student_id == learner.id, legacy.Worksheet.worksheet_date == date.today())
-        .order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc())
-    ).all())
+    today = list(session.scalars(select(legacy.Worksheet).where(legacy.Worksheet.student_id == learner.id, legacy.Worksheet.worksheet_date == date.today()).order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc())).all())
     data['resolved_learner'] = {'id': learner.id, 'username': learner.username, 'display_name': learner.display_name}
     data['today_worksheets'] = [worksheet_summary(w) for w in today]
     data['today_summary'] = {
@@ -143,10 +129,7 @@ def weekly_report_v0120(_: legacy.User = Depends(legacy.parent), session: Sessio
 @app.get('/api/worksheets/history')
 def worksheet_history(user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
     sid = student_id(user, session)
-    rows = list(session.scalars(
-        select(legacy.Worksheet).where(legacy.Worksheet.student_id == sid)
-        .order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc())
-    ).all())
+    rows = list(session.scalars(select(legacy.Worksheet).where(legacy.Worksheet.student_id == sid).order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc())).all())
     return [worksheet_summary(ws) for ws in rows]
 
 
@@ -162,10 +145,7 @@ def worksheet_review(worksheet_id: int, user: legacy.User = Depends(legacy.curre
     raw_questions = sorted(ws.questions, key=lambda x: x.position)
     for question_view, raw in zip(view['questions'], raw_questions):
         attempts = sorted(raw.attempts, key=lambda x: x.attempt_number)
-        question_view['student_answers'] = [
-            {'answer': a.answer, 'correct': a.correct, 'attempt_number': a.attempt_number}
-            for a in attempts
-        ]
+        question_view['student_answers'] = [{'answer': a.answer, 'correct': a.correct, 'attempt_number': a.attempt_number} for a in attempts]
         question_view['correct_answer'] = raw.correct_answer
         question_view['working'] = raw.working
     return view
@@ -175,11 +155,7 @@ def worksheet_review(worksheet_id: int, user: legacy.User = Depends(legacy.curre
 def new_worksheet(payload: NewWorksheetIn, user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
     if user.role != 'student':
         raise HTTPException(403, 'Student access required')
-    active = session.scalar(
-        select(legacy.Worksheet)
-        .where(legacy.Worksheet.student_id == user.id, legacy.Worksheet.completed_at.is_(None))
-        .order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc())
-    )
+    active = session.scalar(select(legacy.Worksheet).where(legacy.Worksheet.student_id == user.id, legacy.Worksheet.completed_at.is_(None)).order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc()))
     if active:
         return legacy.worksheet_view(active)
     return legacy.worksheet_view(create_worksheet(session, user.id, payload.topic))
@@ -189,21 +165,22 @@ def new_worksheet(payload: NewWorksheetIn, user: legacy.User = Depends(legacy.cu
 def latest_active(user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
     if user.role != 'student':
         raise HTTPException(403, 'Student access required')
-    ws = session.scalar(
-        select(legacy.Worksheet)
-        .where(legacy.Worksheet.student_id == user.id, legacy.Worksheet.completed_at.is_(None))
-        .order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc())
-    )
+    ws = session.scalar(select(legacy.Worksheet).where(legacy.Worksheet.student_id == user.id, legacy.Worksheet.completed_at.is_(None)).order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc()))
     return legacy.worksheet_view(ws) if ws else None
 
 
 @app.get('/api/v0120/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
-    return {
-        'version': '0.12.0',
-        'multiple_worksheets_per_day': True,
-        'completed_worksheet_review': True,
-        'worksheet_history': True,
-        'parent_history': True,
-        'consolidated_learner_resolution': True,
-    }
+    return {'version': '0.12.1', 'multiple_worksheets_per_day': True, 'completed_worksheet_review': True, 'worksheet_history': True, 'parent_history': True, 'consolidated_learner_resolution': True}
+
+
+def _move_spa_fallback_to_end() -> None:
+    """Ensure versioned JSON APIs are matched before the production SPA fallback."""
+    routes = app.router.routes
+    for index, route in enumerate(list(routes)):
+        if getattr(route, 'path', None) == '/{path:path}':
+            routes.append(routes.pop(index))
+            break
+
+
+_move_spa_fallback_to_end()
