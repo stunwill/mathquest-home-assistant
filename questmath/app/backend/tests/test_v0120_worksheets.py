@@ -68,3 +68,11 @@ def test_existing_active_worksheet_can_be_identified_independently_of_completed_
     session.add(active); session.commit()
     row = session.query(legacy.Worksheet).filter(legacy.Worksheet.student_id == student.id, legacy.Worksheet.completed_at.is_(None)).order_by(legacy.Worksheet.started_at.desc()).first()
     assert row.id == active.id
+
+
+def test_versioned_get_apis_are_before_spa_fallback():
+    paths = [getattr(route, 'path', None) for route in v0120.app.router.routes]
+    fallback = paths.index('/{path:path}')
+    for path in ('/api/worksheets/history', '/api/dashboard/parent-v0120', '/api/ha/stats', '/api/reports/weekly'):
+        assert path in paths
+        assert paths.index(path) < fallback
