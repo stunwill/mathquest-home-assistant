@@ -1,3 +1,17 @@
+# MathQuest 0.11.0
+
+- Added stable authenticated `GET /api/ha/stats` and lightweight `GET /api/ha/summary` endpoints for Home Assistant dashboards.
+- Exposes real current learner data for questions, correct/incorrect answers, accuracy, hints, completed activities, streak, daily/total XP, recommended topic and last activity.
+- Added dashboard category statistics for Number, Measurement, Space, Algebra and Probability with progress, accuracy, question count and hint-aware mastery.
+- Reuses the existing adaptive topic metrics and mastery calculations rather than maintaining a second learning-statistics implementation.
+- Added optional rolling seven-day questions, accuracy, hints, activities and XP statistics.
+- Added a stable relative `app_path` without hard-coding Home Assistant's session-specific ingress URL.
+- Added defensive category aggregation so missing optional statistics return null/zero values without breaking the complete dashboard response.
+- Documented Home Assistant REST sensor configuration, units, timestamp handling, refresh interval, authentication and a dashboard card example.
+- Added backend regression tests for zero activity, accuracy, category statistics, hints, completion/last activity and compact summary output.
+- Updated CI so backend tests run on every PR alongside compile, frontend TypeScript/Vite build and Home Assistant YAML validation.
+- Updated runtime, frontend and Home Assistant app metadata to 0.11.0.
+
 # MathQuest 0.10.0
 
 - Added browser-based read-aloud support for questions using Australian English speech, including short descriptions of visual question content.
@@ -79,18 +93,3 @@
 - Fixed typed-answer input handling so Check answer activates reliably on iPhone and iPad.
 - Added Return-key submission for typed answers.
 - Updated displayed and runtime version metadata to 0.3.1.
-
-## MathQuest 0.3.1
-
-- Fixed typed answers not being recognised on iPhone and iPad.
-- Check answer now activates as soon as a valid answer is entered.
-- Added Return-key submission for typed answers.
-
-# MathQuest 0.3.1
-
-- Renamed QuestMath to MathQuest.
-- Added the slogan “Sienna’s daily adventure in maths.”
-- Replaced legacy topic generation with Victorian Curriculum F–10 Version 2.0 Level 4-aligned practice across Number, Algebra, Measurement, Space, Statistics and Probability.
-- Added VCAA content-description codes to generated questions and tracking.
-- Added a parent curriculum tracker, areas-to-review flags and recent incorrect-answer review.
-- Updated reports and displayed version to 0.3.1.
