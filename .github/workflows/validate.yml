@@ -22,6 +22,8 @@ jobs:
       - name: Compile backend
         run: python -m compileall -q questmath/app/backend/app
       - name: Run backend tests
+        env:
+          QUESTMATH_DATA_DIR: /tmp/mathquest-test-data
         run: PYTHONPATH=questmath/app/backend pytest -q questmath/app/backend/tests
 
   frontend:
