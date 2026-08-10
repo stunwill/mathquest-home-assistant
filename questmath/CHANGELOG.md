@@ -1,3 +1,35 @@
+# MathQuest 0.14.0
+
+- Fixed the student hero incorrectly treating an unfinished worksheet from a previous date as today's active quest.
+- Today's active worksheet is now strictly scoped to the current calendar date.
+- Previous unfinished worksheets remain in worksheet history but no longer block creation of a new worksheet today.
+- Added explicit previous-unfinished worksheet metadata so old work is visible without being confused with today's progress.
+- Added `quest_today` to `/api/ha/stats` and `/api/ha/summary`, including exists/status/worksheet ID/topic/questions answered/questions total/started time.
+- Added `unfinished_previous_worksheets` to Home Assistant statistics.
+- Home Assistant daily totals continue to aggregate only worksheets belonging to today's date.
+- Parent daily statistics now use the same authoritative date-scoped worksheet logic as the student experience and HA API.
+- Improved worksheet history metadata with `is_today` and `is_previous_unfinished` flags.
+- Added regression tests proving old unfinished worksheets cannot become today's quest or today's Home Assistant statistics.
+- Preserved multiple worksheets per day, completed worksheet review, visual hints, adaptive learning, Teaching Mode, Story Adventures and existing dashboard statistics.
+- Updated runtime, frontend and Home Assistant app metadata to 0.14.0.
+
+# MathQuest 0.13.0
+
+- Added visual learning hints for fractions, number lines, place value, clocks, angles, grids, area/perimeter and sequences.
+- Fraction comparisons can show equal-sized fraction circles and aligned fraction bars without revealing the final answer.
+- Preserved written hints as a fallback when a reliable visual model cannot be derived.
+
+# MathQuest 0.12.1
+
+- Fixed API/SPА route ordering so JSON endpoints are matched before the frontend fallback.
+- Hardened frontend API handling and retained the sidebar load/freeze fixes.
+
+# MathQuest 0.12.0
+
+- Added multiple worksheets per day and worksheet history.
+- Added completed worksheet review for students and parents.
+- Improved learner resolution for parent reporting.
+
 # MathQuest 0.11.0
 
 - Added stable authenticated `GET /api/ha/stats` and lightweight `GET /api/ha/summary` endpoints for Home Assistant dashboards.
