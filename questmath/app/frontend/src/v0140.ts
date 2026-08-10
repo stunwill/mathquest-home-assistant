@@ -11,8 +11,8 @@ async function api(path:string){
 }
 
 function updateVersion(){
-  document.querySelectorAll('.version').forEach(n=>n.textContent='Version 0.14.0');
-  document.querySelectorAll('.header-version').forEach(n=>n.textContent='v0.14.0');
+  document.querySelectorAll('.version').forEach(n=>n.textContent='Version 0.14.1');
+  document.querySelectorAll('.header-version').forEach(n=>n.textContent='v0.14.1');
 }
 
 let loading=false;
