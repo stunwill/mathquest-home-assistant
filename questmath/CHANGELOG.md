@@ -1,3 +1,18 @@
+# MathQuest 0.15.0
+
+- Fixed inherently visual questions rendering without the diagram required to answer them.
+- Analogue-clock questions now reliably show a clock face with correctly positioned hour and minute hands.
+- Angle-identification questions now show the angle itself and ask the learner to identify the type from the diagram.
+- Added a pre-React visual guard so required visuals no longer depend on the earlier frontend fetch timing race.
+- Added a clear visual-unavailable fallback so an unanswerable visual question is never silently presented.
+- Fixed `+ New worksheet` so it always creates a genuinely new worksheet even when another worksheet from today remains incomplete.
+- Existing unfinished worksheets remain safely available in worksheet history and do not get overwritten.
+- Added worksheet-generation protection against repeated question prompts within the same worksheet.
+- Added duplicate-choice protection so the correct answer appears only once in multiple-choice questions.
+- Kept Level 1 Measurement practice focused on practical units, clocks and simple angle identification for now; area/perimeter and advanced reflex/revolution angle work is deferred to higher levels/later work.
+- Added regression tests for visual clocks, visual angles, duplicate choices, repeated questions and starting a second same-day worksheet.
+- Updated runtime, frontend and Home Assistant app metadata to 0.15.0.
+
 # MathQuest 0.14.0
 
 - Fixed the student hero incorrectly treating an unfinished worksheet from a previous date as today's active quest.
