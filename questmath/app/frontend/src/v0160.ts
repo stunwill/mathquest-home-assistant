@@ -81,8 +81,19 @@ async function enhanceHistory(){
 }
 
 async function enhanceHero(){
-  const hero=document.querySelector('.hero');if(!hero||hero.querySelector('.mq-v0160-today'))return;
-  const rows=await history();const today=rows.filter((w:any)=>w.date===localDate());const answered=today.reduce((n:number,w:any)=>n+(w.answered||0),0);const completed=today.filter((w:any)=>w.completed_at).length;const p=document.createElement('div');p.className='mq-v0160-today';p.textContent=`Today overall: ${answered} questions answered across ${today.length} worksheet${today.length===1?'':'s'} · ${completed} completed.`;hero.querySelector('div')?.append(p);
+  const hero=document.querySelector('.hero') as HTMLElement|null;
+  if(!hero||hero.dataset.v0160Today==='1')return;
+  hero.dataset.v0160Today='1';
+  hero.querySelectorAll('.mq-v0160-today').forEach(n=>n.remove());
+  const rows=await history();
+  const today=rows.filter((w:any)=>w.date===localDate());
+  const answered=today.reduce((n:number,w:any)=>n+(w.answered||0),0);
+  const completed=today.filter((w:any)=>w.completed_at).length;
+  const p=document.createElement('div');
+  p.className='mq-v0160-today';
+  p.textContent=`Today overall: ${answered} questions answered across ${today.length} worksheet${today.length===1?'':'s'} · ${completed} completed.`;
+  const content=hero.querySelector(':scope > div')||hero;
+  content.append(p);
 }
 
 let rangeStart=monday();
@@ -95,6 +106,6 @@ async function renderCalendar(){
   target.querySelectorAll('[data-continue]').forEach((b:any)=>b.addEventListener('click',()=>continueWorksheet(Number(b.dataset.continue))));target.querySelectorAll('[data-view]').forEach((b:any)=>b.addEventListener('click',()=>viewWorksheet(Number(b.dataset.view))));
 }
 
-function updateVersion(){document.querySelectorAll('.header-version').forEach(n=>n.textContent='v0.16.0');document.querySelectorAll('.version').forEach(n=>n.textContent='Version 0.16.0')}
+function updateVersion(){document.querySelectorAll('.header-version').forEach(n=>n.textContent='v0.16.1');document.querySelectorAll('.version').forEach(n=>n.textContent='Version 0.16.1')}
 let scheduled=false;function run(){updateVersion();enhanceClock();if(token()){void enhanceHistory();void enhanceHero();void renderCalendar()}}
 const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;run()})});observer.observe(document.documentElement,{childList:true,subtree:true});window.addEventListener('pageshow',run);run();
