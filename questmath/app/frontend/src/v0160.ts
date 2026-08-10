@@ -67,7 +67,7 @@ async function viewWorksheet(id:number){reviewModal(await api(`/worksheets/${id}
 function continueWorksheet(id:number){setActive(id);location.reload()}
 
 let historyCache:any[]|null=null;
-async function history(){if(!historyCache)historyCache=await api('/worksheets/history-v0160');return historyCache}
+async function history():Promise<any[]>{if(historyCache===null)historyCache=await api('/worksheets/history-v0160');return historyCache||[]}
 
 async function enhanceHistory(){
   const section=document.querySelector('.mq-v0120-history') as HTMLElement|null;
@@ -76,8 +76,6 @@ async function enhanceHistory(){
   const today=rows.filter((w:any)=>w.date===localDate());
   const answered=today.reduce((n:number,w:any)=>n+(w.answered||0),0),correct=today.reduce((n:number,w:any)=>n+(w.score||0),0),hints=today.reduce((n:number,w:any)=>n+(w.hints||0),0),xp=today.reduce((n:number,w:any)=>n+(w.xp_earned||0),0),inProgress=today.filter((w:any)=>!w.completed_at).length;
   section.innerHTML=`<div class="mq-v0160-head"><div><p class="eyebrow">WORKSHEETS</p><h2>Your worksheet history</h2><p>${inProgress?`${inProgress} worksheet${inProgress===1?' is':'s are'} currently in progress.`:'No unfinished worksheet today.'}</p></div><button class="primary" data-new>+ New worksheet</button></div><div class="mq-v0160-summary"><article><small>Worksheets today</small><strong>${today.length}</strong></article><article><small>Questions</small><strong>${answered}</strong></article><article><small>Accuracy</small><strong>${answered?Math.round(correct/answered*100)+'%':'—'}</strong></article><article><small>Hints</small><strong>${hints}</strong></article><article><small>XP</small><strong>${xp}</strong></article></div><div class="mq-v0160-list">${rows.slice(0,20).map((w:any)=>`<article class="mq-v0160-row"><div class="meta"><b>${w.display_title}${w.display_time?` · ${w.display_time}`:''}</b><small>${dateLabel(w.date)} · ${w.answered}/${w.total} answered · ${w.hints} hints · ${mins(w.elapsed_seconds)}</small></div><span class="status">${w.completed_at?`Completed · ${w.score}/${w.total}`:`In progress · ${Math.round(w.progress)}%`}</span><button data-${w.completed_at?'view':'continue'}="${w.id}">${w.completed_at?'View worksheet':'Continue worksheet'}</button></article>`).join('')}</div>`;
-  const oldNew=document.querySelector('[data-new]') as HTMLElement|null;
-  oldNew?.addEventListener('click',()=>{const original=[...document.querySelectorAll('button')].find(b=>b.textContent?.includes('+ New worksheet')&&b!==oldNew) as HTMLButtonElement|undefined;original?.click()});
   section.querySelectorAll('[data-continue]').forEach((b:any)=>b.addEventListener('click',()=>continueWorksheet(Number(b.dataset.continue))));
   section.querySelectorAll('[data-view]').forEach((b:any)=>b.addEventListener('click',()=>viewWorksheet(Number(b.dataset.view))));
 }
@@ -98,5 +96,5 @@ async function renderCalendar(){
 }
 
 function updateVersion(){document.querySelectorAll('.header-version').forEach(n=>n.textContent='v0.16.0');document.querySelectorAll('.version').forEach(n=>n.textContent='Version 0.16.0')}
-let scheduled=false;function run(){updateVersion();enhanceClock();if(token()){void enhanceHistory();void enhanceHero();void renderCalendar()}const q=document.querySelector('.worksheet-sidebar .eyebrow');if(q&&q.textContent?.includes('TODAY'))q.textContent='CURRENT WORKSHEET'}
+let scheduled=false;function run(){updateVersion();enhanceClock();if(token()){void enhanceHistory();void enhanceHero();void renderCalendar()}}
 const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;run()})});observer.observe(document.documentElement,{childList:true,subtree:true});window.addEventListener('pageshow',run);run();
