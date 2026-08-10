@@ -66,28 +66,41 @@ def _simple_clock(rng: random.Random):
     )
 
 
+def _simple_angle(rng: random.Random):
+    degrees, answer = rng.choice([(35, 'acute'), (90, 'right'), (125, 'obtuse'), (180, 'straight')])
+    choices = ['acute', 'right', 'obtuse', 'straight']
+    return legacy.q(
+        'VC2M4M04',
+        'visual_angle',
+        'What type of angle is shown?',
+        'choice',
+        {'visual': {'type': 'angle', 'degrees': degrees}, 'choices': choices},
+        answer,
+        f'{degrees}° is a {answer} angle.',
+    )
+
+
 def make_question_v0150(topic: str, level: int, rng: random.Random):
     skill, prompt, answer_type, payload, answer, working = _prior_make_question(topic, level, rng)
     payload = dict(payload or {})
-
-    # Keep early Measurement practice accessible. Area/perimeter can return at higher levels,
-    # but Level 1 should focus on practical units, time and visually identifying angles.
     skill_name = skill.split(':', 1)[-1]
+
+    # Keep early Measurement practice accessible for now. Area/perimeter and reflex/revolution
+    # angle classification can return at higher adaptive levels in a later release.
     if topic == 'measurement' and level <= 1 and skill_name in {'area', 'perimeter'}:
         return _simple_clock(rng)
 
-    # Angle-name questions were previously text-only (for example "What type of angle is 90°?").
-    # Turn them into genuinely visual questions so the learner identifies the shown angle.
+    # Angle-name questions should be identified from a diagram, not from the degree value in text.
     if topic == 'measurement' and ('angle' in skill_name or skill.startswith('VC2M4M04')):
-        degrees = None
         match = re.search(r'(\d{1,3})\s*°', prompt or '')
         if match:
             degrees = int(match.group(1))
-        if degrees is not None:
+            if level <= 1 and degrees > 180:
+                return _simple_angle(rng)
             payload['visual'] = {'type': 'angle', 'degrees': degrees}
             prompt = 'What type of angle is shown?'
             answer_type = 'choice'
-            payload['choices'] = ['acute', 'right', 'obtuse', 'straight', 'reflex', 'revolution']
+            payload['choices'] = ['acute', 'right', 'obtuse', 'straight'] if degrees <= 180 else ['acute', 'right', 'obtuse', 'straight', 'reflex', 'revolution']
 
     payload = _dedupe_choices(payload, str(answer))
     return skill, prompt, answer_type, payload, str(answer), working
