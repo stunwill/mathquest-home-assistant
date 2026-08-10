@@ -19,10 +19,13 @@ def _learner_id(user: legacy.User, session: Session) -> int:
 
 def _history_summary(ws: legacy.Worksheet) -> dict:
     summary = v0120.worksheet_summary(ws)
-    answered = int(summary.get('answered') or 0)
-    correct = int(summary.get('score') or 0)
+    answered = sum(1 for question in ws.questions if question.attempts)
+    correct = sum(1 for question in ws.questions if any(attempt.correct for attempt in question.attempts))
     total = int(summary.get('total') or 0)
     summary.update({
+        'answered': answered,
+        'score': correct,
+        'accuracy': round(correct / answered * 100, 1) if answered else None,
         'incorrect': max(0, answered - correct),
         'progress': round(answered / total * 100, 1) if total else 0,
         'elapsed_seconds': round(float(ws.elapsed_seconds or 0), 1),
