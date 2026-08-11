@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import json
 import os
-import random
-from datetime import date, datetime
+from datetime import date
 
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel
@@ -69,38 +67,7 @@ def worksheet_summary(ws: legacy.Worksheet) -> dict:
 
 
 def create_worksheet(session: Session, sid: int, selected: str) -> legacy.Worksheet:
-    settings = legacy.student_settings(session, sid)
-    enabled = json.loads(settings.enabled_topics)
-    levels = json.loads(settings.manual_levels)
-    selected = (selected or 'mixed').lower()
-    if selected != 'mixed' and selected not in legacy.LEVEL4_STRANDS:
-        raise HTTPException(400, 'Unknown learning area')
-    if selected != 'mixed' and selected not in enabled:
-        raise HTTPException(400, 'This learning area is disabled by the parent')
-    topics = enabled if selected == 'mixed' else [selected]
-    rng = random.Random(f'{sid}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1, 10**9)}')
-    ws = legacy.Worksheet(student_id=sid, worksheet_date=date.today(), total=settings.question_count, selected_topic=selected)
-    session.add(ws)
-    session.flush()
-    weights = legacy.weights(session, sid, topics)
-    for pos in range(settings.question_count):
-        topic = rng.choices(topics, weights=weights, k=1)[0]
-        skill_row = session.scalar(select(legacy.Skill).where(legacy.Skill.student_id == sid, legacy.Skill.topic == topic))
-        level = (skill_row.level if skill_row else 1) if settings.adaptive_mode else levels.get(topic, 1)
-        if rng.random() < .2:
-            level = max(1, level - 1)
-        skill, prompt, answer_type, payload, answer, working = legacy.make_question(topic, min(4, level), rng)
-        item = legacy.Question(worksheet_id=ws.id, topic=topic, skill=skill, level=level, prompt=prompt, answer_type=answer_type, payload=json.dumps(payload), correct_answer=answer, working=working, position=pos)
-        session.add(item)
-        session.flush()
-        if pos == 0:
-            item.state = 'active'
-            item.first_viewed_at = datetime.utcnow()
-            ws.current_question_id = item.id
-    ws.last_active_at = datetime.utcnow()
-    session.commit()
-    session.refresh(ws)
-    return ws
+    return legacy.create_worksheet(session, sid, selected)
 
 
 def today_worksheets(session: Session, sid: int) -> list[legacy.Worksheet]:

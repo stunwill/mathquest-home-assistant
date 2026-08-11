@@ -10,7 +10,7 @@ from . import main as legacy
 from . import v0120, v0150
 
 app = v0150.app
-app.version = '0.16.0'
+app.version = legacy.APP_VERSION
 
 
 def _learner_id(user: legacy.User, session: Session) -> int:
@@ -112,7 +112,7 @@ def learning_week_v0160(
 @app.get('/api/v0160/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
     return {
-        'version': '0.16.0',
+        'version': legacy.APP_VERSION,
         'exact_worksheet_resume': True,
         'weekly_learning_calendar': True,
         'worksheet_day_links': True,

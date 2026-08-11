@@ -1,3 +1,34 @@
+# MathQuest 0.16.2
+
+- Replaced the public development JWT signing secret with a cryptographically secure, installation-specific secret persisted at `/data/jwt-signing-secret` with restrictive permissions where supported.
+- Added support for a deliberately configured `SECRET_KEY` environment value and safe replacement of the legacy `development-only-change-me` value.
+- Added fail-closed startup behaviour when a secure signing secret cannot be loaded or persisted.
+- Added bounded, in-memory throttling for repeated failed logins, including `429 Too Many Requests`, `Retry-After`, recovery after the retry window and credential-safe structured security events.
+- Stopped blindly trusting arbitrary forwarded client-address headers. Uvicorn now trusts only its configured proxy policy when determining the client used for rate limiting.
+- Consolidated first and additional worksheet creation through one authoritative duplicate-safe service.
+- Duplicate identity now includes the normalized prompt and normalized choices, where present.
+- Added bounded generation retries and a shorter valid worksheet fallback when the enabled question pool cannot supply the requested number of unique questions.
+- Added HTTP-level regression tests for the real `/api/worksheets/today` and `/api/worksheets/new` routes, category selection and insufficient unique pools.
+- Fixed release-note extraction for the repository's existing changelog heading format and added automated release-note extraction validation.
+- Added automated version-consistency validation across Home Assistant metadata, backend, frontend, startup messaging and documentation.
+- Updated FastAPI, frontend, add-on and documentation release metadata to `0.16.2` and removed older enhancement scripts' competing visible-version mutations.
+- Existing databases and `/data/questmath.db` remain unchanged. The JWT secret rotation invalidates tokens signed with the old public value, so users may need to sign in again after updating.
+
+# MathQuest 0.16.1
+
+- Fixed a frontend observer loop that repeatedly recreated the **Today overall** worksheet summary in the student hero.
+- Marked the hero as enhanced before loading worksheet history, removed stale duplicate summaries and appended one stable summary after the data request completed.
+- Updated Home Assistant, frontend and startup release metadata to `0.16.1`.
+
+# MathQuest 0.16.0
+
+- Added exact worksheet resume so an incomplete worksheet can be continued by ID without a reload switching to another worksheet.
+- Added answered/total progress, elapsed learning time and dedicated continue/review actions to worksheet history.
+- Replaced the old 28-day completion grid with a navigable seven-day learning activity view covering questions, accuracy, correct/incorrect totals, hints, XP, duration and linked worksheets.
+- Added `GET /api/worksheets/history-v0160`, `GET /api/learning/week-v0160?start=YYYY-MM-DD` and `GET /api/v0160/capabilities`.
+- Improved analogue teaching clocks with all twelve hour numbers and minute tick marks while preserving existing hand positioning.
+- Preserved existing worksheet data, visual questions, visual hints, multiple worksheets per day, parent reporting, Home Assistant statistics, review and adaptive learning behaviour.
+
 # MathQuest 0.15.0
 
 - Fixed inherently visual questions rendering without the diagram required to answer them.

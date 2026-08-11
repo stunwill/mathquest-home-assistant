@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install backend dependencies
-        run: pip install -r questmath/app/backend/requirements.txt pytest
+        run: pip install -r questmath/app/backend/requirements.txt pytest httpx==0.28.1 pyyaml==6.0.3
       - name: Compile backend
         run: python -m compileall -q questmath/app/backend/app
       - name: Run backend tests
@@ -54,8 +54,18 @@ jobs:
           python - <<'PY'
           import pathlib
           import yaml
-          for path in [pathlib.Path('repository.yaml'), pathlib.Path('questmath/config.yaml'), pathlib.Path('questmath/build.yaml')]:
+          for path in [
+              pathlib.Path('repository.yaml'),
+              pathlib.Path('questmath/config.yaml'),
+              pathlib.Path('questmath/build.yaml'),
+              pathlib.Path('.github/workflows/validate.yml'),
+              pathlib.Path('.github/workflows/release.yml'),
+          ]:
               with path.open() as handle:
                   yaml.safe_load(handle)
               print(f'validated {path}')
           PY
+      - name: Validate version consistency
+        run: python scripts/validate_versions.py
+      - name: Validate release-note extraction
+        run: python scripts/extract_release_notes.py 0.16.2 --output /tmp/release-notes.md

@@ -10,11 +10,6 @@ async function api(path:string){
   return r.json();
 }
 
-function updateVersion(){
-  document.querySelectorAll('.version').forEach(n=>n.textContent='Version 0.14.0');
-  document.querySelectorAll('.header-version').forEach(n=>n.textContent='v0.14.0');
-}
-
 let loading=false;
 async function addPreviousNotice(){
   if(loading||!token()||document.querySelector('.mq-v0140-previous')) return;
@@ -31,7 +26,7 @@ async function addPreviousNotice(){
   } finally { loading=false; }
 }
 
-function run(){updateVersion();void addPreviousNotice()}
+function run(){void addPreviousNotice()}
 let scheduled=false;
 const observer=new MutationObserver(()=>{
   if(scheduled)return;

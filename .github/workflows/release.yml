@@ -71,20 +71,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import os
-          import re
-          from pathlib import Path
-
-          version = os.environ['VERSION']
-          changelog = Path('questmath/CHANGELOG.md').read_text(encoding='utf-8')
-          pattern = rf'^##\s+[^\n]*\b(?:v)?{re.escape(version)}\b[^\n]*\n(.*?)(?=^##\s+|\Z)'
-          match = re.search(pattern, changelog, re.MULTILINE | re.DOTALL | re.IGNORECASE)
-          notes = match.group(1).strip() if match else ''
-          if not notes:
-              notes = f'MathQuest {version} release.'
-          Path('/tmp/release-notes.md').write_text(notes + '\n', encoding='utf-8')
-          PY
+          python scripts/extract_release_notes.py "$VERSION" --output /tmp/release-notes.md
 
       - name: Create GitHub release
         if: steps.existing.outputs.exists == 'false'
