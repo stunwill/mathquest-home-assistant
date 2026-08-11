@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import logging
 import os
 import random
 import shutil
@@ -11,7 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
@@ -23,13 +24,19 @@ from reportlab.pdfgen import canvas
 from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, create_engine, func, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
 
+from .auth_security import LoginRateLimiter
+from .security import load_signing_secret
+
 DATA_DIR = Path(os.getenv('QUESTMATH_DATA_DIR', '/data'))
 BACKUP_DIR = Path(os.getenv('QUESTMATH_BACKUP_DIR', str(DATA_DIR / 'backups')))
 DB_PATH = DATA_DIR / 'questmath.db'
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
-SECRET_KEY = os.getenv('SECRET_KEY', 'development-only-change-me')
+SECRET_KEY = load_signing_secret(DATA_DIR)
 ALGORITHM = 'HS256'
+APP_VERSION = '0.16.2'
+logger = logging.getLogger('mathquest.security')
+login_rate_limiter = LoginRateLimiter()
 
 LEVEL4_STRANDS = ['number','algebra','measurement','space','statistics','probability']
 LEVEL4_OUTCOMES = {
@@ -158,7 +165,7 @@ engine=create_engine(f'sqlite:///{DB_PATH}', connect_args={'check_same_thread':F
 SessionLocal=sessionmaker(engine, expire_on_commit=False)
 pwd=CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2=OAuth2PasswordBearer(tokenUrl='api/auth/login')
-app=FastAPI(title='MathQuest', version='0.5.0')
+app=FastAPI(title='MathQuest', version=APP_VERSION)
 
 class AnswerIn(BaseModel): answer: Any; seconds: float = 0
 class WorksheetCreateIn(BaseModel): topic: str = 'mixed'
@@ -230,11 +237,22 @@ def seed():
 def startup(): seed()
 
 @app.get('/api/health')
-def health(): return {'ok':True}
+def health(): return {'ok':True,'version':APP_VERSION}
 @app.post('/api/auth/login')
-def login(form:OAuth2PasswordRequestForm=Depends(), s:Session=Depends(db)):
+def login(request:Request, form:OAuth2PasswordRequestForm=Depends(), s:Session=Depends(db)):
+    client_host = request.client.host if request.client else None
+    key = login_rate_limiter.key(client_host, form.username)
+    retry_after = login_rate_limiter.retry_after(key)
+    if retry_after:
+        logger.warning('security_event=login_rate_limited client=%s retry_after=%s', client_host or 'unknown', retry_after)
+        raise HTTPException(429, 'Too many login attempts. Try again later.', headers={'Retry-After':str(retry_after)})
     u=s.scalar(select(User).where(User.username==form.username))
-    if not u or not pwd.verify(form.password,u.password_hash): raise HTTPException(401,'Incorrect username or password')
+    if not u or not pwd.verify(form.password,u.password_hash):
+        login_rate_limiter.record_failure(key)
+        logger.warning('security_event=login_failed client=%s', client_host or 'unknown')
+        raise HTTPException(401,'Invalid username or password')
+    login_rate_limiter.record_success(key)
+    logger.info('security_event=login_succeeded client=%s', client_host or 'unknown')
     return {'access_token':token_for(u),'token_type':'bearer','user':user_view(u)}
 @app.get('/api/me')
 def me(u:User=Depends(current_user)): return user_view(u)
@@ -345,30 +363,52 @@ def weights(s,sid,topics):
         out.append(max(.25,1.35-acc))
     return out
 
+def question_identity(prompt:str, payload:dict[str,Any]) -> tuple[str,tuple[str,...]]:
+    choices=payload.get('choices') if isinstance(payload,dict) else None
+    choice_key=tuple(sorted(str(value).strip().casefold() for value in choices)) if isinstance(choices,list) else ()
+    return (' '.join((prompt or '').split()).casefold(),choice_key)
+
+def create_worksheet(s:Session,sid:int,selected:str) -> Worksheet:
+    st=student_settings(s,sid); enabled=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
+    selected=(selected or 'mixed').lower()
+    if selected!='mixed' and selected not in LEVEL4_STRANDS: raise HTTPException(400,'Unknown learning area')
+    if selected!='mixed' and selected not in enabled: raise HTTPException(400,'This learning area is disabled by the parent')
+    topics=enabled if selected=='mixed' else [selected]
+    if not topics: raise HTTPException(400,'No learning areas are enabled')
+    rng=random.Random(f'{sid}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1,10**9)}')
+    ws=Worksheet(student_id=sid,worksheet_date=date.today(),total=st.question_count,selected_topic=selected);s.add(ws);s.flush()
+    topic_weights=weights(s,sid,topics); seen:set[tuple[str,tuple[str,...]]]=set()
+    for pos in range(st.question_count):
+        candidate=None
+        for _ in range(50):
+            topic=rng.choices(topics,weights=topic_weights,k=1)[0]
+            sk=s.scalar(select(Skill).where(Skill.student_id==sid,Skill.topic==topic))
+            lvl=(sk.level if sk else 1) if st.adaptive_mode else levels.get(topic,1)
+            if rng.random()<.2: lvl=max(1,lvl-1)
+            skill,prompt,atype,payload,ans,working=make_question(topic,min(4,lvl),rng)
+            key=question_identity(prompt,payload)
+            if key not in seen:
+                candidate=(topic,lvl,skill,prompt,atype,payload,ans,working,key)
+                break
+        if candidate is None:
+            break
+        topic,lvl,skill,prompt,atype,payload,ans,working,key=candidate;seen.add(key)
+        item=Question(worksheet_id=ws.id,topic=topic,skill=skill,level=lvl,prompt=prompt,answer_type=atype,payload=json.dumps(payload),correct_answer=ans,working=working,position=pos)
+        s.add(item);s.flush()
+        if pos==0:
+            item.state='active';item.first_viewed_at=datetime.utcnow();ws.current_question_id=item.id
+    ws.total=len(seen)
+    if not ws.total:
+        s.rollback()
+        raise HTTPException(503,'Unable to generate a unique worksheet from the enabled learning areas')
+    ws.last_active_at=datetime.utcnow();s.commit();s.refresh(ws);return ws
+
 @app.post('/api/worksheets/today')
 def today_ws(selection:WorksheetCreateIn, u:User=Depends(current_user), s:Session=Depends(db)):
     if u.role!='student': raise HTTPException(403,'Student access required')
     existing=s.scalar(select(Worksheet).where(Worksheet.student_id==u.id,Worksheet.worksheet_date==date.today()))
     if existing: return worksheet_view(existing)
-    st=student_settings(s,u.id); enabled=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
-    selected=(selection.topic or 'mixed').lower()
-    if selected!='mixed' and selected not in LEVEL4_STRANDS: raise HTTPException(400,'Unknown learning area')
-    if selected!='mixed' and selected not in enabled: raise HTTPException(400,'This learning area is disabled by the parent')
-    topics=enabled if selected=='mixed' else [selected]
-    rng=random.Random(f'{u.id}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1,10**9)}')
-    ws=Worksheet(student_id=u.id,worksheet_date=date.today(),total=st.question_count,selected_topic=selected);s.add(ws);s.flush()
-    w=weights(s,u.id,topics)
-    for pos in range(st.question_count):
-        topic=rng.choices(topics,weights=w,k=1)[0]
-        sk=s.scalar(select(Skill).where(Skill.student_id==u.id,Skill.topic==topic))
-        lvl=(sk.level if sk else 1) if st.adaptive_mode else levels.get(topic,1)
-        if rng.random()<.2: lvl=max(1,lvl-1)
-        skill,prompt,atype,payload,ans,working=make_question(topic,min(4,lvl),rng)
-        item=Question(worksheet_id=ws.id,topic=topic,skill=skill,level=lvl,prompt=prompt,answer_type=atype,payload=json.dumps(payload),correct_answer=ans,working=working,position=pos)
-        s.add(item); s.flush()
-        if pos == 0:
-            item.state='active'; item.first_viewed_at=datetime.utcnow(); ws.current_question_id=item.id
-    ws.last_active_at=datetime.utcnow(); s.commit(); s.refresh(ws); return worksheet_view(ws)
+    return worksheet_view(create_worksheet(s,u.id,selection.topic))
 
 @app.get('/api/worksheets/today')
 def get_today(u:User=Depends(current_user),s:Session=Depends(db)):

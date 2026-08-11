@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import json
 import random
 import re
-from datetime import date, datetime
 
 from fastapi import Depends, HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import main as legacy
@@ -109,70 +106,8 @@ def make_question_v0150(topic: str, level: int, rng: random.Random):
 legacy.make_question = make_question_v0150
 
 
-def _question_key(prompt: str, payload: dict) -> tuple[str, tuple[str, ...]]:
-    choices = payload.get('choices') if isinstance(payload, dict) else None
-    choice_key = tuple(sorted(str(x).strip().casefold() for x in choices)) if isinstance(choices, list) else ()
-    return (' '.join((prompt or '').split()).casefold(), choice_key)
-
-
 def create_unique_worksheet(session: Session, sid: int, selected: str) -> legacy.Worksheet:
-    settings = legacy.student_settings(session, sid)
-    enabled = json.loads(settings.enabled_topics)
-    levels = json.loads(settings.manual_levels)
-    selected = (selected or 'mixed').lower()
-    if selected != 'mixed' and selected not in legacy.LEVEL4_STRANDS:
-        raise HTTPException(400, 'Unknown learning area')
-    if selected != 'mixed' and selected not in enabled:
-        raise HTTPException(400, 'This learning area is disabled by the parent')
-
-    topics = enabled if selected == 'mixed' else [selected]
-    rng = random.Random(f'{sid}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1, 10**9)}')
-    ws = legacy.Worksheet(student_id=sid, worksheet_date=date.today(), total=settings.question_count, selected_topic=selected)
-    session.add(ws)
-    session.flush()
-    weights = legacy.weights(session, sid, topics)
-    seen: set[tuple[str, tuple[str, ...]]] = set()
-
-    for pos in range(settings.question_count):
-        candidate = None
-        for _ in range(20):
-            topic = rng.choices(topics, weights=weights, k=1)[0]
-            skill_row = session.scalar(select(legacy.Skill).where(legacy.Skill.student_id == sid, legacy.Skill.topic == topic))
-            level = (skill_row.level if skill_row else 1) if settings.adaptive_mode else levels.get(topic, 1)
-            if rng.random() < .2:
-                level = max(1, level - 1)
-            skill, prompt, answer_type, payload, answer, working = legacy.make_question(topic, min(4, level), rng)
-            key = _question_key(prompt, payload)
-            candidate = (topic, level, skill, prompt, answer_type, payload, answer, working, key)
-            if key not in seen:
-                break
-        if candidate is None:
-            raise HTTPException(500, 'Unable to generate worksheet question')
-        topic, level, skill, prompt, answer_type, payload, answer, working, key = candidate
-        seen.add(key)
-        item = legacy.Question(
-            worksheet_id=ws.id,
-            topic=topic,
-            skill=skill,
-            level=level,
-            prompt=prompt,
-            answer_type=answer_type,
-            payload=json.dumps(payload),
-            correct_answer=answer,
-            working=working,
-            position=pos,
-        )
-        session.add(item)
-        session.flush()
-        if pos == 0:
-            item.state = 'active'
-            item.first_viewed_at = datetime.utcnow()
-            ws.current_question_id = item.id
-
-    ws.last_active_at = datetime.utcnow()
-    session.commit()
-    session.refresh(ws)
-    return ws
+    return legacy.create_worksheet(session, sid, selected)
 
 
 # Replace the v0.12 route. "New worksheet" must mean NEW, even if another worksheet
