@@ -6,23 +6,33 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.11.0`
+Version `0.16.2`
 
 ## Features
 
 - Student and parent logins
 - Responsive student dashboard
-- Daily worksheets with save, resume and skip support
+- Multiple daily worksheets with save, exact resume, review and skip support
+- Duplicate-safe adaptive question generation and visual learning guardrails
 - Victorian Curriculum F–10 Version 2.0 Level 4 alignment
 - Curriculum outcome tracking and parent review tools
+- Visual questions, visual hints, story adventures and teaching tools
+- Weekly learning activity and complete worksheet history
 - XP, levels, streaks and badges
 - SQLite persistence and Home Assistant backup support
 - Home Assistant ingress and sidebar integration
 - Dashboard-friendly Home Assistant statistics API
+- Installation-specific JWT signing and failed-login throttling
+
+## Security and upgrades
+
+MathQuest generates a secure JWT signing secret on first start and stores it at `/data/jwt-signing-secret`, separate from the application image and the existing `/data/questmath.db`. An explicitly configured `SECRET_KEY` of at least 32 characters is honoured. The public legacy value `development-only-change-me` is never used.
+
+Upgrading to `0.16.2` rotates installations that previously used the legacy secret. Existing JWTs may stop working and users may need to sign in again. No worksheet, progress, account or database data is reset or removed.
 
 ## Home Assistant Dashboard Integration
 
-MathQuest v0.11 exposes current learner statistics without duplicating the adaptive/mastery calculation logic.
+MathQuest exposes current learner statistics without duplicating the adaptive/mastery calculation logic.
 
 ### API endpoints
 
@@ -181,4 +191,4 @@ If MathQuest cannot be reached, Home Assistant's REST integration marks the REST
 
 ## Development workflow
 
-Changes are developed on branches and proposed to `main` using pull requests. Version changes must update `questmath/config.yaml`, frontend and backend version metadata, and `questmath/CHANGELOG.md`.
+Changes are developed on branches and proposed to `main` using pull requests. Version changes must update every location checked by `python scripts/validate_versions.py` and add matching notes to `questmath/CHANGELOG.md`.

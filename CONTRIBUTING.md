@@ -34,13 +34,15 @@ Do not reuse a version that has already been released.
 
 After a pull request containing a new app version is merged into `main`, `.github/workflows/release.yml`:
 
-1. Reads the version from `questmath/config.yaml`.
+1. Validates that all required version locations agree with `questmath/config.yaml`.
 2. Validates its format.
 3. Extracts the matching section from `questmath/CHANGELOG.md`.
 4. Creates a Git tag such as `v0.3.2`.
 5. Publishes a GitHub Release.
 
 Home Assistant update detection still depends on the version in `questmath/config.yaml`. The GitHub Release provides traceability and release notes.
+
+Run `python scripts/validate_versions.py` before opening a release pull request. The release workflow uses `scripts/extract_release_notes.py`, which supports the existing `# MathQuest VERSION` headings and the `## VERSION - DATE` format below.
 
 ## Changelog format
 
