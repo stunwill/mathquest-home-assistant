@@ -106,6 +106,5 @@ async function renderCalendar(){
   target.querySelectorAll('[data-continue]').forEach((b:any)=>b.addEventListener('click',()=>continueWorksheet(Number(b.dataset.continue))));target.querySelectorAll('[data-view]').forEach((b:any)=>b.addEventListener('click',()=>viewWorksheet(Number(b.dataset.view))));
 }
 
-function updateVersion(){document.querySelectorAll('.header-version').forEach(n=>n.textContent='v0.16.1');document.querySelectorAll('.version').forEach(n=>n.textContent='Version 0.16.1')}
-let scheduled=false;function run(){updateVersion();enhanceClock();if(token()){void enhanceHistory();void enhanceHero();void renderCalendar()}}
+let scheduled=false;function run(){enhanceClock();if(token()){void enhanceHistory();void enhanceHero();void renderCalendar()}}
 const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;run()})});observer.observe(document.documentElement,{childList:true,subtree:true});window.addEventListener('pageshow',run);run();

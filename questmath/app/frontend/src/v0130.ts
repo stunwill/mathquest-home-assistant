@@ -1,7 +1,6 @@
 import './v0130.css';
 
 const API='api';
-const VERSION='0.13.0';
 let visualLoading=false;
 let lastSignature='';
 
@@ -109,12 +108,7 @@ async function addVisualHint(){
   }catch(error){console.warn('MathQuest visual hint unavailable',error)}finally{visualLoading=false}
 }
 
-function updateVersion(){
-  document.querySelectorAll('.version').forEach(n=>n.textContent=`Version ${VERSION}`);
-  document.querySelectorAll('.header-version').forEach(n=>n.textContent=`v${VERSION}`);
-}
-
-function run(){updateVersion();void addVisualHint()}
+function run(){void addVisualHint()}
 let scheduled=false;
 const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;run()})});
 observer.observe(document.documentElement,{childList:true,subtree:true});

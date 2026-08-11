@@ -5,9 +5,9 @@ import {
   LogOut, Play, Settings, SkipForward, Sparkles, Star, Trophy, X
 } from 'lucide-react';
 import './styles.css';
+import {APP_VERSION} from './version';
 
 const API = 'api';
-const VERSION = '0.5.0';
 
 type User = { id:number; username:string; role:string; display_name:string; xp:number; level:number; highest_level:number };
 type QuestionStatus = 'not_started'|'current'|'skipped'|'correct'|'incorrect'|'retry_available';
@@ -74,12 +74,12 @@ function Login({onLogin}:{onLogin:(u:User)=>void}){
       <label>Username<input value={username} onChange={e=>setUsername(e.target.value)}/></label>
       <label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoFocus/></label>
       {error&&<div className="error">{error}</div>}<button>Enter MathQuest</button>
-    </form><small className="version">Version {VERSION}</small>
+    </form><small className="version">Version {APP_VERSION}</small>
   </section></main>;
 }
 
 const Header=({user,logout}:{user:User;logout:()=>void})=><header>
-  <div className="header-brand"><Brand compact/><small className="header-version">v{VERSION}</small></div><span>{user.display_name}</span>
+  <div className="header-brand"><Brand compact/><small className="header-version">v{APP_VERSION}</small></div><span>{user.display_name}</span>
   <button className="ghost" onClick={logout}><LogOut size={18}/> Sign out</button>
 </header>;
 
