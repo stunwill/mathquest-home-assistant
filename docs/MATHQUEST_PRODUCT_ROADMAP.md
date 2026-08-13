@@ -6,14 +6,13 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.18.0
+## Current release scope, 0.19.0
 
-- One authoritative duplicate-safe backend worksheet creation service used by first, additional and Story Adventure flows.
-- React-owned worksheet history, weekly completion calendar and Story Adventure interactions.
-- Exact worksheet resume through explicit worksheet IDs instead of global `fetch` interception.
-- Frontend component and interaction tests for worksheet creation, adventures, history, calendar and recovery messages.
-- In-page connection and action errors with retry or dismissal controls for core learner flows.
-- Existing users, worksheets, answers, history, progress and Home Assistant upgrade paths preserved.
+- A short Number and Algebra diagnostic spanning Victorian Curriculum Levels 2–6.
+- An explicit Level 5 learning target with baseline evidence reported separately for each assessed level.
+- Learner-selectable 5, 10 and 15-minute targeted practice sessions.
+- Session type and target duration saved without changing existing worksheet and answer data.
+- Learner-flow and upgrade regression coverage for diagnostics and timed sessions.
 
 ## Feature findings from the supplied recordings
 
@@ -115,8 +114,8 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Order | Release | Focus | Delivery gate |
 | --- | --- | --- | --- |
 | Completed | 0.17.2 | Calendar, worksheet completion/restart, Story Adventures and roadmap | Merged and released |
-| Current | 0.18.0 | Frontend and worksheet foundation | One worksheet creation service, React-owned calendar/adventures, frontend tests and reliable error states work in Home Assistant |
-| Next | 0.19.0 | Diagnostic and timed tutoring | Levels 2–6 diagnostic, Level 5 pathway and selectable 5/10/15-minute sessions pass learner-flow testing |
+| Completed | 0.18.0 | Frontend and worksheet foundation | Merged and released |
+| Current | 0.19.0 | Diagnostic and timed tutoring | Levels 2–6 diagnostic, Level 5 pathway and selectable 5/10/15-minute sessions pass learner-flow testing |
 | Then | 0.20.0 | Guided tutor and scaffolded hints | Ask-before-tell tutor flow, three-stage hints, Why/another-way/start-over actions and misconception routing are verified across representative question types |
 | Then | 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives work across desktop, mobile and Home Assistant |
 | Then | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, themed data and applied multi-step problems from start to finish |
@@ -146,4 +145,4 @@ The interactive maths lab remains dependent on the frontend architecture and aut
 
 ## Recommended priority
 
-The next major release should be 0.18.0, not the visual maths lab. The current layered frontend is already causing cross-question visuals, broken links and rerendering defects. Consolidating worksheet creation, calendar behaviour and Story Adventures into tested React components will make every later teaching feature faster and safer to build.
+The next release should complete and validate 0.19.0 before guided tutoring begins. The diagnostic baseline and session-duration choices establish the learner pathway that later hints, manipulatives and adaptive mastery will use.

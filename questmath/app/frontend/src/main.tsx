@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import './styles.css';
 import {APP_VERSION} from './version';
-import {apiRequest as req, createWorksheet, loadActiveWorksheet, rememberActiveWorksheet} from './api';
+import {apiRequest as req, createSession, loadActiveWorksheet, rememberActiveWorksheet} from './api';
 import {ErrorNotice, LearningCalendar, StoryAdventures, WorksheetHistory} from './student-foundation';
 
 const API = 'api';
@@ -85,7 +85,7 @@ function Student({user,logout}:{user:User;logout:()=>void}){
   useEffect(load,[]);
   useEffect(()=>{(window as any).__mq_ws=worksheet},[worksheet]);
   const openWorksheet=(next:WorksheetData)=>{setWorksheet(next);setSummary(null);setChoosing(false);setWorking(true)};
-  const startWorksheet=async(topic:string)=>openWorksheet(await createWorksheet<WorksheetData>(topic));
+  const startWorksheet=async(topic:string,minutes:5|10|15,kind:'practice'|'diagnostic')=>openWorksheet(await createSession<WorksheetData>(kind,minutes,topic));
   if(!dashboard&&error)return <><Header user={user} logout={logout}/><main className="page"><ErrorNotice message={error} retry={load}/></main></>;
   if(!dashboard)return <div className="splash"><Brand/></div>;
   if(working&&worksheet&&!worksheet.completed_at&&!summary)return <Worksheet ws={worksheet} onUpdate={setWorksheet} onExit={()=>{setWorking(false);load()}} onDone={x=>{setSummary(x);setWorking(false);load()}}/>;
@@ -118,13 +118,17 @@ const QUEST_CATEGORIES=[
   {id:'mixed',icon:'✨',name:'Mixed Adventure',description:'A balanced quest across all learning areas'}
 ];
 
-function QuestCategoryPicker({start,cancel}:{start:(topic:string)=>Promise<void>;cancel:()=>void}){
+function QuestCategoryPicker({start,cancel}:{start:(topic:string,minutes:5|10|15,kind:'practice'|'diagnostic')=>Promise<void>;cancel:()=>void}){
   const[selected,setSelected]=useState('mixed');
+  const[minutes,setMinutes]=useState<5|10|15>(10);
+  const[kind,setKind]=useState<'practice'|'diagnostic'>('practice');
   const[busy,setBusy]=useState(false);
   return <main className="category-page"><section className="category-card">
-    <Brand compact/><p className="eyebrow">CHOOSE TODAY’S QUEST</p><h1>What would you like to practise?</h1><p>Pick one Victorian Curriculum learning area, or choose a mixed adventure.</p>
-    <div className="category-grid">{QUEST_CATEGORIES.map(c=><button type="button" key={c.id} className={'category-option '+(selected===c.id?'selected':'')} onClick={()=>setSelected(c.id)}><span>{c.icon}</span><b>{c.name}</b><small>{c.description}</small></button>)}</div>
-    <div className="category-actions"><button onClick={cancel}>Back</button><button className="primary" disabled={busy} onClick={async()=>{setBusy(true);try{await start(selected)}finally{setBusy(false)}}}><Play size={20}/>{busy?'Building your quest…':'Start this quest'}</button></div>
+    <Brand compact/><p className="eyebrow">CHOOSE TODAY’S SESSION</p><h1>How would you like to learn?</h1>
+    <div className="session-kind" role="group" aria-label="Session type"><button type="button" className={kind==='practice'?'selected':''} onClick={()=>setKind('practice')}><b>Targeted practice</b><small>Work towards the Level 5 pathway</small></button><button type="button" className={kind==='diagnostic'?'selected':''} onClick={()=>{setKind('diagnostic');setMinutes(15)}}><b>Levels 2–6 diagnostic</b><small>Find a starting point across Number and Algebra</small></button></div>
+    {kind==='practice'&&<><p>Choose a session length and learning area.</p><div className="duration-options" role="group" aria-label="Session length">{([5,10,15] as const).map(value=><button type="button" key={value} className={minutes===value?'selected':''} onClick={()=>setMinutes(value)}><b>{value} minutes</b><small>{value===5?'Quick boost':value===10?'Daily session':'Deep practice'}</small></button>)}</div><div className="category-grid">{QUEST_CATEGORIES.map(c=><button type="button" key={c.id} className={'category-option '+(selected===c.id?'selected':'')} onClick={()=>setSelected(c.id)}><span>{c.icon}</span><b>{c.name}</b><small>{c.description}</small></button>)}</div></>}
+    {kind==='diagnostic'&&<div className="diagnostic-note"><b>About 15 minutes</b><p>Three short questions at each Victorian Curriculum level from 2 to 6. Results identify a baseline; Level 5 remains the learning target.</p></div>}
+    <div className="category-actions"><button onClick={cancel}>Back</button><button className="primary" disabled={busy} onClick={async()=>{setBusy(true);try{await start(kind==='diagnostic'?'number_algebra':selected,minutes,kind)}finally{setBusy(false)}}}><Play size={20}/>{busy?'Building your session…':kind==='diagnostic'?'Start diagnostic':`Start ${minutes}-minute session`}</button></div>
   </section></main>;
 }
 

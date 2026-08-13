@@ -34,7 +34,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.18.0'
+APP_VERSION = '0.19.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -117,6 +117,8 @@ class Worksheet(Base):
     elapsed_seconds: Mapped[float] = mapped_column(Float, default=0)
     status: Mapped[str] = mapped_column(String(20), default='in_progress')
     selected_topic: Mapped[str] = mapped_column(String(40), default='mixed')
+    session_kind: Mapped[str] = mapped_column(String(20), default='practice')
+    target_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
     questions: Mapped[list['Question']] = relationship(cascade='all, delete-orphan')
 
 class Question(Base):
@@ -195,7 +197,9 @@ def migrate_database():
             ('current_question_id', 'INTEGER'), ('current_phase', "VARCHAR(20) DEFAULT 'main'"),
             ('last_active_at', 'DATETIME'), ('elapsed_seconds', 'FLOAT DEFAULT 0'),
             ('status', "VARCHAR(20) DEFAULT 'in_progress'"),
-            ('selected_topic', "VARCHAR(40) DEFAULT 'mixed'")
+            ('selected_topic', "VARCHAR(40) DEFAULT 'mixed'"),
+            ('session_kind', "VARCHAR(20) DEFAULT 'practice'"),
+            ('target_minutes', 'INTEGER')
         ],
         'questions': [
             ('state', "VARCHAR(30) DEFAULT 'not_started'"), ('skipped_count', 'INTEGER DEFAULT 0'),
@@ -368,7 +372,8 @@ def question_identity(prompt:str, payload:dict[str,Any]) -> tuple[str,tuple[str,
     choice_key=tuple(sorted(str(value).strip().casefold() for value in choices)) if isinstance(choices,list) else ()
     return (' '.join((prompt or '').split()).casefold(),choice_key)
 
-def create_worksheet(s:Session,sid:int,selected:str) -> Worksheet:
+def create_worksheet(s:Session,sid:int,selected:str, *, question_count:int|None=None,
+                     session_kind:str='practice', target_minutes:int|None=None) -> Worksheet:
     st=student_settings(s,sid); enabled=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
     selected=(selected or 'mixed').lower()
     focus_topics=['number','algebra']
@@ -378,9 +383,11 @@ def create_worksheet(s:Session,sid:int,selected:str) -> Worksheet:
     topics=enabled if selected=='mixed' else focus_topics if selected=='number_algebra' else [selected]
     if not topics: raise HTTPException(400,'No learning areas are enabled')
     rng=random.Random(f'{sid}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1,10**9)}')
-    ws=Worksheet(student_id=sid,worksheet_date=date.today(),total=st.question_count,selected_topic=selected);s.add(ws);s.flush()
+    total=max(5,min(50,question_count if question_count is not None else st.question_count))
+    ws=Worksheet(student_id=sid,worksheet_date=date.today(),total=total,selected_topic=selected,
+                 session_kind=session_kind,target_minutes=target_minutes);s.add(ws);s.flush()
     topic_weights=weights(s,sid,topics); seen:set[tuple[str,tuple[str,...]]]=set()
-    for pos in range(st.question_count):
+    for pos in range(total):
         candidate=None
         forced_topic=focus_topics[pos] if selected=='number_algebra' and pos < len(focus_topics) else None
         for _ in range(50):
@@ -435,6 +442,8 @@ def worksheet_view(ws):
         'score':ws.score,'total':ws.total,'xp_earned':ws.xp_earned,'current_question_id':ws.current_question_id,
         'current_phase':ws.current_phase or 'main','elapsed_seconds':ws.elapsed_seconds or 0,'status':ws.status or 'in_progress',
         'selected_topic':getattr(ws,'selected_topic','mixed') or 'mixed',
+        'session_kind':getattr(ws,'session_kind','practice') or 'practice',
+        'target_minutes':getattr(ws,'target_minutes',None),
         'counts':{
             'correct':sum(v=='correct' for v in statuses.values()),'incorrect':sum(v=='incorrect' for v in statuses.values()),
             'skipped':sum(v=='skipped' for v in statuses.values()),

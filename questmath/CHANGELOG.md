@@ -1,3 +1,11 @@
+# MathQuest 0.19.0
+
+- Added a short Number and Algebra diagnostic with three questions at each Victorian Curriculum level from 2–6 and an explicit Level 5 learning target.
+- Added selectable 5, 10 and 15-minute targeted practice sessions with question counts sized to the chosen duration.
+- Added persisted session type and target duration metadata using additive database migration columns that preserve existing worksheets and answers.
+- Added a latest-diagnostic summary API reporting evidence and accuracy at each assessed level.
+- Added learner session planning controls and backend regression coverage for timed sessions, diagnostic coverage and database upgrades.
+
 # MathQuest 0.18.0
 
 - Consolidated all new worksheet requests onto the authoritative duplicate-safe backend creation service, removing the later route-replacement layer.
