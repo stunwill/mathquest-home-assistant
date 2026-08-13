@@ -54,12 +54,14 @@ async function ensureRequiredVisual(){
   const card=document.querySelector('.question-card');
   if(!card||loading)return;
   loading=true;
+  let retry=false;
   try{
     const ws=await activeWorksheet();
     if(!ws)return;
     (window as any).__mq_ws=ws;
     const q=ws.questions?.find((x:any)=>x.id===ws.current_question_id);
     if(!q)return;
+    if(!card.isConnected||(card as HTMLElement).dataset.questionId!==String(q.id)){retry=true;return}
     lastQuestionId=q.id;
     const v=q.payload?.visual;
     const existing=card.querySelector('.mq-v080-visual') as HTMLElement|null;
@@ -86,7 +88,7 @@ async function ensureRequiredVisual(){
       warning.innerHTML='<strong>Visual unavailable</strong><p>This question needs a diagram that is missing. Please skip this question for now.</p>';
       card.querySelector('h1')?.insertAdjacentElement('afterend',warning);
     }
-  } finally { loading=false; }
+  } finally { loading=false;if(retry)requestAnimationFrame(run); }
 }
 
 function run(){

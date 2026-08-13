@@ -35,10 +35,17 @@ class AdventureIn(BaseModel):
 
 CONFIDENCE_WEIGHT = {'guessed': 0.75, 'pretty_sure': 0.9, 'knew_it': 1.0}
 ADVENTURES = {
-    'bakery': {'title': 'Bakery Challenge', 'icon': '🧁', 'intro': 'Help run a busy bakery using fractions, money, time and data.'},
-    'camping': {'title': 'Camping Adventure', 'icon': '🏕️', 'intro': 'Plan a camping trip using measurement, maps, time and number skills.'},
-    'space': {'title': 'Space Mission', 'icon': '🚀', 'intro': 'Complete a space mission using coordinates, number, time and data.'},
-    'animal_rescue': {'title': 'Animal Rescue', 'icon': '🐶', 'intro': 'Help an animal shelter solve food, money, measurement and data problems.'},
+    'bakery': {'title': 'Bakery Challenge', 'icon': '🧁', 'intro': 'Help run a busy bakery using fractions, money, time and data.', 'topics': ['number','measurement','statistics']},
+    'camping': {'title': 'Camping Adventure', 'icon': '🏕️', 'intro': 'Plan a camping trip using measurement, maps, time and number skills.', 'topics': ['measurement','space','number']},
+    'space': {'title': 'Space Mission', 'icon': '🚀', 'intro': 'Complete a space mission using coordinates, number, time and data.', 'topics': ['space','number','measurement','statistics']},
+    'animal_rescue': {'title': 'Animal Rescue', 'icon': '🐶', 'intro': 'Help an animal shelter solve food, money, measurement and data problems.', 'topics': ['number','measurement','statistics']},
+}
+
+STORY_CONTEXT = {
+    'bakery': ['The bakery is opening. Solve this to prepare the first orders:', 'A new customer order has arrived. Work this out for the baking team:', 'The lunch rush is getting busy. Solve the next bakery problem:', 'The shelves need restocking. Use your maths to help:', 'One final order remains before closing. Solve:'],
+    'camping': ['The camping trip begins with some careful planning. Solve:', 'The group is packing supplies. Work out:', 'The trail presents a new challenge. Solve:', 'The campsite must be organised before dark. Work out:', 'Complete the final calculation so everyone can head home safely:'],
+    'space': ['Mission control is preparing for launch. Solve:', 'The spacecraft has reached orbit. Calculate:', 'A navigation alert needs your maths skills. Work out:', 'The crew is preparing to return to Earth. Solve:', 'Complete the final mission calculation:'],
+    'animal_rescue': ['The animal shelter is opening for the day. Solve:', 'A new animal has arrived and needs your help. Work out:', 'The care team needs to organise supplies. Solve:', 'Adoption preparations are underway. Calculate:', 'Complete the final task for the shelter:'],
 }
 
 
@@ -151,12 +158,18 @@ def apply_adventure(wid:int,payload:AdventureIn,user:legacy.User=Depends(legacy.
     if payload.theme not in ADVENTURES: raise HTTPException(400,'Unknown adventure')
     ws=session.get(legacy.Worksheet,wid)
     if not ws or ws.student_id!=user.id: raise HTTPException(404,'Worksheet not found')
-    story=ADVENTURES[payload.theme]; chapters=['Getting started','First challenge','A surprise problem','Final preparations','Mission complete']
+    story=ADVENTURES[payload.theme]; chapters=['Getting started','First challenge','A surprise problem','Final preparations','Mission complete'];contexts=STORY_CONTEXT[payload.theme]
+    available=[q for q in sorted(ws.questions,key=lambda x:x.position) if not q.attempts]
+    rng=random.Random(f'adventure:{ws.id}:{payload.theme}')
     changed=0
-    for q in sorted(ws.questions,key=lambda x:x.position):
-        if q.attempts or changed>=5: continue
-        q.payload=legacy.json.dumps({**legacy.json.loads(q.payload), 'adventure':{'theme':payload.theme,'title':story['title'],'chapter':chapters[changed]}})
-        q.prompt=f"{story['icon']} {chapters[changed]}: {q.prompt}"; changed+=1
+    for index,q in enumerate(available):
+        topic=story['topics'][index%len(story['topics'])]
+        skill,prompt,atype,question_payload,answer,working=legacy.make_question(topic,min(4,q.level),rng)
+        chapter_index=min(len(chapters)-1,index*len(chapters)//max(1,len(available)))
+        q.topic=topic;q.skill=skill;q.prompt=f"{story['icon']} {contexts[chapter_index]} {prompt}";q.answer_type=atype;q.correct_answer=str(answer);q.working=working
+        q.payload=legacy.json.dumps({**question_payload,'adventure':{'theme':payload.theme,'title':story['title'],'chapter':chapters[chapter_index],'question':index+1,'total':len(available)}})
+        changed+=1
+    ws.selected_topic=story['title']
     session.commit(); return {'theme':payload.theme,'title':story['title'],'questions_linked':changed}
 
 

@@ -57,6 +57,41 @@ def test_navigation_can_return_to_an_earlier_unfinished_question():
     close(session)
 
 
+def test_completed_worksheet_can_restart_only_its_skipped_questions():
+    client, session = make_client()
+    worksheet = client.post('/api/worksheets/today', json={'topic': 'number_algebra'}).json()
+    source = session.get(legacy.Worksheet, worksheet['id'])
+    for question in source.questions:
+        question.state = 'skipped'
+        question.skipped_count = 1
+    session.commit()
+    completed = client.post(f"/api/worksheets/{source.id}/complete")
+    assert completed.status_code == 200
+    assert completed.json()['skipped'] == source.total
+    restarted = client.post(f"/api/worksheets/{source.id}/restart-skipped")
+    assert restarted.status_code == 200
+    retry = restarted.json()
+    assert retry['id'] != source.id
+    assert retry['total'] == source.total
+    assert retry['current_question_id'] == retry['questions'][0]['id']
+    assert session.get(legacy.Worksheet, source.id).completed_at is not None
+    close(session)
+
+
+def test_story_adventure_builds_and_contextualises_a_dedicated_worksheet():
+    client, session = make_client()
+    worksheet = client.post('/api/worksheets/new', json={'topic': 'mixed'}).json()
+    response = client.post(f"/api/worksheets/{worksheet['id']}/adventure", json={'theme': 'space'})
+    assert response.status_code == 200
+    assert response.json()['questions_linked'] == worksheet['total']
+    raw = session.get(legacy.Worksheet, worksheet['id'])
+    assert raw.selected_topic == 'Space Mission'
+    assert {question.topic for question in raw.questions} <= {'space', 'number', 'measurement', 'statistics'}
+    assert all(json.loads(question.payload)['adventure']['theme'] == 'space' for question in raw.questions)
+    assert all(question.prompt.startswith('🚀') for question in raw.questions)
+    close(session)
+
+
 def test_all_four_fact_operations_have_contextual_strategy_cards():
     generated = [
         v0170._addition_fact(random.Random(1)),

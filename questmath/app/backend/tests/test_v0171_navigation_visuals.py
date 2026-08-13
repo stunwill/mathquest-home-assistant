@@ -15,6 +15,9 @@ def test_question_card_is_keyed_and_previous_navigation_is_available():
     assert 'Previous question' in source
     assert 'function previousEligible' in source
     assert "'skipped','retry_available'" in source
+    assert 'Finish worksheet with skipped questions' in source
+    assert '<h2>Badges</h2>' not in source
+    assert 'completion-calendar' in source
 
 
 def test_visual_guard_rejects_a_visual_from_another_question():
@@ -22,6 +25,22 @@ def test_visual_guard_rejects_a_visual_from_another_question():
     assert 'dataset.questionId' in source
     assert 'existing.dataset.qid!==cardQuestionId' in source
     assert 'existing.remove()' in source
+    assert '!card.isConnected' in source
+    assert 'requestAnimationFrame(run)' in source
+
+
+def test_calendar_navigation_keeps_a_stable_calendar_target():
+    source = (ROOT / 'questmath/app/frontend/src/v0160.ts').read_text(encoding='utf-8')
+    assert "document.querySelector('.mq-v0160-calendar')" in source
+    assert 'target.dataset.calendarStart===start' in source
+    assert 'renderCalendar(true)' in source
+    assert 'restartSkipped' in source
+
+
+def test_story_adventure_creates_and_opens_a_new_worksheet():
+    source = (ROOT / 'questmath/app/frontend/src/v090.ts').read_text(encoding='utf-8')
+    assert "API+'/worksheets/new'" in source
+    assert "sessionStorage.setItem('mq_open_worksheet','1')" in source
 
 
 def test_grid_question_payload_identifies_the_highlighted_square():

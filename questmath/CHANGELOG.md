@@ -1,3 +1,15 @@
+# MathQuest 0.17.2
+
+- Fixed completion-calendar navigation and expanded the calendar to the full dashboard width, with the duplicate Badges panel removed.
+- Allowed worksheets to be finished once every unanswered question has been explicitly skipped.
+- Added **Restart skipped questions**, which creates a focused follow-up worksheet without changing the completed worksheet's score, XP or history.
+- Fixed Story Adventure cards so they create and immediately open a dedicated worksheet for the selected story.
+- Regenerated Story Adventure questions from theme-appropriate learning areas and added chapter-based contextual prompts throughout each adventure.
+- Fixed a visual-loading race so rapid question changes retry against the newly mounted question card instead of attaching to a detached card.
+- Added a product roadmap combining the supplied learning-system recordings with previously identified MathQuest priorities.
+- Updated all authoritative release locations and startup messaging to `0.17.2`.
+- Existing users, worksheets, answers, progress and persisted secrets remain unchanged.
+
 # MathQuest 0.17.1
 
 - Added a **Previous question** control that returns to the nearest earlier unfinished, skipped or retryable question while keeping completed results read-only.

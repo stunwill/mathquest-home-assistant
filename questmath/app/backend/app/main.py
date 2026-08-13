@@ -34,7 +34,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.17.1'
+APP_VERSION = '0.17.2'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -538,15 +538,36 @@ def complete(wid:int,u:User=Depends(current_user),s:Session=Depends(db)):
     if not ws or ws.student_id!=u.id: raise HTTPException(404,'Worksheet not found')
     if ws.completed_at: return summary(s,ws,u)
     unresolved=[q for q in ws.questions if question_status(q) not in ('correct','incorrect')]
-    if unresolved: raise HTTPException(400,f'{len(unresolved)} questions still need to be completed')
+    unskipped=[q for q in unresolved if question_status(q)!='skipped' and not (q.skipped_count and not q.attempts)]
+    if unskipped: raise HTTPException(400,f'{len(unskipped)} questions still need to be answered or skipped')
+    for q in unresolved: q.state='skipped'
     score=0; topic_results={}
     for q in ws.questions:
         attempts=sorted(q.attempts,key=lambda a:a.attempt_number); final_correct=any(a.correct for a in attempts)
-        score+=int(final_correct); topic_results.setdefault(q.topic,[]).append(final_correct)
+        score+=int(final_correct)
+        if attempts: topic_results.setdefault(q.topic,[]).append(final_correct)
     ws.score=score; ws.completed_at=datetime.utcnow(); ws.status='completed'; ws.current_question_id=None
     ws.xp_earned=score*10+(50 if score==ws.total else 0); u.xp+=ws.xp_earned; u.highest_level=max(u.highest_level,u.xp//250+1)
     for topic in topic_results: update_skill(s,u.id,topic)
     s.commit(); return summary(s,ws,u)
+
+@app.post('/api/worksheets/{wid}/restart-skipped')
+def restart_skipped(wid:int,u:User=Depends(current_user),s:Session=Depends(db)):
+    if u.role!='student': raise HTTPException(403,'Student access required')
+    source=s.get(Worksheet,wid)
+    if not source or source.student_id!=u.id: raise HTTPException(404,'Worksheet not found')
+    if not source.completed_at: raise HTTPException(409,'Finish the worksheet before restarting skipped questions')
+    skipped=[q for q in sorted(source.questions,key=lambda item:item.position) if question_status(q)=='skipped' or (q.skipped_count and question_status(q) not in ('correct','incorrect'))]
+    if not skipped: raise HTTPException(400,'This worksheet has no skipped questions to restart')
+    ws=Worksheet(student_id=u.id,worksheet_date=date.today(),total=len(skipped),selected_topic=source.selected_topic,status='in_progress')
+    s.add(ws);s.flush()
+    for position,old in enumerate(skipped):
+        item=Question(worksheet_id=ws.id,topic=old.topic,skill=old.skill,level=old.level,prompt=old.prompt,answer_type=old.answer_type,payload=old.payload,correct_answer=old.correct_answer,working=old.working,position=position)
+        s.add(item);s.flush()
+        if position==0:
+            item.state='active';item.first_viewed_at=datetime.utcnow();ws.current_question_id=item.id
+    ws.last_active_at=datetime.utcnow();s.commit();s.refresh(ws)
+    return worksheet_view(ws)
 
 def update_skill(s,sid,topic):
     sk=s.scalar(select(Skill).where(Skill.student_id==sid,Skill.topic==topic))
@@ -560,10 +581,11 @@ def update_skill(s,sid,topic):
 
 def summary(s,ws,u):
     by={}
-    for q in ws.questions: by.setdefault(q.topic,[]).append(any(a.correct for a in q.attempts))
+    for q in ws.questions:
+        if q.attempts: by.setdefault(q.topic,[]).append(any(a.correct for a in q.attempts))
     rates={k:sum(v)/len(v) for k,v in by.items()}; strongest=max(rates,key=rates.get) if rates else None; weakest=min(rates,key=rates.get) if rates else None
-    hints=sum((q.hint_count or 0) for q in ws.questions)
-    return {'score':ws.score,'total':ws.total,'accuracy':round(ws.score/ws.total*100) if ws.total else 0,'xp_earned':ws.xp_earned,'level':u.xp//250+1,'level_progress':u.xp%250,'strongest_topic':strongest,'weakest_topic':weakest,'hints_used':hints,'perfect':ws.score==ws.total,'message':'Outstanding work!' if ws.score==ws.total else 'You are getting stronger every day.'}
+    hints=sum((q.hint_count or 0) for q in ws.questions);answered=sum(1 for q in ws.questions if q.attempts);skipped=sum(1 for q in ws.questions if question_status(q)=='skipped')
+    return {'score':ws.score,'total':ws.total,'answered':answered,'skipped':skipped,'accuracy':round(ws.score/answered*100) if answered else 0,'xp_earned':ws.xp_earned,'level':u.xp//250+1,'level_progress':u.xp%250,'strongest_topic':strongest,'weakest_topic':weakest,'hints_used':hints,'perfect':ws.score==ws.total,'message':'Outstanding work!' if ws.score==ws.total else 'Worksheet finished. You can restart the skipped questions when you are ready.' if skipped else 'You are getting stronger every day.'}
 
 def streak(s,sid):
     dates=set(s.scalars(select(Worksheet.worksheet_date).where(Worksheet.student_id==sid,Worksheet.completed_at.is_not(None))).all());n=0;d=date.today()
