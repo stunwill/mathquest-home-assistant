@@ -1,3 +1,12 @@
+# MathQuest 0.16.3
+
+- Added version-consistency validation directly to the release workflow before any existing-tag check or GitHub Release publication.
+- Added an explicit Python 3.12 setup and pinned YAML parser dependency so release validation is reproducible on GitHub Actions.
+- Changed pull-request release-note validation to extract notes for the version configured in `questmath/config.yaml` instead of the hard-coded `0.16.2` section.
+- Added regression coverage for release validation order, configured-version note extraction and version agreement.
+- Updated all required add-on, backend, frontend, startup and documentation version locations to `0.16.3`.
+- No database, authentication, worksheet or learning-engine behaviour is changed by this patch.
+
 # MathQuest 0.16.2
 
 - Replaced the public development JWT signing secret with a cryptographically secure, installation-specific secret persisted at `/data/jwt-signing-secret` with restrictive permissions where supported.
