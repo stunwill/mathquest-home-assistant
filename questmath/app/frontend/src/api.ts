@@ -74,3 +74,12 @@ export async function createWorksheet<T = any>(topic: string): Promise<T> {
   rememberActiveWorksheet(worksheet.id);
   return worksheet;
 }
+
+export async function createSession<T = any>(kind: 'practice' | 'diagnostic', minutes: 5 | 10 | 15, topic = 'number_algebra'): Promise<T> {
+  const worksheet = await apiRequest<T & {id: number}>('/sessions/new', {
+    method: 'POST',
+    body: JSON.stringify({kind, minutes, topic}),
+  });
+  rememberActiveWorksheet(worksheet.id);
+  return worksheet;
+}
