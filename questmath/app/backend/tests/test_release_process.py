@@ -16,17 +16,35 @@ def load_script(name: str):
     return module
 
 
-def test_release_notes_extract_v0162_section_only():
+def test_release_notes_extract_current_version_section_only():
     module = load_script('extract_release_notes')
+    versions = load_script('validate_versions').version_locations()
+    current_version = versions['questmath/config.yaml']
     changelog = (ROOT / 'questmath/CHANGELOG.md').read_text(encoding='utf-8')
-    notes = module.extract_release_notes(changelog, '0.16.2')
-    assert notes.startswith('- Replaced the public development JWT signing secret')
-    assert 'JWT' in notes
-    assert 'login' in notes.lower()
-    assert '0.16.1' not in notes
+    notes = module.extract_release_notes(changelog, current_version)
+    assert notes.startswith('- Added version-consistency validation')
+    assert 'release workflow' in notes.lower()
+    assert 'version configured' in notes.lower()
+    assert '# MathQuest' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.16.2'}
+    assert set(versions.values()) == {'0.16.3'}
+
+
+def test_release_workflow_validates_versions_before_publishing():
+    workflow = (ROOT / '.github/workflows/release.yml').read_text(encoding='utf-8')
+    validation = workflow.index('python scripts/validate_versions.py')
+    existing_tag_check = workflow.index('name: Check whether the tag already exists')
+    publish = workflow.index('gh release create')
+    assert validation < existing_tag_check < publish
+
+
+def test_validation_workflow_does_not_hard_code_release_version():
+    workflow = (ROOT / '.github/workflows/validate.yml').read_text(encoding='utf-8')
+    extraction_step = workflow.split('- name: Validate release-note extraction', 1)[1]
+    assert "config['version']" in extraction_step
+    assert 'extract_release_notes.py "$VERSION"' in extraction_step
+    assert 'extract_release_notes.py 0.16.2' not in extraction_step

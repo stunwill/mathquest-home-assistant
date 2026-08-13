@@ -68,4 +68,13 @@ jobs:
       - name: Validate version consistency
         run: python scripts/validate_versions.py
       - name: Validate release-note extraction
-        run: python scripts/extract_release_notes.py 0.16.2 --output /tmp/release-notes.md
+        run: |
+          VERSION="$(python - <<'PY'
+          import yaml
+          from pathlib import Path
+
+          config = yaml.safe_load(Path('questmath/config.yaml').read_text(encoding='utf-8'))
+          print(config['version'])
+          PY
+          )"
+          python scripts/extract_release_notes.py "$VERSION" --output /tmp/release-notes.md
