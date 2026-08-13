@@ -34,7 +34,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.16.3'
+APP_VERSION = '0.17.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -371,17 +371,20 @@ def question_identity(prompt:str, payload:dict[str,Any]) -> tuple[str,tuple[str,
 def create_worksheet(s:Session,sid:int,selected:str) -> Worksheet:
     st=student_settings(s,sid); enabled=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
     selected=(selected or 'mixed').lower()
-    if selected!='mixed' and selected not in LEVEL4_STRANDS: raise HTTPException(400,'Unknown learning area')
-    if selected!='mixed' and selected not in enabled: raise HTTPException(400,'This learning area is disabled by the parent')
-    topics=enabled if selected=='mixed' else [selected]
+    focus_topics=['number','algebra']
+    if selected not in ['mixed','number_algebra'] and selected not in LEVEL4_STRANDS: raise HTTPException(400,'Unknown learning area')
+    if selected=='number_algebra' and any(topic not in enabled for topic in focus_topics): raise HTTPException(400,'Number and Algebra must both be enabled by the parent')
+    if selected not in ['mixed','number_algebra'] and selected not in enabled: raise HTTPException(400,'This learning area is disabled by the parent')
+    topics=enabled if selected=='mixed' else focus_topics if selected=='number_algebra' else [selected]
     if not topics: raise HTTPException(400,'No learning areas are enabled')
     rng=random.Random(f'{sid}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1,10**9)}')
     ws=Worksheet(student_id=sid,worksheet_date=date.today(),total=st.question_count,selected_topic=selected);s.add(ws);s.flush()
     topic_weights=weights(s,sid,topics); seen:set[tuple[str,tuple[str,...]]]=set()
     for pos in range(st.question_count):
         candidate=None
+        forced_topic=focus_topics[pos] if selected=='number_algebra' and pos < len(focus_topics) else None
         for _ in range(50):
-            topic=rng.choices(topics,weights=topic_weights,k=1)[0]
+            topic=forced_topic or rng.choices(topics,weights=topic_weights,k=1)[0]
             sk=s.scalar(select(Skill).where(Skill.student_id==sid,Skill.topic==topic))
             lvl=(sk.level if sk else 1) if st.adaptive_mode else levels.get(topic,1)
             if rng.random()<.2: lvl=max(1,lvl-1)
