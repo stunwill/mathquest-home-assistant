@@ -1,3 +1,18 @@
+# MathQuest 0.17.0
+
+- Added a recommended **Number & Algebra Focus** quest containing only those two Victorian Curriculum strands.
+- Added deliberate fact-recall practice for addition, subtraction, multiplication facts to `10 × 10`, and related division facts.
+- Added efficient mental strategies including make-ten, doubles, near-doubles, inverse facts, multiplication patterns and fact families to reduce reliance on finger counting.
+- Added written addition and subtraction practice with question-specific strategy cards.
+- Added subtraction guidance for the three column cases: subtract directly when the top digit is larger, regroup from the next place when it is smaller, and write zero when the digits match.
+- Added a worked place-value lesson for `81 − 8` that explains regrouping 8 tens and 1 one into 7 tens and 11 ones before subtracting.
+- Expanded unknown-value Algebra questions across addition and subtraction equation forms, with inverse-operation hints and substitution checks.
+- Added Number and Algebra focus reporting for independent accuracy, hint use, average response time, last practice and retention review status.
+- Connected the new skills to MathQuest's existing hint-aware mastery and spaced-review weighting so weak, hinted and due outcomes receive further practice.
+- Added HTTP, generation, hint, strategy, capability and teaching-lesson regression coverage.
+- Updated all authoritative release locations and the production entrypoint to `0.17.0`.
+- Existing users, worksheets, progress, `/data/questmath.db` and `/data/jwt-signing-secret` remain unchanged.
+
 # MathQuest 0.16.3
 
 - Added version-consistency validation directly to the release workflow before any existing-tag check or GitHub Release publication.

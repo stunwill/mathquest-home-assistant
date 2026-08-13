@@ -1,4 +1,4 @@
-# MathQuest 0.16.3
+# MathQuest 0.17.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -21,6 +21,8 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - SQLite backup and restore API
 - Home Assistant ingress and persistent `/data` storage
 - Installation-specific JWT signing and failed-login throttling
+- Number & Algebra Focus quests for targeted fact recall and equation practice
+- Contextual strategy cards, written subtraction regrouping and retention review indicators
 
 ## Upgrade compatibility
 

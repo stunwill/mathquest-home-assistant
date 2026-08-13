@@ -11,8 +11,8 @@ async function createWorksheet(topic:string){
 
 function openPicker(){
   document.querySelector('.mq-v0160-review.mq-picker')?.remove();
-  const topics=['measurement','algebra','probability','number','space','statistics','mixed'];
-  const labels:Record<string,string>={measurement:'Measurement',algebra:'Algebra',probability:'Probability',number:'Number',space:'Space',statistics:'Statistics',mixed:'Mixed Adventure'};
+  const topics=['number_algebra','measurement','algebra','probability','number','space','statistics','mixed'];
+  const labels:Record<string,string>={number_algebra:'Number & Algebra Focus',measurement:'Measurement',algebra:'Algebra',probability:'Probability',number:'Number',space:'Space',statistics:'Statistics',mixed:'Mixed Adventure'};
   const wrap=document.createElement('div');wrap.className='mq-v0160-review mq-picker';
   wrap.innerHTML=`<section><button class="close">×</button><p class="eyebrow">ANOTHER QUEST</p><h2>Choose your next worksheet</h2><p>You can have more than one worksheet in progress. Each worksheet is saved separately.</p><div class="mq-v0120-topics">${topics.map(t=>`<button data-topic="${t}">${labels[t]}</button>`).join('')}</div></section>`;
   wrap.querySelector('.close')?.addEventListener('click',()=>wrap.remove());

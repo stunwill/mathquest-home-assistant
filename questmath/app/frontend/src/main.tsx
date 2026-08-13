@@ -110,6 +110,7 @@ function Student({user,logout}:{user:User;logout:()=>void}){
 }
 
 const QUEST_CATEGORIES=[
+  {id:'number_algebra',icon:'🎯',name:'Number & Algebra Focus',description:'Recommended: number facts, efficient strategies and missing-number equations'},
   {id:'measurement',icon:'📏',name:'Measurement',description:'Length, area, perimeter, time, temperature and angles'},
   {id:'algebra',icon:'🧩',name:'Algebra',description:'Unknown values, patterns and number facts'},
   {id:'probability',icon:'🎲',name:'Probability',description:'Chance, likelihood and repeated experiments'},
@@ -130,6 +131,7 @@ function QuestCategoryPicker({start,cancel}:{start:(topic:string)=>Promise<void>
 }
 
 function Metric({icon,label,value}:any){return <div className="metric">{icon&&<i>{icon}</i>}<div><small>{label}</small><strong>{value}</strong></div></div>}
+function StrategyCard({card}:{card:any}){if(!card)return null;return <div className="mq-strategy-card"><div><span>🧠</span><p><small>STRATEGY FOR THIS QUESTION</small><b>{card.title}</b></p></div><h3>{card.strategy}</h3><p className="mq-strategy-rule">{card.rule}</p><ol>{(card.steps||[]).map((step:string)=><li key={step}>{step}</li>)}</ol>{card.example&&<small className="mq-strategy-example">{card.example}</small>}</div>}
 function Calendar({items}:{items:any[]}){const map=Object.fromEntries(items.map(x=>[x.date,x]));const now=new Date(),days=[];for(let i=27;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const key=d.toISOString().slice(0,10),it=map[key];days.push(<div className={'day '+(it?.completed?'done':'')+(i===0?' today':'')} key={key}><small>{d.toLocaleDateString('en-AU',{weekday:'short'}).slice(0,1)}</small><b>{d.getDate()}</b><span>{it?.completed?'✓':''}</span>{it?.hints>0&&<em title={`${it.hints} hints used`}>💡{it.hints}</em>}</div>)}return <div className="calendar">{days}</div>}
 
 function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:WorksheetData)=>void;onExit:()=>void;onDone:(x:any)=>void}){
@@ -165,7 +167,7 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
     <div className="worksheet-layout"><section className="worksheet-main">
       <div className="worksheet-top"><b>{phase==='skipped'?`Skipped round · ${ws.counts.skipped} remaining`:`Question ${currentNumber} of ${ws.total}`}</b><div className="progress"><i style={{width:`${completed/ws.total*100}%`}}/></div><span>{q.topic} · level {q.level}</span></div>
       <section className="question-card"><div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
-        {hint&&<div className="hint-box"><Lightbulb size={22}/><div><b>Hint {q.hint_count||1}</b><p>{hint}</p></div></div>}
+        {hint&&<><div className="hint-box"><Lightbulb size={22}/><div><b>Hint {q.hint_count||1}</b><p>{hint}</p></div></div><StrategyCard card={q.payload?.strategy_card}/></>}
         {!feedback?<><div className="support-actions"><button className="hint-button" disabled={hintBusy} onClick={requestHint}><Lightbulb size={19}/>{hintBusy?'Getting a hint…':q.hint_count>=2?'Show hint again':q.hint_count===1?'Another hint':'Give me a hint'}</button><small>Hints help with the next step and do not reduce the score.</small></div><div className="question-actions"><button className="skip" onClick={skip}><SkipForward size={19}/> Skip for now</button><button type="button" className="primary" disabled={!String(answer ?? '').trim()} onClick={submit}>Check answer</button></div></>:<div className={'feedback '+(feedback.correct?'correct':'wrong')}><h3>{feedback.correct?'✅ Great job!':'❌ '+feedback.message}</h3>{feedback.working&&<p>{feedback.working}</p>}{feedback.retry_allowed?<button onClick={()=>{setFeedback(null);setAnswer('')}}>Try again</button>:<button className="primary" onClick={next}>{ws.counts.remaining<=1?'Finish worksheet':'Next question'} <ChevronRight size={18}/></button>}</div>}
       </section>
     </section><WorksheetStatus ws={ws} q={q} open={()=>setOverview(true)}/></div>
