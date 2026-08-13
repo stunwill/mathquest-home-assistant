@@ -31,6 +31,8 @@ def _history_summary(ws: legacy.Worksheet) -> dict:
         'elapsed_seconds': round(float(ws.elapsed_seconds or 0), 1),
         'display_time': ws.started_at.strftime('%-I:%M %p') if ws.started_at else None,
         'display_title': (ws.selected_topic or 'mixed').replace('_', ' ').title(),
+        'skipped': int(summary.get('skipped') or 0),
+        'restartable_skipped': bool(ws.completed_at and summary.get('skipped')),
     })
     return summary
 

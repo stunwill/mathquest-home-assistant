@@ -58,6 +58,7 @@ def worksheet_summary(ws: legacy.Worksheet) -> dict:
         'score': ws.score,
         'total': ws.total,
         'answered': answered,
+        'skipped': view['counts']['skipped'],
         'accuracy': round(ws.score / answered * 100, 1) if answered else None,
         'xp_earned': ws.xp_earned,
         'hints': view['counts']['hints'],
