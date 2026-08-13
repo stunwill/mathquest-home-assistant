@@ -110,20 +110,41 @@ The target experience is not a digital worksheet. Each session should diagnose, 
 - Improve authentication expiry handling and eliminate silent or alert-only failures.
 - Preserve existing database, worksheet history, answers, progress and Home Assistant add-on upgrades.
 
-## Expected release plan
+## Release sequence and delivery gates
 
-| Release | Focus | Expected outcome | Indicative effort |
+Calendar estimates are intentionally excluded. MathQuest releases can be developed quickly, while the meaningful delivery constraint is the review and real-world testing gate. The roadmap is therefore an ordered queue, not a dated schedule.
+
+| Order | Release | Focus | Delivery gate |
 | --- | --- | --- | --- |
-| 0.17.2 | Current reliability release | Calendar, worksheet completion/restart, Story Adventures and roadmap | Current draft PR |
-| 0.18.0 | Frontend and worksheet foundation | One worksheet creation service, React-owned calendar/adventures, frontend tests and reliable error states | 1–2 weeks |
-| 0.19.0 | Diagnostic and timed tutoring | Levels 2–6 diagnostic, Level 5 pathway and 5/10/15-minute sessions | 2–3 weeks |
-| 0.20.0 | Guided tutor and scaffolded hints | Ask-before-tell tutor flow, three-stage hints, Why/another-way/start-over actions and misconception routing | 2–3 weeks |
-| 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives | 3–5 weeks |
-| 0.22.0 | Story Adventures 2.0 | Coherent missions driven by learning goals, themed data and applied multi-step problems | 2–3 weeks |
-| 0.23.0 | Adaptive mastery and retention | Outcome-level mastery, prerequisite graph, due-date scheduling and confidence/fluency feedback loops | 2–3 weeks |
-| 0.24.0 | Parent and Home Assistant insight | Growth reporting, next-session recommendations, stable HA service token and dashboard metrics | 1–2 weeks |
+| Current | 0.17.2 | Calendar, worksheet completion/restart, Story Adventures and roadmap | Automated checks pass, then Stu tests and merges the draft PR |
+| Next | 0.18.0 | Frontend and worksheet foundation | One worksheet creation service, React-owned calendar/adventures, frontend tests and reliable error states work in Home Assistant |
+| Then | 0.19.0 | Diagnostic and timed tutoring | Levels 2–6 diagnostic, Level 5 pathway and selectable 5/10/15-minute sessions pass learner-flow testing |
+| Then | 0.20.0 | Guided tutor and scaffolded hints | Ask-before-tell tutor flow, three-stage hints, Why/another-way/start-over actions and misconception routing are verified across representative question types |
+| Then | 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives work across desktop, mobile and Home Assistant |
+| Then | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, themed data and applied multi-step problems from start to finish |
+| Then | 0.23.0 | Adaptive mastery and retention | Outcome mastery, prerequisite routing, review scheduling and confidence/fluency signals produce correct next-session recommendations |
+| Then | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
 
-The indicative total is 13–21 weeks if releases are completed sequentially. The interactive maths lab is the largest item and should not begin until the frontend architecture and automated interaction tests are in place.
+### Continuous delivery loop
+
+1. Lock the next release to a small, independently testable scope.
+2. Develop the complete scope, including version references, changelog and documentation.
+3. Run backend tests, frontend type/build checks, release validation and the relevant regression tests.
+4. Open a draft pull request and stop for Stu's testing and review.
+5. Fix findings on that same release branch until it passes.
+6. After Stu merges the pull request, detect the merge and begin the next release in the queue.
+
+No release receives a promised date or week count. The loop may complete several times in a day when development, automated checks and Stu's testing are all completed quickly. A release remains at its gate for as long as testing or correction requires.
+
+### How new work enters the queue
+
+- Critical security, data-loss or blocking reliability defects may interrupt the queue as a tightly scoped patch release.
+- Normal bugs go into the next suitable release.
+- Small enhancements that directly support the active release can be included before scope lock.
+- Larger features are placed into a future release and do not expand an active release after scope lock.
+- Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
+
+The interactive maths lab remains dependent on the frontend architecture and automated interaction tests, but that dependency defines release order rather than elapsed time.
 
 ## Recommended priority
 
