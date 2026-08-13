@@ -1,3 +1,14 @@
+# MathQuest 0.17.1
+
+- Added a **Previous question** control that returns to the nearest earlier unfinished, skipped or retryable question while keeping completed results read-only.
+- Fixed grid-reference and other visual questions retaining the image from the previous question by keying question cards to their question ID and rejecting mismatched injected visuals.
+- Ensured weak, hinted and due Number and Algebra focus skills influence the generated practice questions, not only the strand-level topic weights.
+- Fixed make-ten addition questions so the second addend always contains enough to complete ten.
+- Fixed direct-subtraction generation so equal ones digits use the dedicated equal-digits strategy instead of contradictory guidance.
+- Added navigation, visual identity, grid payload and strategy edge-case regression coverage.
+- Updated all authoritative release locations and startup messaging to `0.17.1`.
+- Existing users, worksheets, answers, progress and persisted secrets remain unchanged.
+
 # MathQuest 0.17.0
 
 - Added a recommended **Number & Algebra Focus** quest containing only those two Victorian Curriculum strands.

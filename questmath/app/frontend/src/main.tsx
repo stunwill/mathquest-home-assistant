@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  CheckCircle2, ChevronRight, Database, Download, Eye, Flame, Lightbulb, List,
+  CheckCircle2, ChevronLeft, ChevronRight, Database, Download, Eye, Flame, Lightbulb, List,
   LogOut, Play, Settings, SkipForward, Sparkles, Star, Trophy, X
 } from 'lucide-react';
 import './styles.css';
@@ -148,12 +148,14 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
   const q=active;
   const completed=ws.counts.correct+ws.counts.incorrect;
   const phase=ws.current_phase==='skipped'||(!ws.questions.some(x=>['not_started','current','retry_available'].includes(x.status))&&ws.counts.skipped>0)?'skipped':'main';
+  const previous=previousEligible(ws,q?.id);
 
   useEffect(()=>{if(q&&q.id!==ws.current_question_id)goTo(q.id)},[]);
   useEffect(()=>{setHint(q?.last_hint||null)},[q?.id,q?.last_hint]);
   function elapsed(){return (Date.now()-sessionStart)/1000}
   async function refresh(updated?:WorksheetData){const data=updated||await req('/worksheets/today');onUpdate(data);setAnswer('');setFeedback(null);setHint(null);setQuestionStart(Date.now())}
   async function goTo(id:number){const updated=await req(`/worksheets/${ws.id}/navigate/${id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});setOverview(false);await refresh(updated)}
+  async function previousQuestion(){if(previous)await goTo(previous.id)}
   async function submit(){const cleaned=String(answer ?? '').trim();if(!cleaned)return;const result=await req(`/questions/${q.id}/answer`,{method:'POST',body:JSON.stringify({answer:cleaned,seconds:(Date.now()-questionStart)/1000})});setFeedback(result);if(result.correct||!result.retry_allowed){const latest=await req('/worksheets/today');onUpdate(latest)}}
   async function requestHint(){setHintBusy(true);try{const result=await req(`/questions/${q.id}/hint`,{method:'POST'});setHint(result.hint);const latest=await req('/worksheets/today');onUpdate(latest)}finally{setHintBusy(false)}}
   async function skip(){const updated=await req(`/questions/${q.id}/skip`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});const next=nextEligible(updated,q.id);if(next){const moved=await req(`/worksheets/${ws.id}/navigate/${next.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved)}else await refresh(updated)}
@@ -166,9 +168,9 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
     <div className="worksheet-header"><button className="ghost danger-text" onClick={()=>setConfirmExit(true)}><X size={20}/> Exit worksheet</button><Brand compact/><button className="ghost" onClick={()=>setOverview(true)}><List size={20}/> Questions</button></div>
     <div className="worksheet-layout"><section className="worksheet-main">
       <div className="worksheet-top"><b>{phase==='skipped'?`Skipped round · ${ws.counts.skipped} remaining`:`Question ${currentNumber} of ${ws.total}`}</b><div className="progress"><i style={{width:`${completed/ws.total*100}%`}}/></div><span>{q.topic} · level {q.level}</span></div>
-      <section className="question-card"><div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
+      <section className="question-card" key={q.id} data-question-id={q.id}><div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
         {hint&&<><div className="hint-box"><Lightbulb size={22}/><div><b>Hint {q.hint_count||1}</b><p>{hint}</p></div></div><StrategyCard card={q.payload?.strategy_card}/></>}
-        {!feedback?<><div className="support-actions"><button className="hint-button" disabled={hintBusy} onClick={requestHint}><Lightbulb size={19}/>{hintBusy?'Getting a hint…':q.hint_count>=2?'Show hint again':q.hint_count===1?'Another hint':'Give me a hint'}</button><small>Hints help with the next step and do not reduce the score.</small></div><div className="question-actions"><button className="skip" onClick={skip}><SkipForward size={19}/> Skip for now</button><button type="button" className="primary" disabled={!String(answer ?? '').trim()} onClick={submit}>Check answer</button></div></>:<div className={'feedback '+(feedback.correct?'correct':'wrong')}><h3>{feedback.correct?'✅ Great job!':'❌ '+feedback.message}</h3>{feedback.working&&<p>{feedback.working}</p>}{feedback.retry_allowed?<button onClick={()=>{setFeedback(null);setAnswer('')}}>Try again</button>:<button className="primary" onClick={next}>{ws.counts.remaining<=1?'Finish worksheet':'Next question'} <ChevronRight size={18}/></button>}</div>}
+        {!feedback?<><div className="question-navigation"><button type="button" disabled={!previous} onClick={previousQuestion}><ChevronLeft size={19}/> Previous question</button></div><div className="support-actions"><button className="hint-button" disabled={hintBusy} onClick={requestHint}><Lightbulb size={19}/>{hintBusy?'Getting a hint…':q.hint_count>=2?'Show hint again':q.hint_count===1?'Another hint':'Give me a hint'}</button><small>Hints help with the next step and do not reduce the score.</small></div><div className="question-actions"><button className="skip" onClick={skip}><SkipForward size={19}/> Skip for now</button><button type="button" className="primary" disabled={!String(answer ?? '').trim()} onClick={submit}>Check answer</button></div></>:<div className={'feedback '+(feedback.correct?'correct':'wrong')}><h3>{feedback.correct?'✅ Great job!':'❌ '+feedback.message}</h3>{feedback.working&&<p>{feedback.working}</p>}{feedback.retry_allowed?<button onClick={()=>{setFeedback(null);setAnswer('')}}>Try again</button>:<button className="primary" onClick={next}>{ws.counts.remaining<=1?'Finish worksheet':'Next question'} <ChevronRight size={18}/></button>}</div>}
       </section>
     </section><WorksheetStatus ws={ws} q={q} open={()=>setOverview(true)}/></div>
     {overview&&<QuestionOverview ws={ws} activeId={q.id} close={()=>setOverview(false)} goTo={goTo}/>} {confirmExit&&<ConfirmExit cancel={()=>setConfirmExit(false)} exit={exit}/>} 
@@ -182,6 +184,13 @@ function nextEligible(ws:WorksheetData,afterId?:number){
   if(main.length){return [...main.filter(q=>q.position>=start),...main.filter(q=>q.position<start)][0]}
   const skipped=sorted.filter(q=>q.status==='skipped');
   return [...skipped.filter(q=>q.position>=start),...skipped.filter(q=>q.position<start)][0]||null;
+}
+
+function previousEligible(ws:WorksheetData,currentId?:number){
+  const sorted=[...ws.questions].sort((a,b)=>a.position-b.position);
+  const current=sorted.find(q=>q.id===currentId);
+  if(!current)return null;
+  return sorted.filter(q=>q.position<current.position&&['not_started','current','skipped','retry_available'].includes(q.status)).at(-1)||null;
 }
 
 function WorksheetStatus({ws,q,open}:{ws:WorksheetData;q:Question;open:()=>void}){return <aside className="worksheet-status"><p className="eyebrow">TODAY’S QUEST</p><h2>{ws.current_phase==='skipped'?'Skipped round':`Question ${q.position+1} / ${ws.total}`}</h2><div className="progress"><i style={{width:`${(ws.counts.correct+ws.counts.incorrect)/ws.total*100}%`}}/></div><dl><div><dt>Completed</dt><dd>{ws.counts.correct+ws.counts.incorrect}</dd></div><div><dt>Correct</dt><dd className="green">{ws.counts.correct}</dd></div><div><dt>Incorrect</dt><dd className="red">{ws.counts.incorrect}</dd></div><div><dt>Hints</dt><dd className="purple">{ws.counts.hints||0}</dd></div><div><dt>Skipped</dt><dd className="amber">{ws.counts.skipped}</dd></div><div><dt>Remaining</dt><dd>{ws.counts.remaining}</dd></div></dl><button className="wide" onClick={open}><Eye size={18}/> View all questions</button></aside>}

@@ -22,8 +22,8 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     changelog = (ROOT / 'questmath/CHANGELOG.md').read_text(encoding='utf-8')
     notes = module.extract_release_notes(changelog, current_version)
-    assert notes.startswith('- Added a recommended **Number & Algebra Focus** quest')
-    assert 'fact-recall' in notes.lower()
+    assert notes.startswith('- Added a **Previous question** control')
+    assert 'grid-reference' in notes.lower()
     assert 'subtraction' in notes.lower()
     assert '# MathQuest' not in notes
 
@@ -31,7 +31,7 @@ def test_release_notes_extract_current_version_section_only():
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.17.0'}
+    assert set(versions.values()) == {'0.17.1'}
 
 
 def test_release_workflow_validates_versions_before_publishing():

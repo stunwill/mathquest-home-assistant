@@ -45,6 +45,18 @@ def test_number_algebra_focus_route_excludes_other_strands():
     close(session)
 
 
+def test_navigation_can_return_to_an_earlier_unfinished_question():
+    client, session = make_client()
+    worksheet = client.post('/api/worksheets/today', json={'topic': 'number_algebra'}).json()
+    first, second = worksheet['questions'][:2]
+    moved_forward = client.post(f"/api/worksheets/{worksheet['id']}/navigate/{second['id']}", json={'elapsed_seconds': 4})
+    assert moved_forward.status_code == 200
+    moved_back = client.post(f"/api/worksheets/{worksheet['id']}/navigate/{first['id']}", json={'elapsed_seconds': 7})
+    assert moved_back.status_code == 200
+    assert moved_back.json()['current_question_id'] == first['id']
+    close(session)
+
+
 def test_all_four_fact_operations_have_contextual_strategy_cards():
     generated = [
         v0170._addition_fact(random.Random(1)),
