@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import './styles.css';
 import {APP_VERSION} from './version';
+import {apiRequest as req, createWorksheet, loadActiveWorksheet, rememberActiveWorksheet} from './api';
+import {ErrorNotice, LearningCalendar, StoryAdventures, WorksheetHistory} from './student-foundation';
 
 const API = 'api';
 
@@ -23,20 +25,6 @@ type WorksheetData = {
   counts:{correct:number;incorrect:number;skipped:number;remaining:number;hints:number}; questions:Question[];
 };
 
-async function req(path:string, opts:any={}) {
-  const token=localStorage.getItem('token');
-  const response=await fetch(API+path,{
-    ...opts,
-    headers:{
-      ...(opts.body instanceof FormData?{}:{'Content-Type':'application/json'}),
-      ...(token?{Authorization:`Bearer ${token}`}:{}) ,...opts.headers
-    }
-  });
-  if(!response.ok) throw new Error((await response.json()).detail||'Request failed');
-  const type=response.headers.get('content-type')||'';
-  return type.includes('json')?response.json():response.blob();
-}
-
 function Brand({compact=false}:{compact?:boolean}){
   return <div className={'mq-brand '+(compact?'compact':'')} aria-label="MathQuest by Stu">
     <div className="mq-emblem" aria-hidden="true"><span>+</span><span>×</span><span>−</span><span>÷</span></div>
@@ -47,8 +35,11 @@ function Brand({compact=false}:{compact?:boolean}){
 function App(){
   const[user,setUser]=useState<User|null>(null);
   const[loading,setLoading]=useState(true);
-  useEffect(()=>{req('/me').then(setUser).catch(()=>{}).finally(()=>setLoading(false))},[]);
+  const[error,setError]=useState('');
+  const restore=()=>{setLoading(true);setError('');req<User>('/me').then(setUser).catch((e:Error)=>{if(localStorage.getItem('token'))setError(e.message)}).finally(()=>setLoading(false))};
+  useEffect(restore,[]);
   if(loading)return <div className="splash"><Brand/></div>;
+  if(error)return <main className="login"><section className="login-card"><Brand/><ErrorNotice message={error} retry={restore}/><button type="button" onClick={()=>{localStorage.clear();setError('')}}>Sign in again</button></section></main>;
   if(!user)return <Login onLogin={setUser}/>;
   const logout=()=>{localStorage.clear();setUser(null)};
   return user.role==='parent'?<Parent user={user} logout={logout}/>:<Student user={user} logout={logout}/>;
@@ -89,23 +80,30 @@ function Student({user,logout}:{user:User;logout:()=>void}){
   const[summary,setSummary]=useState<any>(null);
   const[working,setWorking]=useState(false);
   const[choosing,setChoosing]=useState(false);
-  const load=()=>{req('/dashboard/student').then(setDashboard);req('/worksheets/today').then(data=>{setWorksheet(data);if(data&&!data.completed_at&&sessionStorage.getItem('mq_open_worksheet')==='1'){sessionStorage.removeItem('mq_open_worksheet');setWorking(true)}})};
+  const[error,setError]=useState('');
+  const load=()=>{setError('');Promise.all([req('/dashboard/student'),loadActiveWorksheet<WorksheetData>()]).then(([nextDashboard,nextWorksheet])=>{setDashboard(nextDashboard);setWorksheet(nextWorksheet);if(nextWorksheet&&!nextWorksheet.completed_at&&sessionStorage.getItem('mq_open_worksheet')==='1'){sessionStorage.removeItem('mq_open_worksheet');setWorking(true)}}).catch((e:Error)=>setError(e.message))};
   useEffect(load,[]);
+  useEffect(()=>{(window as any).__mq_ws=worksheet},[worksheet]);
+  const openWorksheet=(next:WorksheetData)=>{setWorksheet(next);setSummary(null);setChoosing(false);setWorking(true)};
+  const startWorksheet=async(topic:string)=>openWorksheet(await createWorksheet<WorksheetData>(topic));
+  if(!dashboard&&error)return <><Header user={user} logout={logout}/><main className="page"><ErrorNotice message={error} retry={load}/></main></>;
   if(!dashboard)return <div className="splash"><Brand/></div>;
   if(working&&worksheet&&!worksheet.completed_at&&!summary)return <Worksheet ws={worksheet} onUpdate={setWorksheet} onExit={()=>{setWorking(false);load()}} onDone={x=>{setSummary(x);setWorking(false);load()}}/>;
   if(summary)return <Result data={summary} back={()=>{setSummary(null);load()}}/>;
-  if(choosing&&!worksheet)return <QuestCategoryPicker cancel={()=>setChoosing(false)} start={async topic=>{const next=await req('/worksheets/today',{method:'POST',body:JSON.stringify({topic})});setWorksheet(next);setChoosing(false);setWorking(true)}}/>;
+  if(choosing)return <QuestCategoryPicker cancel={()=>setChoosing(false)} start={startWorksheet}/>;
   const hasProgress=worksheet&&!worksheet.completed_at;
   return <><Header user={user} logout={logout}/><main className="page">
-    <section className="hero"><div><p className="eyebrow">TODAY’S ADVENTURE</p><h1>{hasProgress?'Your quest is waiting':'Ready to power up your maths?'}</h1>
+    {error&&<ErrorNotice message={error} retry={load} dismiss={()=>setError('')}/>}<section className="hero"><div><p className="eyebrow">TODAY’S ADVENTURE</p><h1>{hasProgress?'Your quest is waiting':'Ready to power up your maths?'}</h1>
       <p>{hasProgress?`${worksheet.counts.correct+worksheet.counts.incorrect} of ${worksheet.total} questions completed. Your progress is saved.`:'Complete one worksheet, strengthen weak spots and keep your streak alive.'}</p>
       <button className="primary" disabled={!!worksheet?.completed_at} onClick={()=>{
         if(worksheet){setWorking(true)}else{setChoosing(true)}
       }}><Play size={20}/>{worksheet?.completed_at?'Today complete':hasProgress?'Continue Today’s Quest':'Begin Today’s Adventure'}</button>
     </div><div className="level-orb"><small>LEVEL</small><strong>{dashboard.user.level}</strong><span>{dashboard.user.xp%250}/250 XP</span></div></section>
+    <StoryAdventures onOpen={openWorksheet}/>
+    <WorksheetHistory onCreate={()=>setChoosing(true)} onOpen={openWorksheet}/>
     <section className="cards"><Metric icon={<Flame/>} label="Daily streak" value={`${dashboard.streak} days`}/><Metric icon={<CheckCircle2/>} label="Accuracy" value={`${dashboard.accuracy}%`}/><Metric icon={<Star/>} label="Questions" value={dashboard.questions_answered}/><Metric icon={<Trophy/>} label="Highest level" value={dashboard.user.highest_level}/></section>
     <section className="panel"><h2>Skill map</h2><div className="skills">{dashboard.skills.map((s:any)=><div className="skill" key={s.topic}><div><b>{s.topic}</b><span>Level {s.level}</span></div><div className="bar"><i style={{width:`${s.accuracy}%`}}/></div><small>{s.accuracy}% accuracy</small></div>)}</div></section>
-    <section className="panel completion-calendar"><h2>Completion calendar</h2><Calendar items={dashboard.calendar}/></section>
+    <LearningCalendar onOpen={openWorksheet}/>
   </main></>;
 }
 
@@ -132,8 +130,6 @@ function QuestCategoryPicker({start,cancel}:{start:(topic:string)=>Promise<void>
 
 function Metric({icon,label,value}:any){return <div className="metric">{icon&&<i>{icon}</i>}<div><small>{label}</small><strong>{value}</strong></div></div>}
 function StrategyCard({card}:{card:any}){if(!card)return null;return <div className="mq-strategy-card"><div><span>🧠</span><p><small>STRATEGY FOR THIS QUESTION</small><b>{card.title}</b></p></div><h3>{card.strategy}</h3><p className="mq-strategy-rule">{card.rule}</p><ol>{(card.steps||[]).map((step:string)=><li key={step}>{step}</li>)}</ol>{card.example&&<small className="mq-strategy-example">{card.example}</small>}</div>}
-function Calendar({items}:{items:any[]}){const map=Object.fromEntries(items.map(x=>[x.date,x]));const now=new Date(),days=[];for(let i=27;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const key=d.toISOString().slice(0,10),it=map[key];days.push(<div className={'day '+(it?.completed?'done':'')+(i===0?' today':'')} key={key}><small>{d.toLocaleDateString('en-AU',{weekday:'short'}).slice(0,1)}</small><b>{d.getDate()}</b><span>{it?.completed?'✓':''}</span>{it?.hints>0&&<em title={`${it.hints} hints used`}>💡{it.hints}</em>}</div>)}return <div className="calendar">{days}</div>}
-
 function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:WorksheetData)=>void;onExit:()=>void;onDone:(x:any)=>void}){
   const[answer,setAnswer]=useState('');
   const[feedback,setFeedback]=useState<any>(null);
@@ -143,6 +139,7 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
   const[sessionStart]=useState(Date.now()-(ws.elapsed_seconds||0)*1000);
   const[overview,setOverview]=useState(false);
   const[confirmExit,setConfirmExit]=useState(false);
+  const[actionError,setActionError]=useState('');
 
   const active=useMemo(()=>ws.questions.find(q=>q.id===ws.current_question_id)||nextEligible(ws),[ws]);
   const q=active;
@@ -151,17 +148,18 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
   const previous=previousEligible(ws,q?.id);
   const canFinishWithSkipped=ws.questions.every(item=>['correct','incorrect','skipped'].includes(item.status)||(item.skipped_count>0&&!item.attempts.length));
 
-  useEffect(()=>{if(q&&q.id!==ws.current_question_id)goTo(q.id)},[]);
+  useEffect(()=>{if(q&&q.id!==ws.current_question_id)void safe(()=>goTo(q.id))},[]);
   useEffect(()=>{setHint(q?.last_hint||null)},[q?.id,q?.last_hint]);
+  async function safe(action:()=>Promise<void>){setActionError('');try{await action()}catch(e:any){setActionError(e.message||'MathQuest could not complete that action.')}}
   function elapsed(){return (Date.now()-sessionStart)/1000}
-  async function refresh(updated?:WorksheetData){const data=updated||await req('/worksheets/today');onUpdate(data);setAnswer('');setFeedback(null);setHint(null);setQuestionStart(Date.now())}
+  async function refresh(updated?:WorksheetData){const data:WorksheetData=updated||await req<WorksheetData>(`/worksheets/${ws.id}/view`);onUpdate(data);setAnswer('');setFeedback(null);setHint(null);setQuestionStart(Date.now())}
   async function goTo(id:number){const updated=await req(`/worksheets/${ws.id}/navigate/${id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});setOverview(false);await refresh(updated)}
   async function previousQuestion(){if(previous)await goTo(previous.id)}
-  async function submit(){const cleaned=String(answer ?? '').trim();if(!cleaned)return;const result=await req(`/questions/${q.id}/answer`,{method:'POST',body:JSON.stringify({answer:cleaned,seconds:(Date.now()-questionStart)/1000})});setFeedback(result);if(result.correct||!result.retry_allowed){const latest=await req('/worksheets/today');onUpdate(latest)}}
-  async function requestHint(){setHintBusy(true);try{const result=await req(`/questions/${q.id}/hint`,{method:'POST'});setHint(result.hint);const latest=await req('/worksheets/today');onUpdate(latest)}finally{setHintBusy(false)}}
+  async function submit(){const cleaned=String(answer ?? '').trim();if(!cleaned)return;const result=await req(`/questions/${q.id}/answer`,{method:'POST',body:JSON.stringify({answer:cleaned,seconds:(Date.now()-questionStart)/1000})});setFeedback(result);if(result.correct||!result.retry_allowed){const latest=await req(`/worksheets/${ws.id}/view`);onUpdate(latest)}}
+  async function requestHint(){setHintBusy(true);try{const result=await req(`/questions/${q.id}/hint`,{method:'POST'});setHint(result.hint);const latest=await req(`/worksheets/${ws.id}/view`);onUpdate(latest)}finally{setHintBusy(false)}}
   async function skip(){const updated=await req(`/questions/${q.id}/skip`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});const next=nextEligible(updated,q.id);if(next){const moved=await req(`/worksheets/${ws.id}/navigate/${next.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved)}else await refresh(updated)}
-  async function next(){const latest:WorksheetData=await req('/worksheets/today');const target=nextEligible(latest,q.id);if(target){const moved=await req(`/worksheets/${ws.id}/navigate/${target.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved);return}onDone(await req(`/worksheets/${ws.id}/complete`,{method:'POST'}))}
-  async function finish(){onDone(await req(`/worksheets/${ws.id}/complete`,{method:'POST'}))}
+  async function next(){const latest:WorksheetData=await req(`/worksheets/${ws.id}/view`);const target=nextEligible(latest,q.id);if(target){const moved=await req(`/worksheets/${ws.id}/navigate/${target.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved);return}const result=await req(`/worksheets/${ws.id}/complete`,{method:'POST'});rememberActiveWorksheet(null);onDone(result)}
+  async function finish(){const result=await req(`/worksheets/${ws.id}/complete`,{method:'POST'});rememberActiveWorksheet(null);onDone(result)}
   async function exit(){await req(`/worksheets/${ws.id}/save`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});onExit()}
 
   if(!q)return <div className="splash">Preparing your next question…</div>;
@@ -170,13 +168,12 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
     <div className="worksheet-header"><button className="ghost danger-text" onClick={()=>setConfirmExit(true)}><X size={20}/> Exit worksheet</button><Brand compact/><button className="ghost" onClick={()=>setOverview(true)}><List size={20}/> Questions</button></div>
     <div className="worksheet-layout"><section className="worksheet-main">
       <div className="worksheet-top"><b>{phase==='skipped'?`Skipped round · ${ws.counts.skipped} remaining`:`Question ${currentNumber} of ${ws.total}`}</b><div className="progress"><i style={{width:`${completed/ws.total*100}%`}}/></div><span>{q.topic} · level {q.level}</span></div>
-      <section className="question-card" key={q.id} data-question-id={q.id}><div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
+      <section className="question-card" key={q.id} data-question-id={q.id}>{actionError&&<ErrorNotice message={actionError} dismiss={()=>setActionError('')}/>}<div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
         {hint&&<><div className="hint-box"><Lightbulb size={22}/><div><b>Hint {q.hint_count||1}</b><p>{hint}</p></div></div><StrategyCard card={q.payload?.strategy_card}/></>}
-        {!feedback?<><div className="question-navigation"><button type="button" disabled={!previous} onClick={previousQuestion}><ChevronLeft size={19}/> Previous question</button>{canFinishWithSkipped&&<button type="button" className="finish-skipped" onClick={finish}>Finish worksheet with skipped questions</button>}</div><div className="support-actions"><button className="hint-button" disabled={hintBusy} onClick={requestHint}><Lightbulb size={19}/>{hintBusy?'Getting a hint…':q.hint_count>=2?'Show hint again':q.hint_count===1?'Another hint':'Give me a hint'}</button><small>Hints help with the next step and do not reduce the score.</small></div><div className="question-actions"><button className="skip" onClick={skip}><SkipForward size={19}/> Skip for now</button><button type="button" className="primary" disabled={!String(answer ?? '').trim()} onClick={submit}>Check answer</button></div></>:<div className={'feedback '+(feedback.correct?'correct':'wrong')}><h3>{feedback.correct?'✅ Great job!':'❌ '+feedback.message}</h3>{feedback.working&&<p>{feedback.working}</p>}{feedback.retry_allowed?<button onClick={()=>{setFeedback(null);setAnswer('')}}>Try again</button>:<button className="primary" onClick={next}>{ws.counts.remaining<=1?'Finish worksheet':'Next question'} <ChevronRight size={18}/></button>}</div>}
+        {!feedback?<><div className="question-navigation"><button type="button" disabled={!previous} onClick={()=>safe(previousQuestion)}><ChevronLeft size={19}/> Previous question</button>{canFinishWithSkipped&&<button type="button" className="finish-skipped" onClick={()=>safe(finish)}>Finish worksheet with skipped questions</button>}</div><div className="support-actions"><button className="hint-button" disabled={hintBusy} onClick={()=>safe(requestHint)}><Lightbulb size={19}/>{hintBusy?'Getting a hint…':q.hint_count>=2?'Show hint again':q.hint_count===1?'Another hint':'Give me a hint'}</button><small>Hints help with the next step and do not reduce the score.</small></div><div className="question-actions"><button className="skip" onClick={()=>safe(skip)}><SkipForward size={19}/> Skip for now</button><button type="button" className="primary" disabled={!String(answer ?? '').trim()} onClick={()=>safe(submit)}>Check answer</button></div></>:<div className={'feedback '+(feedback.correct?'correct':'wrong')}><h3>{feedback.correct?'✅ Great job!':'❌ '+feedback.message}</h3>{feedback.working&&<p>{feedback.working}</p>}{feedback.retry_allowed?<button onClick={()=>{setFeedback(null);setAnswer('')}}>Try again</button>:<button className="primary" onClick={()=>safe(next)}>{ws.counts.remaining<=1?'Finish worksheet':'Next question'} <ChevronRight size={18}/></button>}</div>}
       </section>
     </section><WorksheetStatus ws={ws} q={q} open={()=>setOverview(true)}/></div>
-    {overview&&<QuestionOverview ws={ws} activeId={q.id} close={()=>setOverview(false)} goTo={goTo}/>} {confirmExit&&<ConfirmExit cancel={()=>setConfirmExit(false)} exit={exit}/>} 
-  </main>;
+    {overview&&<QuestionOverview ws={ws} activeId={q.id} close={()=>setOverview(false)} goTo={goTo}/>} {confirmExit&&<ConfirmExit cancel={()=>setConfirmExit(false)} exit={exit}/>}</main>;
 }
 
 function nextEligible(ws:WorksheetData,afterId?:number){
@@ -208,11 +205,13 @@ function Result({data,back}:any){return <main className="result"><section><div c
 function statusText(status:string){return({secure:'Secure',developing:'Developing',needs_support:'Needs support',not_assessed:'Not assessed'} as any)[status]||status}
 function Parent({user,logout}:{user:User;logout:()=>void}){
   const[d,setD]=useState<any>(null),[settings,setSettings]=useState<any>(null),[backups,setBackups]=useState<any[]>([]);
-  const load=()=>{req('/dashboard/parent').then(setD);req('/settings').then(setSettings);req('/backups').then(setBackups)};
-  useEffect(load,[]);if(!d||!settings)return <div className="splash"><Brand/></div>;
-  async function save(){await req('/settings',{method:'PUT',body:JSON.stringify(settings)});alert('Settings saved')}
-  async function download(path:string,name:string){const b=await req(path);const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()}
-  return <><Header user={user} logout={logout}/><main className="page"><section className="parent-title"><div><p className="eyebrow">PARENT VIEW · VICTORIAN CURRICULUM LEVEL 4</p><h1>Sienna’s learning overview</h1><p>Accuracy shows what is being answered correctly. Hint usage shows where Sienna is asking for extra support, even when she ultimately gets the answer right.</p></div><div className="actions"><button onClick={()=>download('/reports/progress.csv','mathquest-progress.csv')}><Download size={17}/> CSV</button><button onClick={()=>download('/reports/progress.pdf','mathquest-progress.pdf')}><Download size={17}/> PDF</button></div></section>
+  const[error,setError]=useState(''),[notice,setNotice]=useState('');
+  const load=()=>{setError('');Promise.all([req('/dashboard/parent'),req('/settings'),req('/backups')]).then(([dashboard,nextSettings,nextBackups])=>{setD(dashboard);setSettings(nextSettings);setBackups(nextBackups)}).catch((e:Error)=>setError(e.message))};
+  useEffect(load,[]);if(!d||!settings)return error?<><Header user={user} logout={logout}/><main className="page"><ErrorNotice message={error} retry={load}/></main></>:<div className="splash"><Brand/></div>;
+  async function save(){setError('');setNotice('');try{await req('/settings',{method:'PUT',body:JSON.stringify(settings)});setNotice('Settings saved.')}catch(e:any){setError(e.message)}}
+  async function download(path:string,name:string){setError('');try{const b=await req<Blob>(path);const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href)}catch(e:any){setError(e.message)}}
+  async function backup(){setError('');setNotice('');try{await req('/backups',{method:'POST'});setNotice('Backup created.');load()}catch(e:any){setError(e.message)}}
+  return <><Header user={user} logout={logout}/><main className="page">{error&&<ErrorNotice message={error} retry={load} dismiss={()=>setError('')}/>} {notice&&<div className="mq-success-notice" role="status">{notice}</div>}<section className="parent-title"><div><p className="eyebrow">PARENT VIEW · VICTORIAN CURRICULUM LEVEL 4</p><h1>Sienna’s learning overview</h1><p>Accuracy shows what is being answered correctly. Hint usage shows where Sienna is asking for extra support, even when she ultimately gets the answer right.</p></div><div className="actions"><button onClick={()=>download('/reports/progress.csv','mathquest-progress.csv')}><Download size={17}/> CSV</button><button onClick={()=>download('/reports/progress.pdf','mathquest-progress.pdf')}><Download size={17}/> PDF</button></div></section>
   <section className="cards parent-metrics"><Metric label="Streak" value={`${d.streak} days`}/><Metric label="Accuracy" value={`${d.accuracy}%`}/><Metric label="Answered" value={d.questions_answered}/><Metric icon={<Lightbulb/>} label="Hints provided" value={d.hint_summary.total_hints}/><Metric label="Needs support" value={d.curriculum_summary.needs_support}/></section>
   <section className="panel hint-insights"><div className="panel-heading"><div><p className="eyebrow">LEARNING SUPPORT</p><h2><Lightbulb size={22}/> Hint usage by learning area</h2><p>A higher hint rate can identify a topic that needs explanation or more practice, even if overall accuracy remains high.</p></div><div className="hint-total"><span>Questions using hints</span><strong>{d.hint_summary.questions_with_hints}</strong></div></div><div className="hint-topic-grid">{d.hint_summary.by_topic.map((x:any)=><div className="hint-topic" key={x.topic}><div><b>{x.topic}</b><span>{x.hints} hints</span></div><strong>{x.hint_rate}%</strong><div className="hint-rate"><i style={{width:`${Math.min(100,x.hint_rate)}%`}}/></div><small>{x.questions_with_hints} of {x.questions_seen} questions used a hint</small></div>)}</div></section>
   {d.hint_summary.recent.length>0&&<section className="panel"><h2><Sparkles size={20}/> Recent hint activity</h2><div className="recent-hints">{d.hint_summary.recent.map((x:any,i:number)=><div key={`${x.date}-${i}`}><span className="hint-topic-name">{x.topic}</span><div><b>{x.prompt}</b><p>Hint {x.hint_number}: {x.hint}</p></div></div>)}</div></section>}
@@ -220,6 +219,6 @@ function Parent({user,logout}:{user:User;logout:()=>void}){
   <section className="panel"><h2>Level 4 curriculum tracker</h2><div className="curriculum-table"><div className="curriculum-head"><b>Outcome</b><b>Evidence</b><b>Accuracy</b><b>Status</b></div>{d.curriculum.map((x:any)=><div className="curriculum-row" key={x.code}><span><b>{x.code}</b><small>{x.strand} · {x.title}</small></span><span>{x.attempts} attempts</span><span>{x.attempts?`${x.accuracy}%`:'—'}</span><span className={'status-pill '+x.status}>{statusText(x.status)}</span></div>)}</div></section>
   <section className="grid2"><div className="panel"><h2>Strand performance</h2>{d.skills.map((s:any)=><div className="skill" key={s.topic}><div><b>{s.topic}</b><span>Adaptive level {s.level}</span></div><div className="bar"><i style={{width:`${s.accuracy}%`}}/></div><small>{s.accuracy}% · {s.avg_seconds}s average</small></div>)}</div><div className="panel"><h2><Settings size={20}/> Worksheet settings</h2><label>Questions per day<input type="number" min="5" max="50" value={settings.question_count} onChange={e=>setSettings({...settings,question_count:+e.target.value})}/></label><label className="toggle"><input type="checkbox" checked={settings.adaptive_mode} onChange={e=>setSettings({...settings,adaptive_mode:e.target.checked})}/> Adaptive learning</label><div className="topic-checks">{['number','algebra','measurement','space','statistics','probability'].map(t=><label key={t}><input type="checkbox" checked={settings.enabled_topics.includes(t)} onChange={e=>setSettings({...settings,enabled_topics:e.target.checked?[...settings.enabled_topics,t]:settings.enabled_topics.filter((x:string)=>x!==t)})}/>{t}</label>)}</div><button className="primary" onClick={save}>Save settings</button></div></section>
   <section className="panel"><h2>Recent incorrect answers</h2>{d.recent_incorrect.length?<div className="incorrect-list">{d.recent_incorrect.map((x:any,i:number)=><details key={i}><summary><b>{x.code||'Practice'}</b> {x.prompt}</summary><p>Student answer: <strong>{x.student_answer}</strong></p><p>Correct answer: <strong>{x.correct_answer}</strong></p><p>{x.working}</p></details>)}</div>:<p>No incorrect answers recorded yet.</p>}</section>
-  <section className="panel"><h2><Database size={20}/> Backups</h2><button onClick={async()=>{await req('/backups',{method:'POST'});load()}}>Create backup now</button><div className="backup-list">{backups.map(b=><span key={b.filename}>{b.filename} · {(b.size/1024).toFixed(0)} KB</span>)}</div></section></main></>}
+  <section className="panel"><h2><Database size={20}/> Backups</h2><button onClick={backup}>Create backup now</button><div className="backup-list">{backups.map(b=><span key={b.filename}>{b.filename} · {(b.size/1024).toFixed(0)} KB</span>)}</div></section></main></>}
 
 createRoot(document.getElementById('root')!).render(<App/>);

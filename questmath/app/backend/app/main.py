@@ -34,7 +34,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.17.2'
+APP_VERSION = '0.18.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 

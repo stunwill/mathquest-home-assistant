@@ -1,4 +1,4 @@
-# MathQuest 0.17.2
+# MathQuest 0.18.0
 
 **Sienna’s daily adventure in maths.**
 

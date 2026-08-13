@@ -67,10 +67,6 @@ def worksheet_summary(ws: legacy.Worksheet) -> dict:
     }
 
 
-def create_worksheet(session: Session, sid: int, selected: str) -> legacy.Worksheet:
-    return legacy.create_worksheet(session, sid, selected)
-
-
 def today_worksheets(session: Session, sid: int) -> list[legacy.Worksheet]:
     return list(session.scalars(
         select(legacy.Worksheet)
@@ -171,11 +167,9 @@ def worksheet_view_any(worksheet_id: int, user: legacy.User = Depends(legacy.cur
 def new_worksheet(payload: NewWorksheetIn, user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
     if user.role != 'student':
         raise HTTPException(403, 'Student access required')
-    # An unfinished worksheet from a previous day must never block a new worksheet today.
-    active_today = today_active_worksheet(session, user.id)
-    if active_today:
-        return legacy.worksheet_view(active_today)
-    return legacy.worksheet_view(create_worksheet(session, user.id, payload.topic))
+    # Every creation flow uses the authoritative duplicate-safe service in main.py.
+    # Active worksheets remain available through history and exact-resume endpoints.
+    return legacy.worksheet_view(legacy.create_worksheet(session, user.id, payload.topic))
 
 
 @app.get('/api/worksheets/active/latest')
