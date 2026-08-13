@@ -3,8 +3,7 @@ from __future__ import annotations
 import random
 import re
 
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import Depends
 
 from . import main as legacy
 from . import v0140, v0120
@@ -104,32 +103,6 @@ def make_question_v0150(topic: str, level: int, rng: random.Random):
 
 
 legacy.make_question = make_question_v0150
-
-
-def create_unique_worksheet(session: Session, sid: int, selected: str) -> legacy.Worksheet:
-    return legacy.create_worksheet(session, sid, selected)
-
-
-# Replace the v0.12 route. "New worksheet" must mean NEW, even if another worksheet
-# from today is still incomplete. Older/current incomplete work remains available in history.
-app.router.routes[:] = [
-    route for route in app.router.routes
-    if not (
-        getattr(route, 'path', None) == '/api/worksheets/new'
-        and 'POST' in (getattr(route, 'methods', None) or set())
-    )
-]
-
-
-@app.post('/api/worksheets/new')
-def new_worksheet_v0150(
-    payload: v0120.NewWorksheetIn,
-    user: legacy.User = Depends(legacy.current_user),
-    session: Session = Depends(legacy.db),
-):
-    if user.role != 'student':
-        raise HTTPException(403, 'Student access required')
-    return legacy.worksheet_view(create_unique_worksheet(session, user.id, payload.topic))
 
 
 @app.get('/api/v0150/capabilities')

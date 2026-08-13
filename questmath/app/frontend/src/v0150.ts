@@ -7,6 +7,8 @@ let scheduled=false;
 let lastQuestionId:number|null=null;
 
 async function activeWorksheet(){
+  const current=(window as any).__mq_ws;
+  if(current)return current;
   const t=token();
   if(!t)return null;
   const r=await fetch(`${API}/worksheets/active/latest`,{headers:{Authorization:`Bearer ${t}`}});

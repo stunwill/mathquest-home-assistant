@@ -36,6 +36,9 @@ jobs:
       - name: Install frontend dependencies
         working-directory: questmath/app/frontend
         run: npm install
+      - name: Run frontend tests
+        working-directory: questmath/app/frontend
+        run: npm test
       - name: Build frontend
         working-directory: questmath/app/frontend
         run: npm run build

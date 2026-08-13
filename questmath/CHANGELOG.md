@@ -1,3 +1,14 @@
+# MathQuest 0.18.0
+
+- Consolidated all new worksheet requests onto the authoritative duplicate-safe backend creation service, removing the later route-replacement layer.
+- Rebuilt student worksheet history, weekly completion calendar and Story Adventures as React-owned components rather than DOM-rewriting enhancement scripts.
+- Replaced global active-worksheet `fetch` interception with explicit worksheet-ID loading and resume state.
+- Added reusable in-page connection and action errors with retry and dismissal controls for authentication, dashboard, worksheet, history, calendar and adventure flows.
+- Added frontend component and interaction tests covering the creation service, Story Adventure start flow, history controls, calendar recovery and accessible error feedback.
+- Removed the legacy v0.16 calendar and worksheet-picker scripts from the production page while retaining existing worksheet data and API compatibility.
+- Updated all authoritative release locations and startup messaging to `0.18.0`.
+- Existing users, worksheets, answers, progress, XP, database data and persisted secrets remain unchanged.
+
 # MathQuest 0.17.2
 
 - Fixed completion-calendar navigation and expanded the calendar to the full dashboard width, with the duplicate Badges panel removed.

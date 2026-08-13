@@ -61,11 +61,11 @@ def test_new_worksheet_creates_second_same_day_worksheet(monkeypatch):
         return legacy.q('VC2M4M03', f'generated_{n}', f'Question {n}?', 'choice', {'choices': [f'A{n}', f'B{n}', f'C{n}']}, f'A{n}', 'Working')
 
     monkeypatch.setattr(legacy, 'make_question', generator)
-    first = v0150.create_unique_worksheet(session, student.id, 'measurement')
-    second_view = v0150.new_worksheet_v0150(v0150.v0120.NewWorksheetIn(topic='measurement'), student, session)
+    first = legacy.create_worksheet(session, student.id, 'measurement')
+    second = legacy.create_worksheet(session, student.id, 'measurement')
     rows = session.query(legacy.Worksheet).filter_by(student_id=student.id, worksheet_date=date.today()).all()
     assert len(rows) == 2
-    assert second_view['id'] != first.id
+    assert second.id != first.id
     assert first.completed_at is None
 
 
@@ -80,7 +80,7 @@ def test_worksheet_retries_duplicate_prompts(monkeypatch):
         return legacy.q('VC2M4M01', f'unit_{n}', f'Unique prompt {n}', 'choice', {'choices': ['one', 'two', 'three']}, 'one', 'Working')
 
     monkeypatch.setattr(legacy, 'make_question', generator)
-    ws = v0150.create_unique_worksheet(session, student.id, 'measurement')
+    ws = legacy.create_worksheet(session, student.id, 'measurement')
     prompts = [q.prompt for q in ws.questions]
     assert len(prompts) == len(set(prompts))
     assert calls['n'] > len(prompts)

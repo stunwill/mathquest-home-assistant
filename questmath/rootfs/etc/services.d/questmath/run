@@ -15,7 +15,7 @@ fi
 
 cd /app
 
-bashio::log.info "Starting MathQuest v0.17.2 on port 8080"
+bashio::log.info "Starting MathQuest v0.18.0 on port 8080"
 exec /opt/questmath/bin/uvicorn app.v0170:app \
   --app-dir /app \
   --host 0.0.0.0 \

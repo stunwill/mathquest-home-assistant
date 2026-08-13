@@ -17,7 +17,8 @@ def test_question_card_is_keyed_and_previous_navigation_is_available():
     assert "'skipped','retry_available'" in source
     assert 'Finish worksheet with skipped questions' in source
     assert '<h2>Badges</h2>' not in source
-    assert 'completion-calendar' in source
+    foundation = (ROOT / 'questmath/app/frontend/src/student-foundation.tsx').read_text(encoding='utf-8')
+    assert 'completion-calendar' in foundation
 
 
 def test_visual_guard_rejects_a_visual_from_another_question():
@@ -30,17 +31,19 @@ def test_visual_guard_rejects_a_visual_from_another_question():
 
 
 def test_calendar_navigation_keeps_a_stable_calendar_target():
-    source = (ROOT / 'questmath/app/frontend/src/v0160.ts').read_text(encoding='utf-8')
-    assert "document.querySelector('.mq-v0160-calendar')" in source
-    assert 'target.dataset.calendarStart===start' in source
-    assert 'renderCalendar(true)' in source
-    assert 'restartSkipped' in source
+    source = (ROOT / 'questmath/app/frontend/src/student-foundation.tsx').read_text(encoding='utf-8')
+    assert 'function LearningCalendar' in source
+    assert 'setRangeStart' in source
+    assert 'mq-v0160-calendar' in source
+    assert 'MutationObserver' not in source
 
 
 def test_story_adventure_creates_and_opens_a_new_worksheet():
-    source = (ROOT / 'questmath/app/frontend/src/v090.ts').read_text(encoding='utf-8')
-    assert "API+'/worksheets/new'" in source
-    assert "sessionStorage.setItem('mq_open_worksheet','1')" in source
+    source = (ROOT / 'questmath/app/frontend/src/student-foundation.tsx').read_text(encoding='utf-8')
+    assert "createWorksheet('mixed')" in source
+    assert '/adventure' in source
+    assert 'onOpen(await apiRequest' in source
+    assert 'location.reload' not in source
 
 
 def test_grid_question_payload_identifies_the_highlighted_square():
