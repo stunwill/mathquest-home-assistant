@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+from contextvars import ContextVar
 from datetime import datetime
 from typing import Any
 
@@ -18,6 +19,8 @@ app.version = legacy.APP_VERSION
 _prior_make_question = legacy.make_question
 _prior_hint_text = legacy.hint_text
 _prior_mini_lesson = v090.mini_lesson
+_prior_weights = legacy.weights
+_focus_targets: ContextVar[dict[str, str]] = ContextVar('v0170_focus_targets', default={})
 
 FOCUS_SKILLS = {
     'fact_recall_addition': 'addition',
@@ -46,7 +49,7 @@ def _addition_fact(rng: random.Random):
         strategy = 'Use a near double'; rule = f'Use {a} + {a}, then add 1 more.'
         steps = ['Start with the easier doubles fact.', 'Adjust by the one extra.', 'Check that the answer is just one more than the double.']
     else:
-        a = rng.randint(6, 9); b = rng.randint(2, 9); to_ten = 10 - a
+        a = rng.randint(6, 9); to_ten = 10 - a; b = rng.randint(to_ten, 9)
         strategy = 'Make 10 first'; rule = f'Move {to_ten} from {b} to {a} to make 10.'
         steps = [f'Split {b} into {to_ten} and the amount left.', f'Combine {a} and {to_ten} to make 10.', 'Add the remaining part using the new 10 fact.']
     payload = {'operation': 'addition', 'fact_key': f'{min(a,b)}+{max(a,b)}', 'strategy_card': _card('Addition fact strategy', strategy, rule, steps, 'Example: 8 + 5 → 10 + 3', 'addition')}
@@ -95,7 +98,7 @@ def _written_subtraction(rng: random.Random):
         top_ones = bottom_ones = rng.randint(1, 9); strategy = 'Write zero for equal digits'; rule = 'Digits the same? Zero is the game.'
         case_step = f'{top_ones} − {bottom_ones} is 0 in the ones place.'
     else:
-        top_ones = rng.randint(2, 9); bottom_ones = rng.randint(0, top_ones); strategy = 'Subtract without regrouping'; rule = 'More on top? No need to stop.'
+        top_ones = rng.randint(2, 9); bottom_ones = rng.randint(0, top_ones - 1); strategy = 'Subtract without regrouping'; rule = 'More on top? No need to stop.'
         case_step = 'The top ones digit is large enough, so subtract the ones directly.'
     top = top_tens * 10 + top_ones; bottom = bottom_tens * 10 + bottom_ones
     steps = ['Line up tens and ones.', 'Start in the ones column.', case_step, 'Subtract the tens column.', 'Check by adding the difference and the smaller number.']
@@ -115,7 +118,50 @@ def _unknown_equation(rng: random.Random):
     return legacy.q('VC2M4A01', 'unknown_add_subtract', prompt, 'number', payload, unknown, f'Use the inverse operation: {inverse} = {unknown}.')
 
 
+FOCUS_GENERATORS = {
+    'number': {
+        'fact_recall_addition': _addition_fact,
+        'fact_recall_subtraction': _subtraction_fact,
+        'written_addition': _written_addition,
+        'written_subtraction': _written_subtraction,
+    },
+    'algebra': {
+        'unknown_add_subtract': _unknown_equation,
+        'fact_recall_multiplication': _multiplication_fact,
+        'fact_recall_division': _division_fact,
+    },
+}
+
+
+def weights_v0170(session: Session, sid: int, topics: list[str]) -> list[float]:
+    result = _prior_weights(session, sid, topics)
+    targets: dict[str, str] = {}
+    now = datetime.utcnow()
+    for topic in topics:
+        generators = FOCUS_GENERATORS.get(topic)
+        if not generators:
+            continue
+        rows = list(session.scalars(select(legacy.Question).join(legacy.Worksheet).where(legacy.Worksheet.student_id == sid, legacy.Question.topic == topic, legacy.Question.answered_at.is_not(None)).order_by(legacy.Question.answered_at.desc()).limit(300)).all())
+        scored: list[tuple[float, str]] = []
+        for skill in generators:
+            relevant = [q for q in rows if q.skill.split(':', 1)[-1] == skill][:30]
+            if not relevant:
+                scored.append((4.0, skill))
+                continue
+            independent = sum(1 for q in relevant if any(a.correct for a in q.attempts) and not (q.hint_count or 0))
+            hint_rate = sum(1 for q in relevant if q.hint_count) / len(relevant)
+            days_since = max(0, (now - (relevant[0].answered_at or now)).days)
+            due_boost = 1.5 if days_since >= 3 and independent / len(relevant) < .9 else 0.0
+            scored.append(((1 - independent / len(relevant)) * 2 + hint_rate + due_boost, skill))
+        targets[topic] = max(scored)[1]
+    _focus_targets.set(targets)
+    return result
+
+
 def make_question_v0170(topic: str, level: int, rng: random.Random):
+    target = _focus_targets.get().get(topic)
+    if target and target in FOCUS_GENERATORS.get(topic, {}) and rng.random() < .55:
+        return FOCUS_GENERATORS[topic][target](rng)
     if topic == 'number' and rng.random() < 0.78: return rng.choice([_addition_fact, _subtraction_fact, _written_addition, _written_subtraction])(rng)
     if topic == 'algebra' and rng.random() < 0.85: return rng.choice([_unknown_equation, _multiplication_fact, _division_fact])(rng)
     return _prior_make_question(topic, level, rng)
@@ -169,6 +215,7 @@ def capabilities(_: legacy.User = Depends(legacy.current_user)):
 
 
 legacy.make_question = make_question_v0170
+legacy.weights = weights_v0170
 legacy.hint_text = hint_text_v0170
 v090.mini_lesson = mini_lesson_v0170
 v0120._move_spa_fallback_to_end()

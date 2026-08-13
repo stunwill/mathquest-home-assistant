@@ -93,7 +93,9 @@ function run(){
   const card=document.querySelector('.question-card');
   if(!card){lastQuestionId=null;return}
   const existing=card.querySelector('.mq-v080-visual') as HTMLElement|null;
-  if(existing&&existing.dataset.qid===String(lastQuestionId))return;
+  const cardQuestionId=(card as HTMLElement).dataset.questionId;
+  if(existing&&existing.dataset.qid!==cardQuestionId)existing.remove();
+  if(existing&&existing.dataset.qid===cardQuestionId&&cardQuestionId===String(lastQuestionId))return;
   void ensureRequiredVisual();
 }
 
