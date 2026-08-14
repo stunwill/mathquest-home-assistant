@@ -35,18 +35,135 @@ class AdventureIn(BaseModel):
 
 CONFIDENCE_WEIGHT = {'guessed': 0.75, 'pretty_sure': 0.9, 'knew_it': 1.0}
 ADVENTURES = {
-    'bakery': {'title': 'Bakery Challenge', 'icon': '🧁', 'intro': 'Help run a busy bakery using fractions, money, time and data.', 'topics': ['number','measurement','statistics']},
-    'camping': {'title': 'Camping Adventure', 'icon': '🏕️', 'intro': 'Plan a camping trip using measurement, maps, time and number skills.', 'topics': ['measurement','space','number']},
-    'space': {'title': 'Space Mission', 'icon': '🚀', 'intro': 'Complete a space mission using coordinates, number, time and data.', 'topics': ['space','number','measurement','statistics']},
-    'animal_rescue': {'title': 'Animal Rescue', 'icon': '🐶', 'intro': 'Help an animal shelter solve food, money, measurement and data problems.', 'topics': ['number','measurement','statistics']},
+    'bakery': {
+        'title': 'Bakery Challenge', 'icon': '🧁',
+        'intro': 'Prepare every order and open the bakery before the morning rush.',
+        'mission': 'Open the bakery on time',
+        'objective': 'Check supplies, prepare trays, organise orders and complete the final delivery.',
+        'outcome': 'The doors open on time and every customer receives the right order.',
+        'topics': ['number', 'measurement', 'statistics'],
+        'chapters': ['Check the pantry', 'Prepare the trays', 'Handle the rush', 'Pack the delivery', 'Open the doors'],
+    },
+    'camping': {
+        'title': 'Camping Adventure', 'icon': '🏕️',
+        'intro': 'Plan the route and get the whole group safely to camp before dark.',
+        'mission': 'Reach the campsite before sunset',
+        'objective': 'Pack supplies, follow the map, measure the campsite and plan the return trip.',
+        'outcome': 'The group reaches camp safely with the correct supplies and a clear route home.',
+        'topics': ['measurement', 'space', 'number'],
+        'chapters': ['Pack the gear', 'Choose the trail', 'Cross the lookout', 'Set up camp', 'Plan the journey home'],
+    },
+    'space': {
+        'title': 'Space Mission', 'icon': '🚀',
+        'intro': 'Launch, navigate and return the research crew safely to Earth.',
+        'mission': 'Bring the research crew home',
+        'objective': 'Load supplies, navigate the grid, check the flight data and prepare re-entry.',
+        'outcome': 'The research crew lands safely with all mission data secured.',
+        'topics': ['space', 'number', 'measurement', 'statistics'],
+        'chapters': ['Prepare for launch', 'Reach orbit', 'Navigate the asteroid field', 'Prepare re-entry', 'Land safely'],
+    },
+    'animal_rescue': {
+        'title': 'Animal Rescue', 'icon': '🐶',
+        'intro': 'Organise the shelter and help every animal receive the care it needs.',
+        'mission': 'Prepare every animal for adoption day',
+        'objective': 'Count supplies, organise enclosures, review care data and finish the adoption plan.',
+        'outcome': 'Every animal is cared for and the shelter is ready for adoption day.',
+        'topics': ['number', 'measurement', 'statistics'],
+        'chapters': ['Morning care', 'Prepare the enclosures', 'Check the supplies', 'Match the families', 'Open adoption day'],
+    },
 }
 
-STORY_CONTEXT = {
-    'bakery': ['The bakery is opening. Solve this to prepare the first orders:', 'A new customer order has arrived. Work this out for the baking team:', 'The lunch rush is getting busy. Solve the next bakery problem:', 'The shelves need restocking. Use your maths to help:', 'One final order remains before closing. Solve:'],
-    'camping': ['The camping trip begins with some careful planning. Solve:', 'The group is packing supplies. Work out:', 'The trail presents a new challenge. Solve:', 'The campsite must be organised before dark. Work out:', 'Complete the final calculation so everyone can head home safely:'],
-    'space': ['Mission control is preparing for launch. Solve:', 'The spacecraft has reached orbit. Calculate:', 'A navigation alert needs your maths skills. Work out:', 'The crew is preparing to return to Earth. Solve:', 'Complete the final mission calculation:'],
-    'animal_rescue': ['The animal shelter is opening for the day. Solve:', 'A new animal has arrived and needs your help. Work out:', 'The care team needs to organise supplies. Solve:', 'Adoption preparations are underway. Calculate:', 'Complete the final task for the shelter:'],
+STORY_DETAILS = {
+    'bakery': {'container': 'trays', 'item': 'cupcakes', 'used': 'orders', 'place': 'delivery shelf'},
+    'camping': {'container': 'packs', 'item': 'meal portions', 'used': 'hikers', 'place': 'water station'},
+    'space': {'container': 'cargo pods', 'item': 'energy cells', 'used': 'engine checks', 'place': 'rescue beacon'},
+    'animal_rescue': {'container': 'food tubs', 'item': 'meal portions', 'used': 'morning feeds', 'place': 'medical supplies'},
 }
+
+
+def _adventure_goals(session: Session, student_id: int, story: dict[str, Any]) -> list[str]:
+    """Put the least-secure relevant learning areas first."""
+    ranked = []
+    for order, topic in enumerate(story['topics']):
+        skill = session.scalar(select(legacy.Skill).where(
+            legacy.Skill.student_id == student_id, legacy.Skill.topic == topic
+        ))
+        assessed = bool(skill and skill.attempts)
+        mastery = skill.rolling_accuracy if assessed else -1.0
+        ranked.append((mastery, skill.attempts if assessed else 0, order, topic))
+    return [item[-1] for item in sorted(ranked)]
+
+
+def _mission_facts(theme: str, rng: random.Random) -> dict[str, Any]:
+    details = STORY_DETAILS[theme]
+    return {
+        **details,
+        'containers': rng.randint(4, 8),
+        'items_per_container': rng.randint(6, 12),
+        'items_used': rng.randint(3, 9),
+        'length': rng.randint(6, 12),
+        'width': rng.randint(3, 6),
+        'duration_hours': rng.randint(1, 3),
+        'duration_minutes': rng.choice([15, 30, 45]),
+        'readings': [rng.randint(2, 8) for _ in range(7)],
+    }
+
+
+def _mission_question(theme: str, topic: str, index: int, chapter: str,
+                      facts: dict[str, Any], rng: random.Random):
+    """Build a theme-specific applied question from shared mission data."""
+    icon = ADVENTURES[theme]['icon']
+    prefix = f'{icon} {chapter}, challenge {index + 1}. '
+    if topic == 'number':
+        containers = facts['containers'] + index
+        each = facts['items_per_container']
+        used = facts['items_used']
+        answer = containers * each - used
+        prompt = (
+            f"{prefix}There are {containers} {facts['container']} with {each} {facts['item']} in each. "
+            f"After {used} are used for {facts['used']}, how many remain?"
+        )
+        return legacy.q(
+            'VC2M5N06', 'story_multi_step_operations', prompt, 'number',
+            {'operation': 'multiply_then_subtract', 'applied_steps': 2}, answer,
+            f'First calculate {containers} × {each} = {containers * each}. Then subtract {used} to get {answer}.',
+        )
+    if topic == 'measurement':
+        if index % 2:
+            hours, minutes = facts['duration_hours'], facts['duration_minutes']
+            answer = hours * 60 + minutes
+            return legacy.q(
+                'VC2M5M03', 'story_duration',
+                f'{prefix}This stage takes {hours} hours and {minutes} minutes. How many minutes is that altogether?',
+                'number', {'unit': 'minutes', 'applied_steps': 2}, answer,
+                f'Convert {hours} hours to {hours * 60} minutes, then add {minutes} to get {answer} minutes.',
+            )
+        length, width = facts['length'] + index, facts['width']
+        answer = length * width
+        return legacy.q(
+            'VC2M5M02', 'story_area',
+            f"{prefix}A rectangular {facts['place']} is {length} m long and {width} m wide. What area must be prepared?",
+            'number', {'unit': 'm²', 'length': length, 'width': width, 'applied_steps': 1}, answer,
+            f'Area = length × width, so {length} × {width} = {answer} m².',
+        )
+    if topic == 'space':
+        columns = ['A', 'B', 'C', 'D']; rows = [1, 2, 3, 4]
+        target = f'{rng.choice(columns)}{rng.choice(rows)}'
+        choices = [f'{column}{row}' for column in columns for row in rows]
+        return legacy.q(
+            'VC2M5SP03', 'story_grid_reference',
+            f"{prefix}The {facts['place']} is highlighted on the mission grid. Which grid reference contains it?",
+            'choice', {'choices': choices, 'visual': {'type': 'grid', 'target': target}, 'applied_steps': 1}, target,
+            f'Read the highlighted column first and then its row. The location is {target}.',
+        )
+    readings = [value + index for value in facts['readings']]
+    mode = max(set(readings), key=readings.count)
+    return legacy.q(
+        'VC2M5ST01', 'story_data_frequency',
+        f'{prefix}The latest mission readings are {readings}. Which value occurs most often?',
+        'number', {'data': readings, 'applied_steps': 2}, mode,
+        f'Tally each reading, then compare the frequencies. {mode} occurs most often.',
+    )
 
 
 def _confidence(session: Session, qid: int, sid: int) -> str | None:
@@ -148,8 +265,13 @@ def teaching(qid:int,user:legacy.User=Depends(legacy.current_user),session:Sessi
 
 
 @app.get('/api/adventures')
-def adventures(_:legacy.User=Depends(legacy.current_user)):
-    return [{'id':k,**v} for k,v in ADVENTURES.items()]
+def adventures(user:legacy.User=Depends(legacy.current_user),session:Session=Depends(legacy.db)):
+    if user.role != 'student':
+        return [{'id': key, **story, 'recommended_goals': story['topics'][:2]} for key, story in ADVENTURES.items()]
+    return [
+        {'id': key, **story, 'recommended_goals': _adventure_goals(session, user.id, story)[:2]}
+        for key, story in ADVENTURES.items()
+    ]
 
 
 @app.post('/api/worksheets/{wid}/adventure')
@@ -158,19 +280,40 @@ def apply_adventure(wid:int,payload:AdventureIn,user:legacy.User=Depends(legacy.
     if payload.theme not in ADVENTURES: raise HTTPException(400,'Unknown adventure')
     ws=session.get(legacy.Worksheet,wid)
     if not ws or ws.student_id!=user.id: raise HTTPException(404,'Worksheet not found')
-    story=ADVENTURES[payload.theme]; chapters=['Getting started','First challenge','A surprise problem','Final preparations','Mission complete'];contexts=STORY_CONTEXT[payload.theme]
+    story=ADVENTURES[payload.theme]
     available=[q for q in sorted(ws.questions,key=lambda x:x.position) if not q.attempts]
     rng=random.Random(f'adventure:{ws.id}:{payload.theme}')
+    goals=_adventure_goals(session,user.id,story)
+    priority=goals[:2]
+    topic_plan=priority+priority+[topic for topic in story['topics'] if topic not in priority]
+    facts=_mission_facts(payload.theme,rng)
+    mission_id=f'{payload.theme}-{ws.id}'
     changed=0
     for index,q in enumerate(available):
-        topic=story['topics'][index%len(story['topics'])]
-        skill,prompt,atype,question_payload,answer,working=legacy.make_question(topic,min(4,q.level),rng)
-        chapter_index=min(len(chapters)-1,index*len(chapters)//max(1,len(available)))
-        q.topic=topic;q.skill=skill;q.prompt=f"{story['icon']} {contexts[chapter_index]} {prompt}";q.answer_type=atype;q.correct_answer=str(answer);q.working=working
-        q.payload=legacy.json.dumps({**question_payload,'adventure':{'theme':payload.theme,'title':story['title'],'chapter':chapters[chapter_index],'question':index+1,'total':len(available)}})
+        topic=topic_plan[index%len(topic_plan)]
+        chapter_index=min(len(story['chapters'])-1,index*len(story['chapters'])//max(1,len(available)))
+        chapter=story['chapters'][chapter_index]
+        skill,prompt,atype,question_payload,answer,working=_mission_question(
+            payload.theme,topic,index,chapter,facts,rng
+        )
+        adventure={
+            'version':2,'mission_id':mission_id,'theme':payload.theme,'title':story['title'],
+            'mission':story['mission'],'objective':story['objective'],'outcome':story['outcome'],
+            'chapter':chapter,'chapter_number':chapter_index+1,'chapters':story['chapters'],
+            'question':index+1,'total':len(available),'learning_goal':topic,
+            'learning_goals':goals,'mission_data':facts,
+        }
+        q.topic=topic;q.skill=skill;q.prompt=prompt;q.answer_type=atype;q.correct_answer=str(answer);q.working=working
+        q.payload=legacy.json.dumps({**question_payload,'adventure':adventure})
         changed+=1
     ws.selected_topic=story['title']
-    session.commit(); return {'theme':payload.theme,'title':story['title'],'questions_linked':changed}
+    ws.session_kind='adventure'
+    session.commit()
+    return {
+        'theme':payload.theme,'title':story['title'],'mission':story['mission'],
+        'objective':story['objective'],'learning_goals':goals,'chapters':story['chapters'],
+        'questions_linked':changed,
+    }
 
 
 @app.get('/api/v090/capabilities')

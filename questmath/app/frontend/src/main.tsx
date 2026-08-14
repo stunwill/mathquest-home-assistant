@@ -9,6 +9,7 @@ import {APP_VERSION} from './version';
 import {apiRequest as req, createSession, loadActiveWorksheet, rememberActiveWorksheet} from './api';
 import {ErrorNotice, LearningCalendar, StoryAdventures, WorksheetHistory} from './student-foundation';
 import {MathsLab} from './maths-lab';
+import {MissionOutcome, StoryMissionProgress} from './story-adventure';
 
 const API = 'api';
 
@@ -145,6 +146,7 @@ function GuidedTutor({support,onAction,onStartOver,busy,canStartOver}:{support:a
     <div className="guided-actions"><button type="button" disabled={busy} onClick={()=>onAction('why')}>Why?</button><button type="button" disabled={busy} onClick={()=>onAction('teach')}>Teach me this</button><button type="button" disabled={busy} onClick={()=>onAction('another')}>Show another way</button>{canStartOver&&<button type="button" disabled={busy} onClick={onStartOver}>Start over</button>}</div>
   </section>
 }
+
 function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:WorksheetData)=>void;onExit:()=>void;onDone:(x:any)=>void}){
   const[answer,setAnswer]=useState('');
   const[feedback,setFeedback]=useState<any>(null);
@@ -187,7 +189,7 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
     <div className="worksheet-header"><button className="ghost danger-text" onClick={()=>setConfirmExit(true)}><X size={20}/> Exit worksheet</button><Brand compact/><button className="ghost" onClick={()=>setOverview(true)}><List size={20}/> Questions</button></div>
     <div className="worksheet-layout"><section className="worksheet-main">
       <div className="worksheet-top"><b>{phase==='skipped'?`Skipped round · ${ws.counts.skipped} remaining`:`Question ${currentNumber} of ${ws.total}`}</b><div className="progress"><i style={{width:`${completed/ws.total*100}%`}}/></div><span>{q.topic} · level {q.level}</span></div>
-      <section className="question-card" key={q.id} data-question-id={q.id} data-guided-tutor-owner="true">{actionError&&<ErrorNotice message={actionError} dismiss={()=>setActionError('')}/>}<div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><button type="button" className="open-maths-lab" onClick={()=>setLabOpen(true)}>🧩 Open Maths Lab</button><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
+      <section className="question-card" key={q.id} data-question-id={q.id} data-guided-tutor-owner="true">{actionError&&<ErrorNotice message={actionError} dismiss={()=>setActionError('')}/>} {q.payload?.adventure&&<StoryMissionProgress adventure={q.payload.adventure}/>}<div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><button type="button" className="open-maths-lab" onClick={()=>setLabOpen(true)}>🧩 Open Maths Lab</button><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
         {hint&&<div className="hint-box"><Lightbulb size={22}/><div><b>Hint {q.hint_count||1} of 3</b><p>{hint}</p></div></div>}
         <GuidedTutor support={support} busy={hintBusy} canStartOver={!feedback||feedback.retry_allowed} onAction={requestSupport} onStartOver={startOver}/>
         {hint&&q.hint_count>=2&&<StrategyCard card={q.payload?.strategy_card}/>}
@@ -221,7 +223,7 @@ function ConfirmExit({cancel,exit}:{cancel:()=>void;exit:()=>void}){return <div 
 
 function Answer({q,value,setValue}:any){if(q.answer_type==='choice')return <div className="choices">{q.payload.choices.map((x:string)=><button type="button" className={value===x?'selected':''} onClick={()=>setValue(String(x))} key={x}>{x}</button>)}</div>;const capture=(e:any)=>setValue(String(e.currentTarget.value));return <div className="answer-row">{q.answer_type==='money'&&<span>$</span>}<input inputMode={q.answer_type==='text'?'text':'decimal'} value={value} onInput={capture} onChange={capture} onKeyDown={(e:any)=>{if(e.key==='Enter'){e.preventDefault();const button=e.currentTarget.closest('.question-card')?.querySelector('.question-actions .primary:not(:disabled)') as HTMLButtonElement|null;button?.click()}}} autoComplete="off" placeholder="Type your answer"/>{q.payload.unit&&<span>{q.payload.unit}</span>}</div>}
 function FractionShape({parts,shaded}:any){return <div className="fraction-shape">{Array.from({length:parts},(_,i)=><i className={i<shaded?'shade':''} key={i}/>)}</div>}
-function Result({data,back}:any){return <main className="result"><section><div className="result-score">{data.score}/{data.total}</div><h1>{data.message}</h1><p>{data.accuracy}% accuracy · +{data.xp_earned} XP</p><div className="result-grid"><Metric label="Strongest" value={data.strongest_topic}/><Metric label="Practise next" value={data.weakest_topic}/><Metric icon={<Lightbulb/>} label="Hints used" value={data.hints_used||0}/><Metric label="Level" value={data.level}/></div><button className="primary" onClick={back}>Back to dashboard</button></section></main>}
+function Result({data,back}:any){return <main className="result"><section><MissionOutcome adventure={data.adventure}/><div className="result-score">{data.score}/{data.total}</div><h1>{data.message}</h1><p>{data.accuracy}% accuracy · +{data.xp_earned} XP</p><div className="result-grid"><Metric label="Strongest" value={data.strongest_topic}/><Metric label="Practise next" value={data.weakest_topic}/><Metric icon={<Lightbulb/>} label="Hints used" value={data.hints_used||0}/><Metric label="Level" value={data.level}/></div><button className="primary" onClick={back}>Back to dashboard</button></section></main>}
 
 function statusText(status:string){return({secure:'Secure',developing:'Developing',needs_support:'Needs support',not_assessed:'Not assessed'} as any)[status]||status}
 function Parent({user,logout}:{user:User;logout:()=>void}){
