@@ -1,3 +1,16 @@
+# MathQuest 0.21.0
+
+- Added a React-owned Interactive Maths Lab available from every worksheet question.
+- Added adjustable equal-whole fraction comparisons and linked percentage, fraction, decimal and quantity representations.
+- Added interactive number lines, place-value columns, multiplication arrays, analogue clocks, labelled grids, rectangles, rulers and angle models.
+- Added question-aware model recommendations while keeping every maths tool available for learner choice.
+- Added responsive desktop, mobile and Home Assistant layouts plus a model-level **Start over** control.
+- Fixed Algebra multiplication and division facts receiving unknown-equation tutor guidance.
+- Prevented worked examples from reusing the assessed inputs or exposing a colliding final answer.
+- Prevented tutor **Start over** from clearing a final question result and blocking normal worksheet navigation.
+- Added backend and frontend regression coverage for the Maths Lab, model interactions and guided-tutor follow-up defects.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant data remain unchanged.
+
 # MathQuest 0.20.0
 
 - Added an ask-before-tell guided tutor with three progressively stronger hint stages: conceptual cue, strategy prompt and worked next step.

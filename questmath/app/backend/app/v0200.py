@@ -107,6 +107,47 @@ PLANS: dict[str, dict[str, Any]] = {
     },
 }
 
+EXAMPLE_CANDIDATES: dict[str, list[tuple[tuple[str, ...], str]]] = {
+    'arithmetic': [
+        (('47', '28'), 'With 47 + 28, partition 28 into 20 and 8. First calculate 47 + 20, then add the remaining 8.'),
+        (('63', '27'), 'With 63 − 27, regroup one ten before subtracting the ones, then subtract the tens.'),
+        (('9', '6'), 'With 9 × 6, calculate 10 × 6 first, then subtract one group of 6.'),
+    ],
+    'equation': [
+        (('7', '19'), 'For □ + 7 = 19, undo +7 by calculating 19 − 7, then substitute the value back to check.'),
+        (('6', '15'), 'For □ − 6 = 15, undo −6 with addition, then check the value in the original equation.'),
+        (('8', '23'), 'For □ + 8 = 23, use subtraction to isolate the box and then check both sides are equal.'),
+    ],
+    'fraction': [
+        (('3/4', '2/3'), 'Compare 3/4 and 2/3 by drawing equal-width bars or renaming both fractions as twelfths.'),
+        (('4/5', '1/2'), 'Compare 4/5 and 1/2 using equal-sized wholes and a one-half benchmark.'),
+        (('5/8', '3/4'), 'Compare 5/8 and 3/4 by renaming 3/4 as eighths, then compare the numerators.'),
+    ],
+    'measurement': [
+        (('8', '3'), 'For a different 8 cm by 3 cm rectangle, write 8 + 3 + 8 + 3 for perimeter or 8 × 3 for area, then calculate only the requested measure.'),
+        (('11', '7'), 'For a different 11 cm by 7 cm rectangle, trace all four edges for perimeter or cover the inside for area before calculating.'),
+        (('13', '5'), 'For a different 13 cm by 5 cm rectangle, label the dimensions and select the perimeter or area rule before substituting them.'),
+    ],
+    'grid': [
+        (('B4',), 'For a different square in row B and column 4, combine the labels in the agreed order to make B4.'),
+        (('D2',), 'For a different square in row D and column 2, combine the labels in the agreed order to make D2.'),
+        (('A3',), 'For a different square in row A and column 3, combine the labels in the agreed order to make A3.'),
+    ],
+    'time': [
+        (('2:35', '3:20'), 'For a different duration from 2:35 to 3:20, jump to 3:00 first, then make the remaining jump and combine them.'),
+        (('4:15', '5:05'), 'For a different duration from 4:15 to 5:05, split the timeline at 5:00 and combine the two jumps.'),
+        (('7:40', '8:10'), 'For a different duration from 7:40 to 8:10, find the jump to 8:00, then the jump after 8:00.'),
+    ],
+    'data': [
+        (('2, 3, 3, 4, 3',), 'For the separate data set 2, 3, 3, 4, 3, tally how often each value appears before choosing the most frequent.'),
+        (('1, 4, 4, 5, 6',), 'For the separate data set 1, 4, 4, 5, 6, make a frequency table before comparing counts.'),
+    ],
+    'general': [
+        (('3', '4'), 'For a separate problem asking for 3 groups of 4, draw three equal groups and label what each group contains.'),
+        (('5', '6'), 'For a separate problem asking for 5 groups of 6, represent the groups before selecting an operation.'),
+    ],
+}
+
 
 def question_family(question: legacy.Question) -> str:
     skill = question.skill.split(':', 1)[-1].lower()
@@ -122,9 +163,13 @@ def question_family(question: legacy.Question) -> str:
         return 'data'
     if topic == 'measurement' or any(word in skill for word in ('area', 'perimeter', 'length', 'mass', 'capacity', 'angle')):
         return 'measurement'
-    if topic == 'algebra' or any(word in skill for word in ('unknown', 'equation', 'balance')) or '□' in prompt:
+    if any(word in skill for word in ('unknown', 'equation', 'balance')) or '□' in prompt:
         return 'equation'
-    if topic == 'number' or any(word in skill for word in ('addition', 'subtraction', 'multiplication', 'division', 'fact', 'operations')):
+    if any(word in skill for word in ('addition', 'subtraction', 'multiplication', 'division', 'fact', 'operations')):
+        return 'arithmetic'
+    if topic == 'algebra':
+        return 'equation'
+    if topic == 'number':
         return 'arithmetic'
     return 'general'
 
@@ -137,7 +182,21 @@ def guided_plan(question: legacy.Question) -> dict[str, Any]:
 def hint_text_v0200(question: legacy.Question, hint_number: int) -> str:
     plan = guided_plan(question)
     stage = min(3, max(1, hint_number))
+    if stage == 3:
+        return f"Try this different-number example: {safe_worked_example(question, plan['family'])} Then return to your question and use the same structure."
     return plan['stages'][stage - 1]
+
+
+def safe_worked_example(question: legacy.Question, family: str | None = None) -> str:
+    selected_family = family or question_family(question)
+    prompt = str(question.prompt or '').lower()
+    answer = str(question.correct_answer or '').strip().lower()
+    for signature, text in EXAMPLE_CANDIDATES[selected_family]:
+        same_inputs = all(item.lower() in prompt for item in signature)
+        answer_collision = bool(answer and re.search(rf'(?<![\w.]){re.escape(answer)}(?![\w.])', text.lower()))
+        if not same_inputs and not answer_collision:
+            return text
+    return 'Choose smaller values that are not in the assessed question, demonstrate only the first step, and stop before calculating the final result.'
 
 
 def _latest_misconception(question: legacy.Question) -> dict[str, str] | None:
@@ -175,7 +234,7 @@ def guided_support(
         raise HTTPException(403, 'Question does not belong to this student')
     plan = guided_plan(question)
     stage = min(3, max(1, question.hint_count or 1))
-    body = plan['stages'][stage - 1]
+    body = hint_text_v0200(question, stage)
     if action == 'why':
         body = plan['why']
     elif action == 'another':
@@ -188,7 +247,7 @@ def guided_support(
         'title': plan['title'],
         'stage': stage,
         'body': body,
-        'example': plan['example'] if action in ('teach', 'another') or stage == 3 else None,
+        'example': safe_worked_example(question, plan['family']) if action in ('teach', 'another') or stage == 3 else None,
         'misconception': _latest_misconception(question),
         'final_answer_revealed': False,
     }

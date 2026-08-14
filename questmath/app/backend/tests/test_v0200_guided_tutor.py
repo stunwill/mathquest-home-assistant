@@ -38,6 +38,23 @@ def test_representative_question_families_receive_three_scaffolded_stages():
         assert question.correct_answer not in json.dumps(v0200.guided_plan(question))
 
 
+def test_algebra_operation_facts_receive_arithmetic_guidance():
+    multiplication = sample('algebra', 'VC2M4A02:fact_recall_multiplication', 'Calculate 7 × 8.')
+    division = sample('algebra', 'VC2M4A02:fact_recall_division', 'Calculate 56 ÷ 7.')
+    unknown = sample('algebra', 'VC2M4A01:unknown_add_subtract', '□ + 8 = 23')
+    assert v0200.question_family(multiplication) == 'arithmetic'
+    assert v0200.question_family(division) == 'arithmetic'
+    assert v0200.question_family(unknown) == 'equation'
+
+
+def test_worked_example_rejects_assessed_measurement_dimensions_and_answer():
+    question = sample('measurement', 'VC2M4M02:area', 'A rectangle is 6 cm by 4 cm. What is its area?')
+    question.correct_answer = '24'
+    example = v0200.safe_worked_example(question)
+    assert '6 cm by 4 cm' not in example
+    assert not re.search(r'(?<!\d)24(?!\d)', example)
+
+
 def make_client():
     engine = create_engine('sqlite:///:memory:', connect_args={'check_same_thread': False}, poolclass=StaticPool)
     legacy.Base.metadata.create_all(engine)

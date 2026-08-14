@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.20.0`
+Version `0.21.0`
 
 ## Features
 
@@ -26,6 +26,7 @@ Version `0.20.0`
 - Recommended Number & Algebra Focus quests with fact-recall, efficient-strategy and retention support
 - Question-specific strategy cards for addition, subtraction, multiplication, division and unknown equations
 - Three-stage guided hints with Why?, Teach me this, Show another way and Start over support
+- Interactive Maths Lab with linked fractions, percentages, number lines, place value, arrays, clocks, grids and measurement models
 
 ## Security and upgrades
 

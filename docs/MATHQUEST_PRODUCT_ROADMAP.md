@@ -6,25 +6,31 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.20.0
+## Current release scope, 0.21.0
 
-This release turns the existing hint, visual-support, teaching and misconception features into one guided tutoring flow.
+This release replaces the limited legacy manipulative panel with a React-owned Interactive Maths Lab available from every worksheet question.
 
-- Provide three progressively stronger stages: conceptual cue, strategy or visual prompt, then a worked next step.
-- Start by asking Sienna to identify the concept or first decision instead of immediately telling her the method.
-- Tailor guidance for arithmetic, fractions, measurement, grids, time, data and unknown-value equations.
-- Use different numbers in worked examples so support demonstrates the method without revealing the assessed answer.
-- Provide **Why?**, **Teach me this**, **Show another way** and **Start over** actions in the worksheet.
-- Route relevant detected misconceptions into the tutor panel after an incorrect attempt.
-- Allow guided hints and explanations to be read aloud.
-- Add regression coverage for staged progression, representative question families, tutor actions, answer protection and API route ordering.
+- Provide learner-controlled fraction bars, comparison models and equivalent-fraction exploration using equal-sized wholes.
+- Link percentage, fraction, decimal and quantity representations so one adjustment updates every form.
+- Provide open number-line markers and positive or negative jumps for addition and subtraction strategies.
+- Provide place-value columns and visual quantities for thousands, hundreds, tens and ones.
+- Provide configurable arrays and equal groups for multiplication and division.
+- Provide an interactive analogue clock linked to a digital time.
+- Provide a selectable labelled grid for coordinate and grid-reference exploration.
+- Provide rectangle, ruler and angle controls for measurement, perimeter, area and angle reasoning.
+- Make every model available from every question while recommending the most relevant starting model.
+- Include **Start over** within the lab and make the layout usable on desktop, mobile and Home Assistant.
+- **Guided-tutor follow-up:** route Algebra multiplication and division fact questions to arithmetic support instead of unknown-equation support.
+- **Answer-protection follow-up:** reject worked examples whose assessed inputs or final answer collide with the current question.
+- **Worksheet-flow follow-up:** do not allow tutor **Start over** to clear a final result and strand the learner on a completed question.
+- Add component, interaction, answer-protection and regression coverage for the complete release scope.
 
-## Recently completed release, 0.19.1
+## Recently completed release, 0.20.0
 
-- Grid-reference questions no longer reveal the answer inside the highlighted square.
-- Row and column labels are displayed outside the grid.
-- Fraction comparisons use vertically stacked, left-aligned bars scaled to the same whole width.
-- Regression coverage protects grid assessment validity and equal-whole fraction comparison layouts.
+- Three progressively stronger ask-before-tell hint stages.
+- Question-specific guidance across representative mathematics families.
+- **Why?**, **Teach me this**, **Show another way** and **Start over** tutor actions.
+- Different-number worked examples, misconception routing and read-aloud tutor support.
 
 ## Feature findings from the supplied recordings
 
@@ -130,9 +136,9 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.18.0 | Frontend and worksheet foundation | Merged and released |
 | Completed | 0.19.0 | Diagnostic and timed tutoring | Merged and released |
 | Completed | 0.19.1 | Grid and fraction visual correctness | Merged and released |
-| Current | 0.20.0 | Guided tutor and scaffolded hints | Ask-before-tell tutor flow, three-stage hints, Why/another-way/start-over actions and misconception routing are verified across representative question types |
-| Next | 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives work across desktop, mobile and Home Assistant |
-| Then | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, themed data and applied multi-step problems from start to finish |
+| Completed | 0.20.0 | Guided tutor and scaffolded hints | Merged and released |
+| Current | 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives work across desktop, mobile and Home Assistant; guided-tutor follow-up defects are corrected |
+| Next | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, themed data and applied multi-step problems from start to finish |
 | Then | 0.23.0 | Adaptive mastery and retention | Outcome mastery, prerequisite routing, review scheduling and confidence/fluency signals produce correct next-session recommendations |
 | Then | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
 
@@ -160,4 +166,4 @@ The interactive maths lab remains dependent on the frontend architecture and aut
 
 ## Recommended priority
 
-The current release should deliver and validate the 0.20.0 guided tutor. The key educational gate is that support becomes progressively stronger while still requiring Sienna to reason, with different-number examples and misconception-specific guidance protecting the assessed answer. After this release is merged, 0.21.0 should begin the interactive maths lab and include any compatible ad-hoc items accepted while 0.20.0 was underway.
+The current release should deliver and validate the 0.21.0 Interactive Maths Lab. The key educational gate is that Sienna can manipulate multiple connected representations, reset and retry them, and access the relevant model without leaving a question. The three guided-tutor defects found after v0.20.0 merged are included under the agreed ad-hoc intake rule. After this release is merged, 0.22.0 should begin Story Adventures 2.0 and include compatible ad-hoc items accepted while 0.21.0 was underway.
