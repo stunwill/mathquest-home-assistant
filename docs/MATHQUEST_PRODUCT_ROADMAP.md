@@ -6,28 +6,28 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.22.0
+## Current release scope, 0.23.0
 
-This release upgrades Story Adventures from themed worksheets into coherent applied missions that use Sienna's current learning needs from beginning to end.
+This release turns MathQuest's stored learning evidence into a practical adaptive mastery and retention loop.
 
-- Give each adventure a clear mission, objective, five named chapters and a final story outcome.
-- Recommend the relevant learning areas with the weakest current evidence for each available theme.
-- Prioritise those recommended learning areas when building the selected mission.
-- Generate theme-specific applied questions instead of prefixing unrelated generic questions with story text.
-- Reuse consistent mission data and context across the complete adventure.
-- Include multi-step calculations and reasoning tasks within the mission sequence.
-- Show the current mission, chapter pathway and learning focus during every adventure question.
-- Show a final narrative outcome on completion, including a clear recovery message when questions were skipped.
-- Preserve duplicate-question protection, guided tutoring, Maths Lab access, progress, scoring and restart-skipped behaviour.
-- Add backend and React coverage for adaptive goal selection, story continuity, mission progress, outcomes and release routing.
+- Calculate outcome-level mastery from first-attempt independent accuracy, supported accuracy, hint use, fluency, confidence calibration and delayed retention evidence.
+- Map Story Adventure evidence back to the corresponding Level 4 curriculum outcomes.
+- Give assessed outcomes deterministic spaced-review due dates without introducing a second progress store or changing the database schema.
+- Route a weak outcome through an unsecured prerequisite when prerequisite teaching is more useful than repeating the target outcome.
+- Recommend the learner's next diagnostic, guided, review or practice session with an appropriate 5, 10 or 15-minute duration and an explanation of why it was selected.
+- Let Sienna start the recommended session directly from the dashboard while preserving the existing unfinished worksheet as the single active path.
+- Target generated Number and Algebra practice towards the selected weak skill while retaining duplicate protection and all existing worksheet support.
+- Fix Space Adventure grid-reference questions whose payload omitted the grid dimensions required to render cells.
+- Fix Statistics Adventure mode questions so the generated data always has one unambiguous mode.
+- Add backend and React coverage for mastery signals, review scheduling, prerequisite routing, recommended-session creation and the two Story Adventure corrections.
 
-## Recently completed release, 0.21.0
+## Recently completed release, 0.22.0
 
-- React-owned Interactive Maths Lab available from every worksheet question.
-- Linked fraction, percentage, decimal and quantity representations.
-- Number-line, place-value, array, clock, grid and measurement models.
-- Question-aware model recommendations and responsive layouts.
-- Guided-tutor routing, example-safety and final-feedback follow-up fixes.
+- Coherent five-chapter Story Adventure missions with clear objectives and final outcomes.
+- Adaptive adventure recommendations based on relevant weaker learning areas.
+- Theme-specific applied Number, Measurement, Space and Statistics questions.
+- Shared mission data, multi-step calculations and connected chapter progress.
+- Preserved guided tutoring, Interactive Maths Lab, scoring, progress and restart-skipped behaviour.
 
 ## Feature findings from the supplied recordings
 
@@ -135,9 +135,9 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.19.1 | Grid and fraction visual correctness | Merged and released |
 | Completed | 0.20.0 | Guided tutor and scaffolded hints | Merged and released |
 | Completed | 0.21.0 | Interactive maths lab | Merged and released |
-| Current | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, shared themed data and applied multi-step problems from start to finish |
-| Next | 0.23.0 | Adaptive mastery and retention | Outcome mastery, prerequisite routing, review scheduling and confidence/fluency signals produce correct next-session recommendations |
-| Then | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
+| Completed | 0.22.0 | Story Adventures 2.0 | Merged and released |
+| Current | 0.23.0 | Adaptive mastery and retention | Outcome mastery, prerequisite routing, review scheduling and confidence/fluency signals produce correct next-session recommendations |
+| Next | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
 
 ### Continuous delivery loop
 
@@ -159,8 +159,8 @@ No release receives a promised date or week count. The loop may complete several
 - If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
 - Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
 
-Story Adventures 2.0 builds on the React worksheet foundation, guided tutor and Interactive Maths Lab, but those dependencies define release order rather than elapsed time.
+Adaptive Mastery and Retention builds on the diagnostic, timed sessions, guided tutor, Interactive Maths Lab and Story Adventures, but those dependencies define release order rather than elapsed time.
 
 ## Recommended priority
 
-The current release should deliver and validate Story Adventures 2.0. The key educational gate is that selecting a theme creates one coherent mission whose story, shared data, chapter sequence and applied questions remain connected while prioritising Sienna's relevant weaker learning areas. After this release is merged, 0.23.0 should begin Adaptive Mastery and Retention and include compatible ad-hoc items accepted while 0.22.0 was underway.
+The current release should deliver and validate Adaptive Mastery and Retention. The key educational gate is that MathQuest distinguishes independent, supported, fluent and retained performance, then recommends a correctly sized next session that either revisits due learning or repairs the right prerequisite. The two compatible Story Adventure defects accepted after 0.22.0 development are included in 0.23.0 under the agreed ad-hoc intake rule. After this release is merged, 0.24.0 should begin Parent and Home Assistant Insight.

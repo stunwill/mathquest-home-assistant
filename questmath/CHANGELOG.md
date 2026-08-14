@@ -1,3 +1,16 @@
+# MathQuest 0.23.0
+
+- Added outcome-level mastery using independent and supported accuracy, hint use, fluency, confidence calibration and delayed retention evidence.
+- Added deterministic spaced-review due dates and review-due prioritisation using existing persisted learning history.
+- Added prerequisite routing that can teach an unsecured supporting outcome before repeating a weak target outcome.
+- Added personalised diagnostic, guided, review and practice recommendations sized to 5, 10 or 15 minutes.
+- Added direct dashboard creation of recommended sessions, including targeted Number and Algebra question generation.
+- Included Story Adventure evidence in the corresponding Level 4 outcome mastery calculations.
+- Fixed Space Adventure grid questions whose missing dimensions prevented the grid cells from rendering.
+- Fixed Statistics Adventure mode questions so generated readings always have one unambiguous mode.
+- Added backend and React regression coverage for adaptive mastery, review scheduling, prerequisite routing, session creation and Story Adventure payload correctness.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant data remain unchanged.
+
 # MathQuest 0.22.0
 
 - Upgraded Story Adventures from themed worksheets into coherent five-chapter missions with clear objectives and final outcomes.

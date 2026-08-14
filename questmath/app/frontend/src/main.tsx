@@ -10,6 +10,7 @@ import {apiRequest as req, createSession, loadActiveWorksheet, rememberActiveWor
 import {ErrorNotice, LearningCalendar, StoryAdventures, WorksheetHistory} from './student-foundation';
 import {MathsLab} from './maths-lab';
 import {MissionOutcome, StoryMissionProgress} from './story-adventure';
+import {AdaptiveRecommendation} from './adaptive-recommendation';
 
 const API = 'api';
 
@@ -82,12 +83,15 @@ function Student({user,logout}:{user:User;logout:()=>void}){
   const[summary,setSummary]=useState<any>(null);
   const[working,setWorking]=useState(false);
   const[choosing,setChoosing]=useState(false);
+  const[adaptive,setAdaptive]=useState<any>(null);
+  const[recommendationBusy,setRecommendationBusy]=useState(false);
   const[error,setError]=useState('');
-  const load=()=>{setError('');Promise.all([req('/dashboard/student'),loadActiveWorksheet<WorksheetData>()]).then(([nextDashboard,nextWorksheet])=>{setDashboard(nextDashboard);setWorksheet(nextWorksheet);if(nextWorksheet&&!nextWorksheet.completed_at&&sessionStorage.getItem('mq_open_worksheet')==='1'){sessionStorage.removeItem('mq_open_worksheet');setWorking(true)}}).catch((e:Error)=>setError(e.message))};
+  const load=()=>{setError('');Promise.all([req('/dashboard/student'),loadActiveWorksheet<WorksheetData>(),req('/learning/adaptive-v0230').catch(()=>null)]).then(([nextDashboard,nextWorksheet,nextAdaptive])=>{setDashboard(nextDashboard);setWorksheet(nextWorksheet);setAdaptive(nextAdaptive);if(nextWorksheet&&!nextWorksheet.completed_at&&sessionStorage.getItem('mq_open_worksheet')==='1'){sessionStorage.removeItem('mq_open_worksheet');setWorking(true)}}).catch((e:Error)=>setError(e.message))};
   useEffect(load,[]);
   useEffect(()=>{(window as any).__mq_ws=worksheet},[worksheet]);
   const openWorksheet=(next:WorksheetData)=>{setWorksheet(next);setSummary(null);setChoosing(false);setWorking(true)};
   const startWorksheet=async(topic:string,minutes:5|10|15,kind:'practice'|'diagnostic')=>openWorksheet(await createSession<WorksheetData>(kind,minutes,topic));
+  const startRecommended=async()=>{setRecommendationBusy(true);setError('');try{const next=await req<WorksheetData>('/sessions/recommended',{method:'POST'});rememberActiveWorksheet(next.id);openWorksheet(next)}catch(e:any){setError(e.message)}finally{setRecommendationBusy(false)}};
   if(!dashboard&&error)return <><Header user={user} logout={logout}/><main className="page"><ErrorNotice message={error} retry={load}/></main></>;
   if(!dashboard)return <div className="splash"><Brand/></div>;
   if(working&&worksheet&&!worksheet.completed_at&&!summary)return <Worksheet ws={worksheet} onUpdate={setWorksheet} onExit={()=>{setWorking(false);load()}} onDone={x=>{setSummary(x);setWorking(false);load()}}/>;
@@ -101,6 +105,7 @@ function Student({user,logout}:{user:User;logout:()=>void}){
         if(worksheet){setWorking(true)}else{setChoosing(true)}
       }}><Play size={20}/>{worksheet?.completed_at?'Today complete':hasProgress?'Continue Today’s Quest':'Begin Today’s Adventure'}</button>
     </div><div className="level-orb"><small>LEVEL</small><strong>{dashboard.user.level}</strong><span>{dashboard.user.xp%250}/250 XP</span></div></section>
+    {!hasProgress&&<AdaptiveRecommendation data={adaptive} busy={recommendationBusy} onStart={startRecommended}/>}
     <StoryAdventures onOpen={openWorksheet}/>
     <WorksheetHistory onCreate={()=>setChoosing(true)} onOpen={openWorksheet}/>
     <section className="cards"><Metric icon={<Flame/>} label="Daily streak" value={`${dashboard.streak} days`}/><Metric icon={<CheckCircle2/>} label="Accuracy" value={`${dashboard.accuracy}%`}/><Metric icon={<Star/>} label="Questions" value={dashboard.questions_answered}/><Metric icon={<Trophy/>} label="Highest level" value={dashboard.user.highest_level}/></section>

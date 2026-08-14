@@ -96,6 +96,10 @@ def _adventure_goals(session: Session, student_id: int, story: dict[str, Any]) -
 
 def _mission_facts(theme: str, rng: random.Random) -> dict[str, Any]:
     details = STORY_DETAILS[theme]
+    mode = rng.randint(2, 8)
+    other_readings = rng.sample([value for value in range(2, 12) if value != mode], 4)
+    readings = [mode, mode, mode, *other_readings]
+    rng.shuffle(readings)
     return {
         **details,
         'containers': rng.randint(4, 8),
@@ -105,7 +109,7 @@ def _mission_facts(theme: str, rng: random.Random) -> dict[str, Any]:
         'width': rng.randint(3, 6),
         'duration_hours': rng.randint(1, 3),
         'duration_minutes': rng.choice([15, 30, 45]),
-        'readings': [rng.randint(2, 8) for _ in range(7)],
+        'readings': readings,
     }
 
 
@@ -153,7 +157,7 @@ def _mission_question(theme: str, topic: str, index: int, chapter: str,
         return legacy.q(
             'VC2M5SP03', 'story_grid_reference',
             f"{prefix}The {facts['place']} is highlighted on the mission grid. Which grid reference contains it?",
-            'choice', {'choices': choices, 'visual': {'type': 'grid', 'target': target}, 'applied_steps': 1}, target,
+            'choice', {'choices': choices, 'visual': {'type': 'grid', 'columns': columns, 'rows': len(rows), 'target': target}, 'applied_steps': 1}, target,
             f'Read the highlighted column first and then its row. The location is {target}.',
         )
     readings = [value + index for value in facts['readings']]
