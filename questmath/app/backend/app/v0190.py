@@ -61,9 +61,7 @@ def new_session(payload: SessionCreateIn, user: legacy.User = Depends(legacy.cur
     return legacy.worksheet_view(worksheet)
 
 
-@app.get('/api/diagnostic/latest')
-def latest_diagnostic(user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
-    sid = user.id if user.role == 'student' else v0120.resolve_learner(session).id
+def diagnostic_summary(session: Session, sid: int):
     worksheet = session.scalar(select(legacy.Worksheet).where(
         legacy.Worksheet.student_id == sid, legacy.Worksheet.session_kind == 'diagnostic'
     ).order_by(legacy.Worksheet.started_at.desc()))
@@ -80,6 +78,12 @@ def latest_diagnostic(user: legacy.User = Depends(legacy.current_user), session:
     secure = [item['level'] for item in levels if item['answered'] == 3 and item['accuracy'] is not None and item['accuracy'] >= 67]
     return {'status': 'complete' if completed else 'in_progress', 'worksheet_id': worksheet.id,
             'estimated_level': max(secure) if completed and secure else None, 'target_level': 5, 'levels': levels}
+
+
+@app.get('/api/diagnostic/latest')
+def latest_diagnostic(user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
+    sid = user.id if user.role == 'student' else v0120.resolve_learner(session).id
+    return diagnostic_summary(session, sid)
 
 
 @app.get('/api/v0190/capabilities')

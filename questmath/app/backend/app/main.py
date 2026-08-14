@@ -25,7 +25,7 @@ from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, Stri
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
 
 from .auth_security import LoginRateLimiter
-from .security import load_signing_secret
+from .security import load_ha_service_token, load_signing_secret
 
 DATA_DIR = Path(os.getenv('QUESTMATH_DATA_DIR', '/data'))
 BACKUP_DIR = Path(os.getenv('QUESTMATH_BACKUP_DIR', str(DATA_DIR / 'backups')))
@@ -33,8 +33,9 @@ DB_PATH = DATA_DIR / 'questmath.db'
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
+HA_SERVICE_TOKEN = load_ha_service_token(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.23.0'
+APP_VERSION = '0.24.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -181,12 +182,14 @@ def db():
     finally: s.close()
 
 def token_for(u:User): return jwt.encode({'sub':str(u.id),'role':u.role,'exp':datetime.now(timezone.utc)+timedelta(hours=24)}, SECRET_KEY, algorithm=ALGORITHM)
-def current_user(token:str=Depends(oauth2), s:Session=Depends(db)):
+def user_from_token(token: str, s: Session) -> User:
     try: uid=int(jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])['sub'])
     except (JWTError,KeyError,ValueError): raise HTTPException(401,'Invalid session')
     u=s.get(User,uid)
     if not u: raise HTTPException(401,'User not found')
     return u
+def current_user(token:str=Depends(oauth2), s:Session=Depends(db)):
+    return user_from_token(token, s)
 def parent(u:User=Depends(current_user)):
     if u.role!='parent': raise HTTPException(403,'Parent access required')
     return u

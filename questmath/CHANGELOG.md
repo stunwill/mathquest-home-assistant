@@ -1,3 +1,17 @@
+# MathQuest 0.24.0
+
+- Added parent reporting for baseline, current estimated curriculum level and diagnostic growth.
+- Added outcome growth using comparable early and recent independent-performance windows.
+- Added weekly independent and supported accuracy, first-attempt time, hints, learning days and completed activity reporting.
+- Added parent summaries of recent gains, persistent gaps, strategies practised and the recommended next 5, 10 or 15-minute session.
+- Added outcome mastery, retention, review-due status and all six learning areas to the Home Assistant statistics response.
+- Added the weekly learning summary and next-session recommendation to the compact Home Assistant summary response.
+- Added a dedicated long-lived Home Assistant service token that persists through restart and upgrade and cannot access general MathQuest endpoints.
+- Added a parent dashboard control for revealing and copying the Home Assistant service token.
+- Added graceful unavailable responses so optional reporting failures do not break Home Assistant sensors.
+- Added backend, security and React regression coverage for reporting, authentication persistence and responsive parent presentation.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant endpoint paths remain unchanged.
+
 # MathQuest 0.23.0
 
 - Added outcome-level mastery using independent and supported accuracy, hint use, fluency, confidence calibration and delayed retention evidence.

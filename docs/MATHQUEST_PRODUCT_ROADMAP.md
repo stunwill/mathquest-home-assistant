@@ -6,28 +6,30 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.23.0
+## Current release scope, 0.24.0
 
-This release turns MathQuest's stored learning evidence into a practical adaptive mastery and retention loop.
+This release turns MathQuest's adaptive learning evidence into clear parent insight and stable Home Assistant reporting.
 
-- Calculate outcome-level mastery from first-attempt independent accuracy, supported accuracy, hint use, fluency, confidence calibration and delayed retention evidence.
-- Map Story Adventure evidence back to the corresponding Level 4 curriculum outcomes.
-- Give assessed outcomes deterministic spaced-review due dates without introducing a second progress store or changing the database schema.
-- Route a weak outcome through an unsecured prerequisite when prerequisite teaching is more useful than repeating the target outcome.
-- Recommend the learner's next diagnostic, guided, review or practice session with an appropriate 5, 10 or 15-minute duration and an explanation of why it was selected.
-- Let Sienna start the recommended session directly from the dashboard while preserving the existing unfinished worksheet as the single active path.
-- Target generated Number and Algebra practice towards the selected weak skill while retaining duplicate protection and all existing worksheet support.
-- Fix Space Adventure grid-reference questions whose payload omitted the grid dimensions required to render cells.
-- Fix Statistics Adventure mode questions so the generated data always has one unambiguous mode.
-- Add backend and React coverage for mastery signals, review scheduling, prerequisite routing, recommended-session creation and the two Story Adventure corrections.
+- Show baseline, current estimated curriculum level and measurable diagnostic growth.
+- Show outcome-level growth using comparable early and recent independent evidence windows.
+- Separate independent accuracy from supported accuracy and report first-attempt time, fluency, retention and review-due status.
+- Provide a seven-day parent summary covering learning days, completed activities, questions, hints and the recommended next 5, 10 or 15-minute session.
+- Identify recent gains, persistent gaps and the mathematical strategies practised during the week.
+- Add all six learning areas and outcome-level mastery to the complete Home Assistant statistics response.
+- Include the next-session recommendation and weekly learning summary in the compact Home Assistant summary response.
+- Persist a dedicated long-lived Home Assistant service token that survives app restart and upgrade without granting general MathQuest access.
+- Let the authenticated parent reveal and copy the Home Assistant service token from the parent dashboard.
+- Return a stable unavailable response instead of breaking Home Assistant sensors when optional insight aggregation fails.
+- Preserve the existing database, learning history, user JWT authentication and existing Home Assistant endpoint paths.
+- Add backend, security and React coverage for parent insight, service authentication, restart persistence, graceful failure and responsive presentation.
 
-## Recently completed release, 0.22.0
+## Recently completed release, 0.23.0
 
-- Coherent five-chapter Story Adventure missions with clear objectives and final outcomes.
-- Adaptive adventure recommendations based on relevant weaker learning areas.
-- Theme-specific applied Number, Measurement, Space and Statistics questions.
-- Shared mission data, multi-step calculations and connected chapter progress.
-- Preserved guided tutoring, Interactive Maths Lab, scoring, progress and restart-skipped behaviour.
+- Outcome mastery using independent and supported accuracy, hint use, fluency, confidence and retention.
+- Deterministic spaced-review due dates and prerequisite routing.
+- Personalised diagnostic, guided, review and practice recommendations sized to 5, 10 or 15 minutes.
+- Dashboard creation of recommended sessions with targeted Number and Algebra practice.
+- Corrected Space Adventure grid rendering and ambiguous Statistics mode questions.
 
 ## Feature findings from the supplied recordings
 
@@ -136,8 +138,8 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.20.0 | Guided tutor and scaffolded hints | Merged and released |
 | Completed | 0.21.0 | Interactive maths lab | Merged and released |
 | Completed | 0.22.0 | Story Adventures 2.0 | Merged and released |
-| Current | 0.23.0 | Adaptive mastery and retention | Outcome mastery, prerequisite routing, review scheduling and confidence/fluency signals produce correct next-session recommendations |
-| Next | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
+| Completed | 0.23.0 | Adaptive mastery and retention | Merged and released |
+| Current | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
 
 ### Continuous delivery loop
 
@@ -159,8 +161,8 @@ No release receives a promised date or week count. The loop may complete several
 - If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
 - Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
 
-Adaptive Mastery and Retention builds on the diagnostic, timed sessions, guided tutor, Interactive Maths Lab and Story Adventures, but those dependencies define release order rather than elapsed time.
+Parent and Home Assistant Insight builds on the persisted diagnostic, adaptive mastery, retention and session-recommendation evidence, but those dependencies define release order rather than elapsed time.
 
 ## Recommended priority
 
-The current release should deliver and validate Adaptive Mastery and Retention. The key educational gate is that MathQuest distinguishes independent, supported, fluent and retained performance, then recommends a correctly sized next session that either revisits due learning or repairs the right prerequisite. The two compatible Story Adventure defects accepted after 0.22.0 development are included in 0.23.0 under the agreed ad-hoc intake rule. After this release is merged, 0.24.0 should begin Parent and Home Assistant Insight.
+The current release should deliver and validate Parent and Home Assistant Insight. The key gate is that Stu can distinguish independent progress from supported completion, see meaningful weekly gains and persistent gaps, and use the same reliable learning metrics in Home Assistant without replacing an expiring login token each day. No release after 0.24.0 is sufficiently defined yet, so the next release requires a product decision after this release is reviewed and merged.
