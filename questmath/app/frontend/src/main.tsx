@@ -8,6 +8,7 @@ import './styles.css';
 import {APP_VERSION} from './version';
 import {apiRequest as req, createSession, loadActiveWorksheet, rememberActiveWorksheet} from './api';
 import {ErrorNotice, LearningCalendar, StoryAdventures, WorksheetHistory} from './student-foundation';
+import {MathsLab} from './maths-lab';
 
 const API = 'api';
 
@@ -134,14 +135,14 @@ function QuestCategoryPicker({start,cancel}:{start:(topic:string,minutes:5|10|15
 
 function Metric({icon,label,value}:any){return <div className="metric">{icon&&<i>{icon}</i>}<div><small>{label}</small><strong>{value}</strong></div></div>}
 function StrategyCard({card}:{card:any}){if(!card)return null;return <div className="mq-strategy-card"><div><span>🧠</span><p><small>STRATEGY FOR THIS QUESTION</small><b>{card.title}</b></p></div><h3>{card.strategy}</h3><p className="mq-strategy-rule">{card.rule}</p><ol>{(card.steps||[]).map((step:string)=><li key={step}>{step}</li>)}</ol>{card.example&&<small className="mq-strategy-example">{card.example}</small>}</div>}
-function GuidedTutor({support,onAction,onStartOver,busy}:{support:any;onAction:(action:string)=>Promise<void>;onStartOver:()=>void;busy:boolean}){
+function GuidedTutor({support,onAction,onStartOver,busy,canStartOver}:{support:any;onAction:(action:string)=>Promise<void>;onStartOver:()=>void;busy:boolean;canStartOver:boolean}){
   if(!support)return null;
   const speak=()=>{if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();window.speechSynthesis.speak(new SpeechSynthesisUtterance([support.title,support.body,support.example].filter(Boolean).join('. ')))};
   return <section className="guided-tutor" data-guided-tutor="true" aria-live="polite">
     <div className="guided-tutor-heading"><div><small>GUIDED TUTOR{support.action==='hint'?` · STAGE ${support.stage} OF 3`:''}</small><h3>{support.title}</h3></div><button type="button" onClick={speak}>🔊 Read this aloud</button></div>
     {support.misconception&&<div className="guided-misconception"><b>What MathQuest noticed</b><p>{support.misconception.message}</p></div>}
     <p>{support.body}</p>{support.example&&<div className="guided-example"><b>Different-number example</b><p>{support.example}</p></div>}
-    <div className="guided-actions"><button type="button" disabled={busy} onClick={()=>onAction('why')}>Why?</button><button type="button" disabled={busy} onClick={()=>onAction('teach')}>Teach me this</button><button type="button" disabled={busy} onClick={()=>onAction('another')}>Show another way</button><button type="button" disabled={busy} onClick={onStartOver}>Start over</button></div>
+    <div className="guided-actions"><button type="button" disabled={busy} onClick={()=>onAction('why')}>Why?</button><button type="button" disabled={busy} onClick={()=>onAction('teach')}>Teach me this</button><button type="button" disabled={busy} onClick={()=>onAction('another')}>Show another way</button>{canStartOver&&<button type="button" disabled={busy} onClick={onStartOver}>Start over</button>}</div>
   </section>
 }
 function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:WorksheetData)=>void;onExit:()=>void;onDone:(x:any)=>void}){
@@ -154,6 +155,7 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
   const[sessionStart]=useState(Date.now()-(ws.elapsed_seconds||0)*1000);
   const[overview,setOverview]=useState(false);
   const[confirmExit,setConfirmExit]=useState(false);
+  const[labOpen,setLabOpen]=useState(false);
   const[actionError,setActionError]=useState('');
 
   const active=useMemo(()=>ws.questions.find(q=>q.id===ws.current_question_id)||nextEligible(ws),[ws]);
@@ -173,7 +175,7 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
   async function submit(){const cleaned=String(answer ?? '').trim();if(!cleaned)return;const result=await req(`/questions/${q.id}/answer`,{method:'POST',body:JSON.stringify({answer:cleaned,seconds:(Date.now()-questionStart)/1000})});setFeedback(result);if(result.correct||!result.retry_allowed){const latest=await req(`/worksheets/${ws.id}/view`);onUpdate(latest)}}
   async function requestHint(){setHintBusy(true);try{const result=await req(`/questions/${q.id}/hint`,{method:'POST'});setHint(result.hint);setSupport(await req(`/questions/${q.id}/guided-support?action=hint`));const latest=await req(`/worksheets/${ws.id}/view`);onUpdate(latest)}finally{setHintBusy(false)}}
   async function requestSupport(action:string){setHintBusy(true);try{setSupport(await req(`/questions/${q.id}/guided-support?action=${action}`))}finally{setHintBusy(false)}}
-  function startOver(){setAnswer('');setFeedback(null);setHint(null);setSupport(null);setQuestionStart(Date.now())}
+  function startOver(){if(feedback&&!feedback.retry_allowed)return;setAnswer('');setFeedback(null);setHint(null);setSupport(null);setQuestionStart(Date.now())}
   async function skip(){const updated=await req(`/questions/${q.id}/skip`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});const next=nextEligible(updated,q.id);if(next){const moved=await req(`/worksheets/${ws.id}/navigate/${next.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved)}else await refresh(updated)}
   async function next(){const latest:WorksheetData=await req(`/worksheets/${ws.id}/view`);const target=nextEligible(latest,q.id);if(target){const moved=await req(`/worksheets/${ws.id}/navigate/${target.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved);return}const result=await req(`/worksheets/${ws.id}/complete`,{method:'POST'});rememberActiveWorksheet(null);onDone(result)}
   async function finish(){const result=await req(`/worksheets/${ws.id}/complete`,{method:'POST'});rememberActiveWorksheet(null);onDone(result)}
@@ -185,14 +187,14 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
     <div className="worksheet-header"><button className="ghost danger-text" onClick={()=>setConfirmExit(true)}><X size={20}/> Exit worksheet</button><Brand compact/><button className="ghost" onClick={()=>setOverview(true)}><List size={20}/> Questions</button></div>
     <div className="worksheet-layout"><section className="worksheet-main">
       <div className="worksheet-top"><b>{phase==='skipped'?`Skipped round · ${ws.counts.skipped} remaining`:`Question ${currentNumber} of ${ws.total}`}</b><div className="progress"><i style={{width:`${completed/ws.total*100}%`}}/></div><span>{q.topic} · level {q.level}</span></div>
-      <section className="question-card" key={q.id} data-question-id={q.id} data-guided-tutor-owner="true">{actionError&&<ErrorNotice message={actionError} dismiss={()=>setActionError('')}/>}<div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
+      <section className="question-card" key={q.id} data-question-id={q.id} data-guided-tutor-owner="true">{actionError&&<ErrorNotice message={actionError} dismiss={()=>setActionError('')}/>}<div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><button type="button" className="open-maths-lab" onClick={()=>setLabOpen(true)}>🧩 Open Maths Lab</button><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
         {hint&&<div className="hint-box"><Lightbulb size={22}/><div><b>Hint {q.hint_count||1} of 3</b><p>{hint}</p></div></div>}
-        <GuidedTutor support={support} busy={hintBusy} onAction={requestSupport} onStartOver={startOver}/>
+        <GuidedTutor support={support} busy={hintBusy} canStartOver={!feedback||feedback.retry_allowed} onAction={requestSupport} onStartOver={startOver}/>
         {hint&&q.hint_count>=2&&<StrategyCard card={q.payload?.strategy_card}/>}
         {!feedback?<><div className="question-navigation"><button type="button" disabled={!previous} onClick={()=>safe(previousQuestion)}><ChevronLeft size={19}/> Previous question</button>{canFinishWithSkipped&&<button type="button" className="finish-skipped" onClick={()=>safe(finish)}>Finish worksheet with skipped questions</button>}</div><div className="support-actions"><button className="hint-button" disabled={hintBusy} onClick={()=>safe(requestHint)}><Lightbulb size={19}/>{hintBusy?'Getting help…':q.hint_count>=3?'Review final hint':q.hint_count===2?'Show worked next step':q.hint_count===1?'Show a strategy':'Give me a hint'}</button><small>Hints become gradually stronger and do not reduce the score.</small></div><div className="question-actions"><button className="skip" onClick={()=>safe(skip)}><SkipForward size={19}/> Skip for now</button><button type="button" className="primary" disabled={!String(answer ?? '').trim()} onClick={()=>safe(submit)}>Check answer</button></div></>:<div className={'feedback '+(feedback.correct?'correct':'wrong')}><h3>{feedback.correct?'✅ Great job!':'❌ '+feedback.message}</h3>{feedback.working&&<p>{feedback.working}</p>}{feedback.retry_allowed?<button onClick={()=>{setFeedback(null);setAnswer('')}}>Try again</button>:<button className="primary" onClick={()=>safe(next)}>{ws.counts.remaining<=1?'Finish worksheet':'Next question'} <ChevronRight size={18}/></button>}</div>}
       </section>
     </section><WorksheetStatus ws={ws} q={q} open={()=>setOverview(true)}/></div>
-    {overview&&<QuestionOverview ws={ws} activeId={q.id} close={()=>setOverview(false)} goTo={goTo}/>} {confirmExit&&<ConfirmExit cancel={()=>setConfirmExit(false)} exit={exit}/>}</main>;
+    {overview&&<QuestionOverview ws={ws} activeId={q.id} close={()=>setOverview(false)} goTo={goTo}/>} {confirmExit&&<ConfirmExit cancel={()=>setConfirmExit(false)} exit={exit}/>} {labOpen&&<MathsLab question={q} onClose={()=>setLabOpen(false)}/>}</main>;
 }
 
 function nextEligible(ws:WorksheetData,afterId?:number){
