@@ -6,31 +6,28 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.21.0
+## Current release scope, 0.22.0
 
-This release replaces the limited legacy manipulative panel with a React-owned Interactive Maths Lab available from every worksheet question.
+This release upgrades Story Adventures from themed worksheets into coherent applied missions that use Sienna's current learning needs from beginning to end.
 
-- Provide learner-controlled fraction bars, comparison models and equivalent-fraction exploration using equal-sized wholes.
-- Link percentage, fraction, decimal and quantity representations so one adjustment updates every form.
-- Provide open number-line markers and positive or negative jumps for addition and subtraction strategies.
-- Provide place-value columns and visual quantities for thousands, hundreds, tens and ones.
-- Provide configurable arrays and equal groups for multiplication and division.
-- Provide an interactive analogue clock linked to a digital time.
-- Provide a selectable labelled grid for coordinate and grid-reference exploration.
-- Provide rectangle, ruler and angle controls for measurement, perimeter, area and angle reasoning.
-- Make every model available from every question while recommending the most relevant starting model.
-- Include **Start over** within the lab and make the layout usable on desktop, mobile and Home Assistant.
-- **Guided-tutor follow-up:** route Algebra multiplication and division fact questions to arithmetic support instead of unknown-equation support.
-- **Answer-protection follow-up:** reject worked examples whose assessed inputs or final answer collide with the current question.
-- **Worksheet-flow follow-up:** do not allow tutor **Start over** to clear a final result and strand the learner on a completed question.
-- Add component, interaction, answer-protection and regression coverage for the complete release scope.
+- Give each adventure a clear mission, objective, five named chapters and a final story outcome.
+- Recommend the relevant learning areas with the weakest current evidence for each available theme.
+- Prioritise those recommended learning areas when building the selected mission.
+- Generate theme-specific applied questions instead of prefixing unrelated generic questions with story text.
+- Reuse consistent mission data and context across the complete adventure.
+- Include multi-step calculations and reasoning tasks within the mission sequence.
+- Show the current mission, chapter pathway and learning focus during every adventure question.
+- Show a final narrative outcome on completion, including a clear recovery message when questions were skipped.
+- Preserve duplicate-question protection, guided tutoring, Maths Lab access, progress, scoring and restart-skipped behaviour.
+- Add backend and React coverage for adaptive goal selection, story continuity, mission progress, outcomes and release routing.
 
-## Recently completed release, 0.20.0
+## Recently completed release, 0.21.0
 
-- Three progressively stronger ask-before-tell hint stages.
-- Question-specific guidance across representative mathematics families.
-- **Why?**, **Teach me this**, **Show another way** and **Start over** tutor actions.
-- Different-number worked examples, misconception routing and read-aloud tutor support.
+- React-owned Interactive Maths Lab available from every worksheet question.
+- Linked fraction, percentage, decimal and quantity representations.
+- Number-line, place-value, array, clock, grid and measurement models.
+- Question-aware model recommendations and responsive layouts.
+- Guided-tutor routing, example-safety and final-feedback follow-up fixes.
 
 ## Feature findings from the supplied recordings
 
@@ -137,9 +134,9 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.19.0 | Diagnostic and timed tutoring | Merged and released |
 | Completed | 0.19.1 | Grid and fraction visual correctness | Merged and released |
 | Completed | 0.20.0 | Guided tutor and scaffolded hints | Merged and released |
-| Current | 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives work across desktop, mobile and Home Assistant; guided-tutor follow-up defects are corrected |
-| Next | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, themed data and applied multi-step problems from start to finish |
-| Then | 0.23.0 | Adaptive mastery and retention | Outcome mastery, prerequisite routing, review scheduling and confidence/fluency signals produce correct next-session recommendations |
+| Completed | 0.21.0 | Interactive maths lab | Merged and released |
+| Current | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, shared themed data and applied multi-step problems from start to finish |
+| Next | 0.23.0 | Adaptive mastery and retention | Outcome mastery, prerequisite routing, review scheduling and confidence/fluency signals produce correct next-session recommendations |
 | Then | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
 
 ### Continuous delivery loop
@@ -162,8 +159,8 @@ No release receives a promised date or week count. The loop may complete several
 - If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
 - Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
 
-The interactive maths lab remains dependent on the frontend architecture and automated interaction tests, but that dependency defines release order rather than elapsed time.
+Story Adventures 2.0 builds on the React worksheet foundation, guided tutor and Interactive Maths Lab, but those dependencies define release order rather than elapsed time.
 
 ## Recommended priority
 
-The current release should deliver and validate the 0.21.0 Interactive Maths Lab. The key educational gate is that Sienna can manipulate multiple connected representations, reset and retry them, and access the relevant model without leaving a question. The three guided-tutor defects found after v0.20.0 merged are included under the agreed ad-hoc intake rule. After this release is merged, 0.22.0 should begin Story Adventures 2.0 and include compatible ad-hoc items accepted while 0.21.0 was underway.
+The current release should deliver and validate Story Adventures 2.0. The key educational gate is that selecting a theme creates one coherent mission whose story, shared data, chapter sequence and applied questions remain connected while prioritising Sienna's relevant weaker learning areas. After this release is merged, 0.23.0 should begin Adaptive Mastery and Retention and include compatible ad-hoc items accepted while 0.22.0 was underway.

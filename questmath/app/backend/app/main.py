@@ -34,7 +34,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.21.0'
+APP_VERSION = '0.22.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -594,7 +594,18 @@ def summary(s,ws,u):
         if q.attempts: by.setdefault(q.topic,[]).append(any(a.correct for a in q.attempts))
     rates={k:sum(v)/len(v) for k,v in by.items()}; strongest=max(rates,key=rates.get) if rates else None; weakest=min(rates,key=rates.get) if rates else None
     hints=sum((q.hint_count or 0) for q in ws.questions);answered=sum(1 for q in ws.questions if q.attempts);skipped=sum(1 for q in ws.questions if question_status(q)=='skipped')
-    return {'score':ws.score,'total':ws.total,'answered':answered,'skipped':skipped,'accuracy':round(ws.score/answered*100) if answered else 0,'xp_earned':ws.xp_earned,'level':u.xp//250+1,'level_progress':u.xp%250,'strongest_topic':strongest,'weakest_topic':weakest,'hints_used':hints,'perfect':ws.score==ws.total,'message':'Outstanding work!' if ws.score==ws.total else 'Worksheet finished. You can restart the skipped questions when you are ready.' if skipped else 'You are getting stronger every day.'}
+    adventure=None
+    if ws.questions:
+        first_payload=json.loads(sorted(ws.questions,key=lambda item:item.position)[0].payload or '{}')
+        story=first_payload.get('adventure') if isinstance(first_payload,dict) else None
+        if isinstance(story,dict):
+            adventure={
+                'theme':story.get('theme'),'title':story.get('title'),'mission':story.get('mission'),
+                'objective':story.get('objective'),'outcome':story.get('outcome'),
+                'chapters':story.get('chapters') or [],'learning_goals':story.get('learning_goals') or [],
+                'status':'complete_with_review' if skipped else 'complete',
+            }
+    return {'score':ws.score,'total':ws.total,'answered':answered,'skipped':skipped,'accuracy':round(ws.score/answered*100) if answered else 0,'xp_earned':ws.xp_earned,'level':u.xp//250+1,'level_progress':u.xp%250,'strongest_topic':strongest,'weakest_topic':weakest,'hints_used':hints,'perfect':ws.score==ws.total,'message':'Outstanding work!' if ws.score==ws.total else 'Worksheet finished. You can restart the skipped questions when you are ready.' if skipped else 'You are getting stronger every day.','adventure':adventure}
 
 def streak(s,sid):
     dates=set(s.scalars(select(Worksheet.worksheet_date).where(Worksheet.student_id==sid,Worksheet.completed_at.is_not(None))).all());n=0;d=date.today()

@@ -22,9 +22,10 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     changelog = (ROOT / 'questmath/CHANGELOG.md').read_text(encoding='utf-8')
     notes = module.extract_release_notes(changelog, current_version)
-    assert notes.startswith('- Added a React-owned Interactive Maths Lab')
-    assert 'linked percentage, fraction, decimal and quantity' in notes
-    assert 'Prevented worked examples' in notes
+    assert notes.startswith('- Upgraded Story Adventures')
+    assert 'adaptive adventure recommendations' in notes
+    assert 'shared mission data' in notes
+    assert 'Interactive Maths Lab' in notes
     assert 'Added a short Number and Algebra diagnostic' not in notes
     assert '# MathQuest' not in notes
 
@@ -32,7 +33,7 @@ def test_release_notes_extract_current_version_section_only():
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.21.0'}
+    assert set(versions.values()) == {'0.22.0'}
 
 
 def test_release_workflow_validates_versions_before_publishing():

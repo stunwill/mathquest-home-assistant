@@ -1,3 +1,15 @@
+# MathQuest 0.22.0
+
+- Upgraded Story Adventures from themed worksheets into coherent five-chapter missions with clear objectives and final outcomes.
+- Added adaptive adventure recommendations that prioritise Sienna's weaker learning areas relevant to each theme.
+- Replaced generic story-prefixed questions with theme-specific applied Number, Measurement, Space and Statistics challenges.
+- Added shared mission data and multi-step calculations that remain connected across each adventure.
+- Added in-question mission, chapter pathway and current learning-focus progress.
+- Added a mission-completion outcome with skipped-question recovery guidance.
+- Preserved guided tutoring, Interactive Maths Lab access, scoring, progress, duplicate protection and restart-skipped behaviour.
+- Added backend and React regression coverage for adaptive goals, narrative continuity, mission progress and outcomes.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant data remain unchanged.
+
 # MathQuest 0.21.0
 
 - Added a React-owned Interactive Maths Lab available from every worksheet question.
