@@ -22,17 +22,17 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     changelog = (ROOT / 'questmath/CHANGELOG.md').read_text(encoding='utf-8')
     notes = module.extract_release_notes(changelog, current_version)
-    assert notes.startswith('- Added a short Number and Algebra diagnostic')
-    assert '5, 10 and 15-minute targeted practice sessions' in notes
-    assert 'latest-diagnostic summary api' in notes.lower()
-    assert 'Consolidated all new worksheet requests' not in notes
+    assert notes.startswith('- Fixed grid-reference questions')
+    assert 'highlighted square' in notes
+    assert 'vertically stacked, left-aligned rows' in notes
+    assert 'Added a short Number and Algebra diagnostic' not in notes
     assert '# MathQuest' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.19.0'}
+    assert set(versions.values()) == {'0.19.1'}
 
 
 def test_release_workflow_validates_versions_before_publishing():

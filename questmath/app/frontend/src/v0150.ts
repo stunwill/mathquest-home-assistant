@@ -1,4 +1,5 @@
 import './v080.css';
+import {fractionComparisonMarkup, gridReferenceMarkup} from './visual-markup';
 
 const API='api';
 const token=()=>localStorage.getItem('token');
@@ -19,7 +20,7 @@ async function activeWorksheet(){
 
 function visualMarkup(v:any){
   if(!v)return'';
-  if(v.type==='fraction_compare')return `<div class="mq-visual fraction-compare">${v.items.map((x:any)=>`<div><b>${x.label}</b><div class="fraction-bar">${Array.from({length:x.denominator},(_:unknown,i:number)=>`<span class="${i<x.numerator?'on':''}"></span>`).join('')}</div><small>${x.numerator}/${x.denominator}</small></div>`).join('')}</div>`;
+  if(v.type==='fraction_compare')return fractionComparisonMarkup(v.items);
   if(v.type==='number_line')return `<div class="mq-visual number-line"><div class="line-track">${Array.from({length:v.steps+1},(_:unknown,i:number)=>`<button type="button" data-visual-answer="${i}"><i></i><span>${i===0?'0':i===v.steps?'1':''}</span></button>`).join('')}</div></div>`;
   if(v.type==='clock'){
     const minute=Number(v.minute)||0;
@@ -40,7 +41,7 @@ function visualMarkup(v:any){
     const m=Math.max(...v.values);
     return `<div class="mq-visual bar-chart" role="img" aria-label="Bar chart for this question">${v.labels.map((x:string,i:number)=>`<div><span style="height:${Math.max(12,v.values[i]/m*120)}px"></span><b>${v.values[i]}</b><small>${x}</small></div>`).join('')}</div>`;
   }
-  if(v.type==='grid')return `<div class="mq-visual grid-vis">${v.columns.map((c:string)=>Array.from({length:v.rows},(_:unknown,idx:number)=>{const r=idx+1,k=`${c}${r}`;return `<button type="button" data-visual-answer="${k}" class="${k===v.target?'target':''}"><small>${k}</small></button>`}).join('')).join('')}</div>`;
+  if(v.type==='grid')return gridReferenceMarkup(v);
   return'';
 }
 

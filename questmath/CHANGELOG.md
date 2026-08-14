@@ -1,3 +1,13 @@
+# MathQuest 0.19.1
+
+- Fixed grid-reference questions so row letters and column numbers appear outside the grid instead of printing complete references inside every cell.
+- Removed the highlighted square's visible and interactive answer value so the visual no longer gives away the correct response.
+- Changed fraction comparisons to vertically stacked, left-aligned rows whose bars use the same whole width for direct visual comparison.
+- Preserved each fraction's denominator partitions, shaded numerator, learner label and written value across desktop, mobile and Home Assistant layouts.
+- Added frontend and source-level regression coverage for grid answer leakage, external axis labels, fraction partitions and equal-whole stacked layout.
+- Corrected the roadmap patch version after v0.19.0 diagnostic and timed tutoring had already been released.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant data remain unchanged.
+
 # MathQuest 0.19.0
 
 - Added a short Number and Algebra diagnostic with three questions at each Victorian Curriculum level from 2–6 and an explicit Level 5 learning target.
