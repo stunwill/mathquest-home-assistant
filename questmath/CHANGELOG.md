@@ -1,3 +1,14 @@
+# MathQuest 0.20.0
+
+- Added an ask-before-tell guided tutor with three progressively stronger hint stages: conceptual cue, strategy prompt and worked next step.
+- Added question-specific guidance for arithmetic, fractions, measurement, grids, time, data and unknown-value equations.
+- Added **Why?**, **Teach me this**, **Show another way** and **Start over** actions within the worksheet.
+- Added different-number worked examples that demonstrate a method without revealing the assessed question's final answer.
+- Routed detected misconceptions into the tutor panel after an incorrect attempt.
+- Added read-aloud support for guided hints and explanations while retaining existing prompt narration.
+- Added regression coverage for all representative question families, three-stage progression, tutor actions, answer protection and route ordering.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant data remain unchanged.
+
 # MathQuest 0.19.1
 
 - Fixed grid-reference questions so row letters and column numbers appear outside the grid instead of printing complete references inside every cell.
