@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import os
+import secrets
 from datetime import date, datetime, timedelta
 from typing import Any
 
 from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,11 +16,25 @@ from . import v060, v090, v0100
 app = legacy.app
 app.version = '0.14.0'
 
-DASHBOARD_CATEGORIES = ('number', 'measurement', 'space', 'algebra', 'probability')
+DASHBOARD_CATEGORIES = ('number', 'algebra', 'measurement', 'space', 'statistics', 'probability')
+ha_bearer = HTTPBearer(auto_error=False)
+_dashboard_insight_provider = None
 
 
-def _student_id(user: legacy.User, session: Session) -> int:
-    if user.role == 'student':
+def ha_principal(
+    credentials: HTTPAuthorizationCredentials | None = Depends(ha_bearer),
+    session: Session = Depends(legacy.db),
+) -> legacy.User | None:
+    if not credentials or credentials.scheme.lower() != 'bearer':
+        raise HTTPException(401, 'Home Assistant authentication required')
+    token = credentials.credentials
+    if secrets.compare_digest(token, legacy.HA_SERVICE_TOKEN):
+        return None
+    return legacy.user_from_token(token, session)
+
+
+def _student_id(user: legacy.User | None, session: Session) -> int:
+    if user is not None and user.role == 'student':
         return user.id
     latest = session.scalar(
         select(legacy.Worksheet)
@@ -63,12 +79,13 @@ def _category_stats(session: Session, sid: int, topic: str) -> dict[str, Any]:
     progress = None
     if skill:
         progress = round(max(0, min(8, skill.level)) / 8 * 100)
-    return {
+    result = {
         'progress': progress,
         'accuracy': accuracy,
         'questions': adaptive.get('questions', 0),
         'mastery': adaptive.get('mastery'),
     }
+    return result
 
 
 def _streak(session: Session, sid: int) -> int:
@@ -151,7 +168,7 @@ def dashboard_stats(session: Session, sid: int) -> dict[str, Any]:
     setting = session.scalar(select(legacy.Setting).where(legacy.Setting.student_id == sid))
     default_total = setting.question_count if setting else 20
     quest_today = _today_quest_state(today_works, default_total)
-    return {
+    result = {
         'available': True,
         'questions_today': len(today_q),
         'correct_today': today_correct,
@@ -174,21 +191,36 @@ def dashboard_stats(session: Session, sid: int) -> dict[str, Any]:
         'activities_this_week': sum(1 for w in week_works if w.completed_at),
         'xp_this_week': sum(w.xp_earned or 0 for w in week_works),
     }
+    if _dashboard_insight_provider:
+        result.update(_dashboard_insight_provider(session, sid))
+    return result
 
 
 def dashboard_summary(stats: dict[str, Any]) -> dict[str, Any]:
-    keys = ('available', 'questions_today', 'accuracy_today', 'hints_used_today', 'activities_completed_today', 'streak_days', 'xp_today', 'xp_total', 'recommended_topic', 'last_activity', 'app_path', 'quest_today', 'unfinished_previous_worksheets')
+    keys = ('available', 'questions_today', 'accuracy_today', 'hints_used_today', 'activities_completed_today', 'streak_days', 'xp_today', 'xp_total', 'recommended_topic', 'last_activity', 'app_path', 'quest_today', 'unfinished_previous_worksheets', 'learning')
     return {k: stats.get(k) for k in keys}
 
 
 @app.get('/api/ha/stats')
-def ha_stats(user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
-    return dashboard_stats(session, _student_id(user, session))
+def ha_stats(user: legacy.User | None = Depends(ha_principal), session: Session = Depends(legacy.db)):
+    try:
+        return dashboard_stats(session, _student_id(user, session))
+    except HTTPException:
+        raise
+    except Exception:
+        legacy.logger.exception('Home Assistant statistics are temporarily unavailable')
+        return {'available': False, 'reason': 'statistics_unavailable', 'app_path': '/'}
 
 
 @app.get('/api/ha/summary')
-def ha_summary(user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
-    return dashboard_summary(dashboard_stats(session, _student_id(user, session)))
+def ha_summary(user: legacy.User | None = Depends(ha_principal), session: Session = Depends(legacy.db)):
+    try:
+        return dashboard_summary(dashboard_stats(session, _student_id(user, session)))
+    except HTTPException:
+        raise
+    except Exception:
+        legacy.logger.exception('Home Assistant summary is temporarily unavailable')
+        return {'available': False, 'reason': 'statistics_unavailable', 'app_path': '/'}
 
 
 @app.get('/api/v0110/capabilities')

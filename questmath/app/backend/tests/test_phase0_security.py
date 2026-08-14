@@ -12,7 +12,14 @@ from sqlalchemy.pool import StaticPool
 from app import main as legacy
 from app import v0160
 from app.auth_security import LoginRateLimiter
-from app.security import LEGACY_SECRET, SECRET_FILENAME, SecretConfigurationError, load_signing_secret
+from app.security import (
+    HA_SERVICE_TOKEN_FILENAME,
+    LEGACY_SECRET,
+    SECRET_FILENAME,
+    SecretConfigurationError,
+    load_ha_service_token,
+    load_signing_secret,
+)
 
 
 def test_new_secret_is_generated_and_persisted(tmp_path):
@@ -28,6 +35,16 @@ def test_secret_remains_stable_across_simulated_restarts(tmp_path):
     first = load_signing_secret(tmp_path, {})
     second = load_signing_secret(tmp_path, {})
     assert second == first
+
+
+def test_ha_service_token_remains_stable_across_simulated_restarts(tmp_path):
+    first = load_ha_service_token(tmp_path, {})
+    second = load_ha_service_token(tmp_path, {})
+    path = tmp_path / HA_SERVICE_TOKEN_FILENAME
+    assert second == first
+    assert len(first) >= 32
+    assert path.read_text(encoding='utf-8').strip() == first
+    assert stat.S_IMODE(path.stat().st_mode) == 0o600
 
 
 def test_explicit_environment_secret_is_honoured(tmp_path):

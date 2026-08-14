@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.23.0`
+Version `0.24.0`
 
 ## Features
 
@@ -29,10 +29,12 @@ Version `0.23.0`
 - Interactive Maths Lab with linked fractions, percentages, number lines, place value, arrays, clocks, grids and measurement models
 - Story Adventures 2.0 with adaptive learning goals, connected mission chapters, shared themed data and final outcomes
 - Outcome-level mastery, spaced-review scheduling, prerequisite routing and personalised 5, 10 or 15-minute next-session recommendations
+- Parent insight showing level and outcome growth, independent versus supported performance, retention, review dates and weekly recommendations
+- Long-lived Home Assistant service authentication plus complete category and outcome learning metrics
 
 ## Security and upgrades
 
-MathQuest generates a secure JWT signing secret on first start and stores it at `/data/jwt-signing-secret`, separate from the application image and the existing `/data/questmath.db`. An explicitly configured `SECRET_KEY` of at least 32 characters is honoured. The public legacy value `development-only-change-me` is never used.
+MathQuest generates a secure JWT signing secret on first start and stores it at `/data/jwt-signing-secret`, separate from the application image and the existing `/data/questmath.db`. It also generates a dedicated Home Assistant service token at `/data/ha-service-token`. Both values persist through restart and upgrade with restrictive permissions where supported. Explicit `SECRET_KEY` and `HA_SERVICE_TOKEN` values of at least 32 characters are honoured.
 
 Upgrading to `0.16.2` rotates installations that previously used the legacy secret. Existing JWTs may stop working and users may need to sign in again. No worksheet, progress, account or database data is reset or removed.
 
@@ -44,7 +46,9 @@ MathQuest exposes current learner statistics without duplicating the adaptive/ma
 
 - `GET /api/ha/summary` is the lightweight polling endpoint recommended for dashboard headline values.
 - `GET /api/ha/stats` includes headline values, weekly values and category statistics.
-- Both endpoints require the same Bearer token used by the MathQuest web application.
+- Both endpoints accept a normal MathQuest login token or the dedicated Home Assistant service token.
+- The service token does not have the normal 24-hour login expiry and only authorises these Home Assistant statistics endpoints.
+- A parent can reveal and copy it from **Parent View → Home Assistant Connection**.
 - Recommended polling interval: **30–60 seconds**.
 - `app_path` is returned as `/`, which is relative to MathQuest itself. Home Assistant should use the add-on's configured ingress/sidebar route rather than inventing a hard-coded ingress URL.
 
@@ -62,22 +66,27 @@ Example summary response:
   "xp_total": 2450,
   "recommended_topic": "Fractions",
   "last_activity": "2026-08-09T14:30:00",
-  "app_path": "/"
+  "app_path": "/",
+  "learning": {
+    "estimated_level": {"baseline": 3, "current": 4, "target": 5, "growth": 1},
+    "summary": {"mastered": 2, "secure": 4, "developing": 5, "needs_support": 3, "review_due": 2},
+    "recommendation": {"title": "Review efficient calculation strategies", "minutes": 10, "mode": "review"}
+  }
 }
 ```
 
-The full endpoint additionally returns `correct_today`, `incorrect_today`, weekly totals and `categories` for Number, Measurement, Space, Algebra and Probability. Category values contain `progress`, `accuracy`, `questions` and hint-aware `mastery`. Values are `null` where MathQuest genuinely has no data yet.
+The full endpoint additionally returns `correct_today`, `incorrect_today`, weekly totals, all six `categories`, `outcome_categories` and the complete `outcomes` list. Outcome values include independent and supported accuracy, mastery, fluency, retention, growth and review-due dates. Values are `null` where MathQuest genuinely has no data yet.
 
 ### Recommended Home Assistant REST sensors
 
-MathQuest is an ingress add-on rather than a Home Assistant integration, so v0.11 deliberately does not register entities directly. Use REST sensors against a network-reachable MathQuest URL. Store the MathQuest Bearer token in `secrets.yaml` as `mathquest_token`.
+MathQuest is an ingress add-on rather than a Home Assistant integration, so it does not register entities directly. Use REST sensors against a network-reachable MathQuest URL. Copy the complete authorization value shown in the parent dashboard, including the `Bearer ` prefix, and store it in `secrets.yaml` as `mathquest_authorization`.
 
 ```yaml
 rest:
   - resource: "http://HOME_ASSISTANT_HOST:8080/api/ha/stats"
     scan_interval: 30
     headers:
-      Authorization: !secret mathquest_token
+      Authorization: !secret mathquest_authorization
     sensor:
       - name: MathQuest Summary
         unique_id: mathquest_summary
@@ -95,6 +104,9 @@ rest:
           - recommended_topic
           - last_activity
           - categories
+          - learning
+          - outcome_categories
+          - outcomes
       - name: MathQuest Questions Today
         unique_id: mathquest_questions_today
         value_template: "{{ value_json.questions_today }}"
@@ -122,7 +134,7 @@ rest:
         value_template: "{{ value_json.xp_total }}"
       - name: MathQuest Recommended Topic
         unique_id: mathquest_recommended_topic
-        value_template: "{{ value_json.recommended_topic or 'None' }}"
+        value_template: "{{ value_json.learning.recommendation.title if value_json.learning is defined else (value_json.recommended_topic or 'None') }}"
       - name: MathQuest Last Activity
         unique_id: mathquest_last_activity
         device_class: timestamp
@@ -142,7 +154,7 @@ Category sensors can use the same REST response. For example:
         value_template: "{{ value_json.categories.number.accuracy }}"
 ```
 
-Repeat that pair for `measurement`, `space`, `algebra` and `probability` if separate dashboard entities are desired. If the add-on port is not exposed, use a suitable internal/reverse-proxy route instead. Do not copy an ingress token URL into configuration because Home Assistant ingress URLs are session-specific.
+Repeat that pair for `algebra`, `measurement`, `space`, `statistics` and `probability` if separate dashboard entities are desired. If the add-on port is not exposed, use a suitable internal/reverse-proxy route instead. Do not copy an ingress token URL into configuration because Home Assistant ingress URLs are session-specific.
 
 ### Example dashboard card
 
