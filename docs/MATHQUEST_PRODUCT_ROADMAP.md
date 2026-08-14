@@ -6,7 +6,19 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.19.0
+## Current release scope, 0.18.1
+
+This is a visual-correctness patch that takes priority before 0.19.0.
+
+- **High-priority bug:** grid-reference questions must not print each cell's complete reference inside the grid or reveal the answer in the highlighted square.
+- Display row labels and column labels outside the grid so Sienna must combine them to determine the reference.
+- Keep the highlighted square visually clear, with no answer text inside it.
+- **Educational improvement:** display compared fraction bars as vertically stacked, left-aligned rows using the same total-whole width.
+- Preserve each denominator's correct partitions, shaded numerator, learner/person label and written fraction.
+- Keep both visual types clear and usable on desktop, mobile and Home Assistant layouts.
+- Add regression coverage for answer leakage, grid labelling and fraction-comparison layout.
+
+## Next planned release scope, 0.19.0
 
 - A short Number and Algebra diagnostic spanning Victorian Curriculum Levels 2–6.
 - An explicit Level 5 learning target with baseline evidence reported separately for each assessed level.
@@ -63,6 +75,7 @@ The target experience is not a digital worksheet. Each session should diagnose, 
 ### Interactive mathematical models
 
 - Fraction tiles, fraction walls, area models and equivalent-fraction builders.
+- Fraction-comparison bars stacked vertically, aligned to the same origin and scaled to an equal whole so relative amounts can be compared directly.
 - Percentage bars linked to fractions, decimals and quantities.
 - Open number lines and jump strategies for addition and subtraction.
 - Place-value blocks and regrouping models for written operations.
@@ -115,7 +128,8 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | --- | --- | --- | --- |
 | Completed | 0.17.2 | Calendar, worksheet completion/restart, Story Adventures and roadmap | Merged and released |
 | Completed | 0.18.0 | Frontend and worksheet foundation | Merged and released |
-| Current | 0.19.0 | Diagnostic and timed tutoring | Levels 2–6 diagnostic, Level 5 pathway and selectable 5/10/15-minute sessions pass learner-flow testing |
+| Current | 0.18.1 | Grid and fraction visual correctness | Grid references do not expose answers, and equal-whole fraction bars are vertically stacked and left-aligned across supported layouts |
+| Next | 0.19.0 | Diagnostic and timed tutoring | Levels 2–6 diagnostic, Level 5 pathway and selectable 5/10/15-minute sessions pass learner-flow testing |
 | Then | 0.20.0 | Guided tutor and scaffolded hints | Ask-before-tell tutor flow, three-stage hints, Why/another-way/start-over actions and misconception routing are verified across representative question types |
 | Then | 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives work across desktop, mobile and Home Assistant |
 | Then | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, themed data and applied multi-step problems from start to finish |
@@ -145,4 +159,4 @@ The interactive maths lab remains dependent on the frontend architecture and aut
 
 ## Recommended priority
 
-The next release should complete and validate 0.19.0 before guided tutoring begins. The diagnostic baseline and session-duration choices establish the learner pathway that later hints, manipulatives and adaptive mastery will use.
+The next release should deliver and validate the 0.18.1 visual-correctness patch before 0.19.0 begins. A grid question that reveals its own answer undermines assessment validity, while equal-width stacked fraction bars provide a clearer comparison model. After that patch is merged, 0.19.0 should complete the diagnostic baseline and session-duration choices before guided tutoring begins.
