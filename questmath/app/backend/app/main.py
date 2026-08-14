@@ -34,7 +34,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.19.1'
+APP_VERSION = '0.20.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -487,14 +487,14 @@ def request_hint(qid:int,u:User=Depends(current_user),s:Session=Depends(db)):
     if not ws or ws.student_id!=u.id: raise HTTPException(403,'Question does not belong to this student')
     if question_status(q) in ('correct','incorrect'): raise HTTPException(400,'Completed questions do not need hints')
     next_number=(q.hint_count or 0)+1
-    if next_number>2:
+    if next_number>3:
         last=sorted(q.hints,key=lambda h:h.hint_number)[-1] if q.hints else None
-        return {'hint':last.hint_text if last else hint_text(q,2),'hint_count':q.hint_count or 0,'more_available':False}
+        return {'hint':last.hint_text if last else hint_text(q,3),'hint_count':q.hint_count or 0,'more_available':False}
     text=hint_text(q,next_number)
     q.hint_count=next_number
     s.add(HintEvent(question_id=q.id,student_id=u.id,topic=q.topic,hint_number=next_number,hint_text=text))
     ws.last_active_at=datetime.utcnow(); s.commit()
-    return {'hint':text,'hint_count':next_number,'more_available':next_number<2}
+    return {'hint':text,'hint_count':next_number,'more_available':next_number<3}
 
 @app.post('/api/questions/{qid}/answer')
 def answer(qid:int,data:AnswerIn,u:User=Depends(current_user),s:Session=Depends(db)):

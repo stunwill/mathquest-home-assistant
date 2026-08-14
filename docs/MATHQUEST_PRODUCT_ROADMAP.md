@@ -6,25 +6,25 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.19.1
+## Current release scope, 0.20.0
 
-This is a visual-correctness patch following the completed 0.19.0 diagnostic and timed-tutoring release.
+This release turns the existing hint, visual-support, teaching and misconception features into one guided tutoring flow.
 
-- **High-priority bug:** grid-reference questions must not print each cell's complete reference inside the grid or reveal the answer in the highlighted square.
-- Display row labels and column labels outside the grid so Sienna must combine them to determine the reference.
-- Keep the highlighted square visually clear, with no answer text inside it.
-- **Educational improvement:** display compared fraction bars as vertically stacked, left-aligned rows using the same total-whole width.
-- Preserve each denominator's correct partitions, shaded numerator, learner/person label and written fraction.
-- Keep both visual types clear and usable on desktop, mobile and Home Assistant layouts.
-- Add regression coverage for answer leakage, grid labelling and fraction-comparison layout.
+- Provide three progressively stronger stages: conceptual cue, strategy or visual prompt, then a worked next step.
+- Start by asking Sienna to identify the concept or first decision instead of immediately telling her the method.
+- Tailor guidance for arithmetic, fractions, measurement, grids, time, data and unknown-value equations.
+- Use different numbers in worked examples so support demonstrates the method without revealing the assessed answer.
+- Provide **Why?**, **Teach me this**, **Show another way** and **Start over** actions in the worksheet.
+- Route relevant detected misconceptions into the tutor panel after an incorrect attempt.
+- Allow guided hints and explanations to be read aloud.
+- Add regression coverage for staged progression, representative question families, tutor actions, answer protection and API route ordering.
 
-## Recently completed release, 0.19.0
+## Recently completed release, 0.19.1
 
-- A short Number and Algebra diagnostic spanning Victorian Curriculum Levels 2–6.
-- An explicit Level 5 learning target with baseline evidence reported separately for each assessed level.
-- Learner-selectable 5, 10 and 15-minute targeted practice sessions.
-- Session type and target duration saved without changing existing worksheet and answer data.
-- Learner-flow and upgrade regression coverage for diagnostics and timed sessions.
+- Grid-reference questions no longer reveal the answer inside the highlighted square.
+- Row and column labels are displayed outside the grid.
+- Fraction comparisons use vertically stacked, left-aligned bars scaled to the same whole width.
+- Regression coverage protects grid assessment validity and equal-whole fraction comparison layouts.
 
 ## Feature findings from the supplied recordings
 
@@ -129,9 +129,9 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.17.2 | Calendar, worksheet completion/restart, Story Adventures and roadmap | Merged and released |
 | Completed | 0.18.0 | Frontend and worksheet foundation | Merged and released |
 | Completed | 0.19.0 | Diagnostic and timed tutoring | Merged and released |
-| Current | 0.19.1 | Grid and fraction visual correctness | Grid references do not expose answers, and equal-whole fraction bars are vertically stacked and left-aligned across supported layouts |
-| Next | 0.20.0 | Guided tutor and scaffolded hints | Ask-before-tell tutor flow, three-stage hints, Why/another-way/start-over actions and misconception routing are verified across representative question types |
-| Then | 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives work across desktop, mobile and Home Assistant |
+| Completed | 0.19.1 | Grid and fraction visual correctness | Merged and released |
+| Current | 0.20.0 | Guided tutor and scaffolded hints | Ask-before-tell tutor flow, three-stage hints, Why/another-way/start-over actions and misconception routing are verified across representative question types |
+| Next | 0.21.0 | Interactive maths lab | Fractions, percentages, number lines, place value, arrays, clocks, grids and measurement manipulatives work across desktop, mobile and Home Assistant |
 | Then | 0.22.0 | Story Adventures 2.0 | Coherent missions use the selected theme, current learning goals, themed data and applied multi-step problems from start to finish |
 | Then | 0.23.0 | Adaptive mastery and retention | Outcome mastery, prerequisite routing, review scheduling and confidence/fluency signals produce correct next-session recommendations |
 | Then | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
@@ -150,13 +150,14 @@ No release receives a promised date or week count. The loop may complete several
 ### How new work enters the queue
 
 - Critical security, data-loss or blocking reliability defects may interrupt the queue as a tightly scoped patch release.
-- Normal bugs go into the next suitable release.
-- Small enhancements that directly support the active release can be included before scope lock.
-- Larger features are placed into a future release and do not expand an active release after scope lock.
+- Ad-hoc bugs and enhancements reported during an active release are assessed and added to the next planned release development, rather than interrupting or reshuffling the release already underway.
+- Related ad-hoc items may be grouped into that upcoming release when this makes implementation and testing more coherent.
+- The active release remains scope-locked unless Stu explicitly asks to include an item, or the item is required for that release to function correctly.
+- If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
 - Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
 
 The interactive maths lab remains dependent on the frontend architecture and automated interaction tests, but that dependency defines release order rather than elapsed time.
 
 ## Recommended priority
 
-The current release should deliver and validate the 0.19.1 visual-correctness patch. A grid question that reveals its own answer undermines assessment validity, while equal-width stacked fraction bars provide a clearer comparison model. After that patch is merged, 0.20.0 should begin guided tutoring and scaffolded hints.
+The current release should deliver and validate the 0.20.0 guided tutor. The key educational gate is that support becomes progressively stronger while still requiring Sienna to reason, with different-number examples and misconception-specific guidance protecting the assessed answer. After this release is merged, 0.21.0 should begin the interactive maths lab and include any compatible ad-hoc items accepted while 0.20.0 was underway.
