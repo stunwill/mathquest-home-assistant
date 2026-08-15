@@ -6,30 +6,29 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.24.0
+## Current release scope, 0.25.0
 
-This release turns MathQuest's adaptive learning evidence into clear parent insight and stable Home Assistant reporting.
+This release gives the parent account a persistent quality-testing workflow for validating worksheets and tracing feedback into later releases.
 
-- Show baseline, current estimated curriculum level and measurable diagnostic growth.
-- Show outcome-level growth using comparable early and recent independent evidence windows.
-- Separate independent accuracy from supported accuracy and report first-attempt time, fluency, retention and review-due status.
-- Provide a seven-day parent summary covering learning days, completed activities, questions, hints and the recommended next 5, 10 or 15-minute session.
-- Identify recent gains, persistent gaps and the mathematical strategies practised during the week.
-- Add all six learning areas and outcome-level mastery to the complete Home Assistant statistics response.
-- Include the next-session recommendation and weekly learning summary in the compact Home Assistant summary response.
-- Persist a dedicated long-lived Home Assistant service token that survives app restart and upgrade without granting general MathQuest access.
-- Let the authenticated parent reveal and copy the Home Assistant service token from the parent dashboard.
-- Return a stable unavailable response instead of breaking Home Assistant sensors when optional insight aggregation fails.
-- Preserve the existing database, learning history, user JWT authentication and existing Home Assistant endpoint paths.
-- Add backend, security and React coverage for parent insight, service authentication, restart persistence, graceful failure and responsive presentation.
+- Let a parent create and complete Number, Algebra, Measurement, Space, Statistics, Probability, Number and Algebra, or mixed test worksheets.
+- Generate parent test questions from Sienna's enabled learning areas and adaptive profile while storing the attempt under the parent account.
+- Keep all parent test answers, hints, time, completion and scores out of Sienna's progress, mastery, XP, streak, calendar and recommendations.
+- Let the parent add structured bug, enhancement or general notes after completing each test question.
+- Let the parent add overall notes after completing a test worksheet.
+- Provide a parent test history with in-progress resume, completed test review, question context, answers and saved notes.
+- Track feedback as open, planned, addressed or deferred.
+- Require addressed feedback to identify the semantic release number that delivered the correction or enhancement.
+- Show open and addressed feedback counts and addressed release numbers for every completed test worksheet.
+- Preserve all existing learner worksheets and data while adding a compatible feedback table.
+- Correct parent reporting so one diagnostic does not claim zero measured growth before a repeat diagnostic exists.
+- Add backend and React regression coverage for parent-only access, feedback lifecycle, release traceability, learning-data isolation and responsive presentation.
 
-## Recently completed release, 0.23.0
+## Recently completed release, 0.24.0
 
-- Outcome mastery using independent and supported accuracy, hint use, fluency, confidence and retention.
-- Deterministic spaced-review due dates and prerequisite routing.
-- Personalised diagnostic, guided, review and practice recommendations sized to 5, 10 or 15 minutes.
-- Dashboard creation of recommended sessions with targeted Number and Algebra practice.
-- Corrected Space Adventure grid rendering and ambiguous Statistics mode questions.
+- Parent reporting for diagnostic and outcome growth, independent and supported accuracy, fluency, retention and review dates.
+- Seven-day learning summaries, recent gains, persistent gaps, practised strategies and recommended sessions.
+- Complete Home Assistant category and outcome learning metrics.
+- Persistent, narrowly scoped Home Assistant service authentication and graceful unavailable states.
 
 ## Feature findings from the supplied recordings
 
@@ -124,6 +123,7 @@ This release turns MathQuest's adaptive learning evidence into clear parent insi
 - Keep duplicate-question protection in every worksheet and adventure flow.
 - Improve authentication expiry handling and eliminate silent or alert-only failures.
 - Preserve existing database, worksheet history, answers, progress and Home Assistant add-on upgrades.
+- Parent-only test worksheets with question and overall feedback, status tracking and addressed-release traceability.
 
 ## Release sequence and delivery gates
 
@@ -139,7 +139,8 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.21.0 | Interactive maths lab | Merged and released |
 | Completed | 0.22.0 | Story Adventures 2.0 | Merged and released |
 | Completed | 0.23.0 | Adaptive mastery and retention | Merged and released |
-| Current | 0.24.0 | Parent and Home Assistant insight | Growth reporting, recommendations, stable HA authentication and dashboard metrics remain correct through restart and upgrade testing |
+| Completed | 0.24.0 | Parent and Home Assistant insight | Merged and released |
+| Current | 0.25.0 | Parent test worksheets and feedback traceability | Parent testing remains isolated from learning evidence, notes persist with question context, and addressed items show a valid release number |
 
 ### Continuous delivery loop
 
@@ -161,8 +162,8 @@ No release receives a promised date or week count. The loop may complete several
 - If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
 - Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
 
-Parent and Home Assistant Insight builds on the persisted diagnostic, adaptive mastery, retention and session-recommendation evidence, but those dependencies define release order rather than elapsed time.
+Parent Test Worksheets and Feedback Traceability reuses the worksheet experience and question generator, but stores its evidence under the parent account and keeps it separate from Sienna's adaptive learning history.
 
 ## Recommended priority
 
-The current release should deliver and validate Parent and Home Assistant Insight. The key gate is that Stu can distinguish independent progress from supported completion, see meaningful weekly gains and persistent gaps, and use the same reliable learning metrics in Home Assistant without replacing an expiring login token each day. No release after 0.24.0 is sufficiently defined yet, so the next release requires a product decision after this release is reviewed and merged.
+The current release should deliver and validate Parent Test Worksheets and Feedback Traceability. The key gate is that Stu can test the real worksheet flow, record actionable question-level and overall feedback, review it later, and see which release addressed each item without changing any of Sienna's learning evidence. No release after 0.25.0 is sufficiently defined yet, so the next release requires a product decision after this release is reviewed and merged.

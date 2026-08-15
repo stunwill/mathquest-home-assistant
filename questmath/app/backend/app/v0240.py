@@ -56,7 +56,7 @@ def _estimated_levels(session: Session, sid: int) -> dict[str, Any]:
         'baseline': baseline,
         'current': current,
         'target': 5,
-        'growth': current - baseline if current is not None and baseline is not None else None,
+        'growth': current - baseline if len(diagnostics) >= 2 and current is not None and baseline is not None else None,
         'diagnostics_completed': len(diagnostics),
     }
 

@@ -1,3 +1,15 @@
+# MathQuest 0.25.0
+
+- Added parent-only test worksheet creation for every standard MathQuest learning-area selection.
+- Added test attempts that use Sienna's learning profile for question generation while remaining isolated from her progress, mastery, XP, streak, calendar and recommendations.
+- Added structured bug, enhancement and general notes after each completed test question.
+- Added overall feedback notes after a test worksheet is completed.
+- Added parent test history with resume, completed review, question context, answers and saved feedback.
+- Added open, planned, addressed and deferred feedback states.
+- Added semantic release traceability for feedback marked as addressed.
+- Corrected diagnostic growth reporting so a single diagnostic does not imply measured zero growth.
+- Added backend and React regression coverage for parent access, learning-data isolation, feedback persistence and release traceability.
+
 # MathQuest 0.24.0
 
 - Added parent reporting for baseline, current estimated curriculum level and diagnostic growth.
