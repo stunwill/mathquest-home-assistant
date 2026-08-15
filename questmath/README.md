@@ -1,4 +1,4 @@
-# MathQuest 0.24.0
+# MathQuest 0.25.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -29,6 +29,7 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Outcome mastery, deterministic spaced reviews, prerequisite routing and personalised next-session recommendations
 - Parent reporting for diagnostic and outcome growth, independent and supported accuracy, weekly progress, retention and review-due learning
 - Persistent Home Assistant service authentication and dashboard-ready category, outcome and recommendation metrics
+- Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
 
 ## Upgrade compatibility
 

@@ -224,14 +224,14 @@ def guided_support(
     user: legacy.User = Depends(legacy.current_user),
     session: Session = Depends(legacy.db),
 ):
-    if user.role != 'student':
-        raise HTTPException(403, 'Student access required')
     question = session.get(legacy.Question, qid)
     if not question:
         raise HTTPException(404, 'Question not found')
     worksheet = session.get(legacy.Worksheet, question.worksheet_id)
     if not worksheet or worksheet.student_id != user.id:
         raise HTTPException(403, 'Question does not belong to this student')
+    if user.role != 'student' and not (user.role == 'parent' and worksheet.session_kind == 'parent_test'):
+        raise HTTPException(403, 'Student or parent test access required')
     plan = guided_plan(question)
     stage = min(3, max(1, question.hint_count or 1))
     body = hint_text_v0200(question, stage)

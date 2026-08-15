@@ -35,7 +35,7 @@ BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 HA_SERVICE_TOKEN = load_ha_service_token(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.24.0'
+APP_VERSION = '0.25.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -376,8 +376,10 @@ def question_identity(prompt:str, payload:dict[str,Any]) -> tuple[str,tuple[str,
     return (' '.join((prompt or '').split()).casefold(),choice_key)
 
 def create_worksheet(s:Session,sid:int,selected:str, *, question_count:int|None=None,
-                     session_kind:str='practice', target_minutes:int|None=None) -> Worksheet:
-    st=student_settings(s,sid); enabled=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
+                     session_kind:str='practice', target_minutes:int|None=None,
+                     learning_profile_id:int|None=None) -> Worksheet:
+    profile_id=learning_profile_id or sid
+    st=student_settings(s,profile_id); enabled=json.loads(st.enabled_topics); levels=json.loads(st.manual_levels)
     selected=(selected or 'mixed').lower()
     focus_topics=['number','algebra']
     if selected not in ['mixed','number_algebra'] and selected not in LEVEL4_STRANDS: raise HTTPException(400,'Unknown learning area')
@@ -385,17 +387,17 @@ def create_worksheet(s:Session,sid:int,selected:str, *, question_count:int|None=
     if selected not in ['mixed','number_algebra'] and selected not in enabled: raise HTTPException(400,'This learning area is disabled by the parent')
     topics=enabled if selected=='mixed' else focus_topics if selected=='number_algebra' else [selected]
     if not topics: raise HTTPException(400,'No learning areas are enabled')
-    rng=random.Random(f'{sid}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1,10**9)}')
+    rng=random.Random(f'{sid}:{profile_id}:{date.today().isoformat()}:{selected}:{random.SystemRandom().randint(1,10**9)}')
     total=max(5,min(50,question_count if question_count is not None else st.question_count))
     ws=Worksheet(student_id=sid,worksheet_date=date.today(),total=total,selected_topic=selected,
                  session_kind=session_kind,target_minutes=target_minutes);s.add(ws);s.flush()
-    topic_weights=weights(s,sid,topics); seen:set[tuple[str,tuple[str,...]]]=set()
+    topic_weights=weights(s,profile_id,topics); seen:set[tuple[str,tuple[str,...]]]=set()
     for pos in range(total):
         candidate=None
         forced_topic=focus_topics[pos] if selected=='number_algebra' and pos < len(focus_topics) else None
         for _ in range(50):
             topic=forced_topic or rng.choices(topics,weights=topic_weights,k=1)[0]
-            sk=s.scalar(select(Skill).where(Skill.student_id==sid,Skill.topic==topic))
+            sk=s.scalar(select(Skill).where(Skill.student_id==profile_id,Skill.topic==topic))
             lvl=(sk.level if sk else 1) if st.adaptive_mode else levels.get(topic,1)
             if rng.random()<.2: lvl=max(1,lvl-1)
             skill,prompt,atype,payload,ans,working=make_question(topic,min(4,lvl),rng)
@@ -446,6 +448,7 @@ def worksheet_view(ws):
         'current_phase':ws.current_phase or 'main','elapsed_seconds':ws.elapsed_seconds or 0,'status':ws.status or 'in_progress',
         'selected_topic':getattr(ws,'selected_topic','mixed') or 'mixed',
         'session_kind':getattr(ws,'session_kind','practice') or 'practice',
+        'test_mode':getattr(ws,'session_kind','practice')=='parent_test',
         'target_minutes':getattr(ws,'target_minutes',None),
         'counts':{
             'correct':sum(v=='correct' for v in statuses.values()),'incorrect':sum(v=='incorrect' for v in statuses.values()),
@@ -483,11 +486,12 @@ def hint_text(q:Question, hint_number:int) -> str:
 
 @app.post('/api/questions/{qid}/hint')
 def request_hint(qid:int,u:User=Depends(current_user),s:Session=Depends(db)):
-    if u.role!='student': raise HTTPException(403,'Student access required')
     q=s.get(Question,qid)
     if not q: raise HTTPException(404,'Question not found')
     ws=s.get(Worksheet,q.worksheet_id)
     if not ws or ws.student_id!=u.id: raise HTTPException(403,'Question does not belong to this student')
+    if u.role!='student' and not (u.role=='parent' and ws.session_kind=='parent_test'):
+        raise HTTPException(403,'Student or parent test access required')
     if question_status(q) in ('correct','incorrect'): raise HTTPException(400,'Completed questions do not need hints')
     next_number=(q.hint_count or 0)+1
     if next_number>3:
@@ -559,8 +563,11 @@ def complete(wid:int,u:User=Depends(current_user),s:Session=Depends(db)):
         score+=int(final_correct)
         if attempts: topic_results.setdefault(q.topic,[]).append(final_correct)
     ws.score=score; ws.completed_at=datetime.utcnow(); ws.status='completed'; ws.current_question_id=None
-    ws.xp_earned=score*10+(50 if score==ws.total else 0); u.xp+=ws.xp_earned; u.highest_level=max(u.highest_level,u.xp//250+1)
-    for topic in topic_results: update_skill(s,u.id,topic)
+    is_parent_test=ws.session_kind=='parent_test'
+    ws.xp_earned=0 if is_parent_test else score*10+(50 if score==ws.total else 0)
+    if not is_parent_test:
+        u.xp+=ws.xp_earned; u.highest_level=max(u.highest_level,u.xp//250+1)
+        for topic in topic_results: update_skill(s,u.id,topic)
     s.commit(); return summary(s,ws,u)
 
 @app.post('/api/worksheets/{wid}/restart-skipped')
@@ -608,7 +615,8 @@ def summary(s,ws,u):
                 'chapters':story.get('chapters') or [],'learning_goals':story.get('learning_goals') or [],
                 'status':'complete_with_review' if skipped else 'complete',
             }
-    return {'score':ws.score,'total':ws.total,'answered':answered,'skipped':skipped,'accuracy':round(ws.score/answered*100) if answered else 0,'xp_earned':ws.xp_earned,'level':u.xp//250+1,'level_progress':u.xp%250,'strongest_topic':strongest,'weakest_topic':weakest,'hints_used':hints,'perfect':ws.score==ws.total,'message':'Outstanding work!' if ws.score==ws.total else 'Worksheet finished. You can restart the skipped questions when you are ready.' if skipped else 'You are getting stronger every day.','adventure':adventure}
+    is_parent_test=ws.session_kind=='parent_test'
+    return {'worksheet_id':ws.id,'test_mode':is_parent_test,'score':ws.score,'total':ws.total,'answered':answered,'skipped':skipped,'accuracy':round(ws.score/answered*100) if answered else 0,'xp_earned':ws.xp_earned,'level':u.xp//250+1,'level_progress':u.xp%250,'strongest_topic':strongest,'weakest_topic':weakest,'hints_used':hints,'perfect':ws.score==ws.total,'message':'Test worksheet complete. Add an overall note before returning to the parent dashboard.' if is_parent_test else 'Outstanding work!' if ws.score==ws.total else 'Worksheet finished. You can restart the skipped questions when you are ready.' if skipped else 'You are getting stronger every day.','adventure':adventure}
 
 def streak(s,sid):
     dates=set(s.scalars(select(Worksheet.worksheet_date).where(Worksheet.student_id==sid,Worksheet.completed_at.is_not(None))).all());n=0;d=date.today()

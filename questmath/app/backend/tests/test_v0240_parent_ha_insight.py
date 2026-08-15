@@ -126,6 +126,17 @@ def test_ha_service_token_and_user_jwt_both_authorise_dashboard_endpoints():
     close(session)
 
 
+def test_one_diagnostic_does_not_claim_measured_growth():
+    _, session, _, student = make_client()
+    add_diagnostic(session, student, when=datetime.now(), secure_to=4)
+    levels = v0240.parent_insight(session, student.id)['estimated_level']
+    assert levels['baseline'] == 4
+    assert levels['current'] == 4
+    assert levels['diagnostics_completed'] == 1
+    assert levels['growth'] is None
+    close(session)
+
+
 def test_ha_endpoint_returns_an_unavailable_state_when_insight_aggregation_fails(monkeypatch):
     client, session, _, student = make_client()
     add_question(session, student, when=datetime.now(), correct=True)
