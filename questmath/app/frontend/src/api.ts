@@ -1,5 +1,6 @@
 const API = 'api';
 const ACTIVE_WORKSHEET_KEY = 'mq_active_worksheet_id';
+const DRAFT_PREFIX = 'mq_answer_draft:';
 
 export class ApiError extends Error {
   status: number;
@@ -51,6 +52,16 @@ export function rememberActiveWorksheet(id: number | null): void {
   else localStorage.removeItem(ACTIVE_WORKSHEET_KEY);
 }
 
+export function questionDraft(worksheetId: number, questionId: number): string {
+  return localStorage.getItem(`${DRAFT_PREFIX}${worksheetId}:${questionId}`) || '';
+}
+
+export function rememberQuestionDraft(worksheetId: number, questionId: number, value: string): void {
+  const key = `${DRAFT_PREFIX}${worksheetId}:${questionId}`;
+  if (value) localStorage.setItem(key, value);
+  else localStorage.removeItem(key);
+}
+
 export async function loadActiveWorksheet<T = any>(): Promise<T | null> {
   const id = activeWorksheetId();
   if (id) {
@@ -79,6 +90,15 @@ export async function createSession<T = any>(kind: 'practice' | 'diagnostic', mi
   const worksheet = await apiRequest<T & {id: number}>('/sessions/new', {
     method: 'POST',
     body: JSON.stringify({kind, minutes, topic}),
+  });
+  rememberActiveWorksheet(worksheet.id);
+  return worksheet;
+}
+
+export async function createIntervention<T = any>(minutes: 5 | 10 | 15, focus = 'auto'): Promise<T> {
+  const worksheet = await apiRequest<T & {id: number}>('/interventions/new', {
+    method: 'POST',
+    body: JSON.stringify({minutes, focus}),
   });
   rememberActiveWorksheet(worksheet.id);
   return worksheet;

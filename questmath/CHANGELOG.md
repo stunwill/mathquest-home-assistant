@@ -1,3 +1,21 @@
+# MathQuest 0.26.0
+
+- Added targeted 5, 10 and 15-minute Number and Algebra intervention sessions.
+- Added intervention coverage for addition, subtraction, multiplication, division, fact families, written methods and unknown-value equations.
+- Added check, teach, practice and retrieval phases with progressively supported learning goals.
+- Added question-specific model recommendations for number lines, place value, arrays and fraction comparisons.
+- Added **Why?**, **Show another way** and **Start over** support without revealing the assessed answer.
+- Moved question visuals, read-aloud, scratchpad, confidence checks and guided support into the React worksheet experience.
+- Added stable per-question visual identities so images cannot carry over from a previous question.
+- Added saved per-question answer drafts across previous, next, exit and resume actions.
+- Added vertically stacked fraction comparison models aligned to equal-sized wholes.
+- Corrected grid visuals so row and column labels are shown on the axes without printing the answer inside the highlighted square.
+- Reconciled answered, completed, correct, incorrect, skipped, remaining and hinted counts from one evidence calculation.
+- Separated independent accuracy from supported accuracy in intervention and Home Assistant reporting.
+- Kept parent test evidence excluded from Sienna's progress, mastery, XP, streak, calendar, recommendations and Home Assistant metrics.
+- Reduced legacy worksheet DOM enhancement layers and replaced browser-alert failures with in-page recovery messages.
+- Added backend and React regression coverage for interventions, visual ownership, answer drafts, evidence isolation and reporting reconciliation.
+
 # MathQuest 0.25.0
 
 - Added parent-only test worksheet creation for every standard MathQuest learning-area selection.

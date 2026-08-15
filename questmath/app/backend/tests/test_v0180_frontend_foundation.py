@@ -41,6 +41,7 @@ def test_core_frontend_uses_in_page_recovery_messages():
 
 def test_explicitly_resumed_worksheet_is_the_visual_source():
     main = (ROOT / 'questmath/app/frontend/src/main.tsx').read_text(encoding='utf-8')
-    visual_guard = (ROOT / 'questmath/app/frontend/src/v0150.ts').read_text(encoding='utf-8')
+    visual = (ROOT / 'questmath/app/frontend/src/question-visual.tsx').read_text(encoding='utf-8')
     assert '(window as any).__mq_ws=worksheet' in main
-    assert 'if(current)return current' in visual_guard
+    assert '<QuestionVisual question={q}/>' in main
+    assert 'const visual = question?.payload?.visual' in visual

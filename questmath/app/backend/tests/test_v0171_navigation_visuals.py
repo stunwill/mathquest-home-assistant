@@ -11,7 +11,8 @@ ROOT = Path(__file__).resolve().parents[4]
 
 def test_question_card_is_keyed_and_previous_navigation_is_available():
     source = (ROOT / 'questmath/app/frontend/src/main.tsx').read_text(encoding='utf-8')
-    assert 'key={q.id} data-question-id={q.id}' in source
+    assert "key={`${q.id}:${q.payload?.visual_key||''}`}" in source
+    assert 'data-visual-key={q.payload?.visual_key}' in source
     assert 'Previous question' in source
     assert 'function previousEligible' in source
     assert "'skipped','retry_available'" in source
@@ -22,12 +23,11 @@ def test_question_card_is_keyed_and_previous_navigation_is_available():
 
 
 def test_visual_guard_rejects_a_visual_from_another_question():
-    source = (ROOT / 'questmath/app/frontend/src/v0150.ts').read_text(encoding='utf-8')
-    assert 'dataset.questionId' in source
-    assert 'existing.dataset.qid!==cardQuestionId' in source
-    assert 'existing.remove()' in source
-    assert '!card.isConnected' in source
-    assert 'requestAnimationFrame(run)' in source
+    source = (ROOT / 'questmath/app/frontend/src/question-visual.tsx').read_text(encoding='utf-8')
+    main = (ROOT / 'questmath/app/frontend/src/main.tsx').read_text(encoding='utf-8')
+    assert 'question?.payload?.visual_key' in source
+    assert '<QuestionVisual question={q}/>' in main
+    assert "key={`${q.id}:${q.payload?.visual_key||''}`}" in main
 
 
 def test_calendar_navigation_keeps_a_stable_calendar_target():

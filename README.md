@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.25.0`
+Version `0.26.0`
 
 ## Features
 
@@ -32,6 +32,7 @@ Version `0.25.0`
 - Parent insight showing level and outcome growth, independent versus supported performance, retention, review dates and weekly recommendations
 - Long-lived Home Assistant service authentication plus complete category and outcome learning metrics
 - Parent-only test worksheets with question notes, overall feedback and addressed-release traceability
+- Targeted Number and Algebra interventions with React-owned visuals, reliable resume state and reconciled reporting
 
 ## Security and upgrades
 

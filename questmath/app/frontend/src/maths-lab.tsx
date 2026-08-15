@@ -16,6 +16,8 @@ const TOOLS:{id:LabTool;label:string;icon:string}[]=[
 ];
 
 export function recommendedLabTool(question:any):LabTool{
+  const recommended=String(question?.payload?.recommended_model||'') as LabTool;
+  if(TOOLS.some(tool=>tool.id===recommended))return recommended;
   const skill=String(question?.skill||'').toLowerCase(),topic=String(question?.topic||'').toLowerCase(),prompt=String(question?.prompt||'').toLowerCase();
   if(skill.includes('fraction'))return'fractions';
   if(skill.includes('percent'))return'percentages';
@@ -31,14 +33,29 @@ export function MathsLab({question,onClose}:{question:any;onClose:()=>void}){
   const suggested=useMemo(()=>recommendedLabTool(question),[question]);
   const[tool,setTool]=useState<LabTool>(suggested);
   const[resetKey,setResetKey]=useState(0);
+  const[support,setSupport]=useState<'why'|'another'|null>(null);
   return <div className="lab-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)onClose()}}>
     <section className="maths-lab" role="dialog" aria-modal="true" aria-labelledby="maths-lab-title">
-      <header className="lab-header"><div><small>INTERACTIVE MATHS LAB</small><h2 id="maths-lab-title">Build it, move it, explain it</h2><p>Use a model to test your thinking. The lab does not submit an answer.</p></div><button type="button" aria-label="Close maths lab" onClick={onClose}><X/></button></header>
+      <header className="lab-header"><div><small>INTERACTIVE MATHS LAB</small><h2 id="maths-lab-title">Build it, move it, explain it</h2><p>Use a different-number model to test your strategy. The lab does not submit or reveal the assessed answer.</p>{question?.payload?.intervention?.learning_goal&&<strong className="lab-learning-goal">Goal: {question.payload.intervention.learning_goal}</strong>}</div><button type="button" aria-label="Close maths lab" onClick={onClose}><X/></button></header>
       <div className="lab-layout"><nav className="lab-tabs" aria-label="Maths lab tools">{TOOLS.map(item=><button type="button" key={item.id} className={tool===item.id?'selected':''} aria-pressed={tool===item.id} onClick={()=>{setTool(item.id);setResetKey(value=>value+1)}}><span>{item.icon}</span>{item.label}{item.id===suggested&&<small>Suggested</small>}</button>)}</nav>
-        <div className="lab-workspace"><div className="lab-workspace-head"><div><small>CURRENT MODEL</small><b>{TOOLS.find(item=>item.id===tool)?.label}</b></div><button type="button" onClick={()=>setResetKey(value=>value+1)}><RotateCcw size={17}/> Start over</button></div><LabModel key={`${tool}-${resetKey}`} tool={tool}/></div>
+        <div className="lab-workspace"><div className="lab-workspace-head"><div><small>CURRENT MODEL</small><b>{TOOLS.find(item=>item.id===tool)?.label}</b></div><div className="lab-support-actions"><button type="button" aria-pressed={support==='why'} onClick={()=>setSupport(value=>value==='why'?null:'why')}>Why?</button><button type="button" aria-pressed={support==='another'} onClick={()=>setSupport(value=>value==='another'?null:'another')}>Show another way</button><button type="button" onClick={()=>{setResetKey(value=>value+1);setSupport(null)}}><RotateCcw size={17}/> Start over</button></div></div>{support&&<aside className="lab-support" role="status"><b>{support==='why'?'Why this model helps':'Another strategy to try'}</b><p>{supportText(tool,support)}</p></aside>}<LabModel key={`${tool}-${resetKey}`} tool={tool}/></div>
       </div>
     </section>
   </div>;
+}
+
+function supportText(tool:LabTool,mode:'why'|'another'){
+  const guidance:Record<LabTool,[string,string]>={
+    fractions:['Equal-sized wholes let you compare the shaded amounts fairly.','Rename both fractions with a common denominator, then compare the numerators.'],
+    percentages:['The bar, fraction, decimal and quantity all describe the same part of one whole.','Use a benchmark such as 50%, 25% or 10%, then combine benchmark parts.'],
+    'number-line':['Each jump records both the amount and the direction of a calculation.','Partition a number to bridge through the nearest ten before making the remaining jump.'],
+    'place-value':['Aligned columns keep ones, tens, hundreds and thousands in their correct places.','Partition each number by place, calculate matching parts, then recombine them.'],
+    arrays:['Equal rows make the factors and total visible at the same time.','Use a related known fact, then add or remove one equal group.'],
+    clock:['The hour hand moves gradually while the minute hand completes each hour.','Count elapsed time in jumps to the next hour, then add the remaining minutes.'],
+    grid:['The axes label the position without writing the answer inside the square.','Trace from the row label and column number until the two paths meet.'],
+    measurement:['Changing a dimension shows which measurements depend on length, width or angle.','Draw and label a simple diagram, then select the matching measurement rule.'],
+  };
+  return guidance[tool][mode==='why'?0:1];
 }
 
 function LabModel({tool}:{tool:LabTool}){
