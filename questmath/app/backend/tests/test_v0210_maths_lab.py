@@ -20,6 +20,7 @@ def test_frontend_lab_covers_the_release_models_and_replaces_legacy_button():
         assert f"id:'{model}'" in source
     assert '[data-manip]{display:none}' in styles
     main = (ROOT / 'questmath/app/frontend/src/main.tsx').read_text(encoding='utf-8')
-    assert 'Open Maths Lab' in main
+    assert '<QuestionTools question={q} onOpenLab={()=>setLabOpen(true)}' in main
+    assert '<MathsLab key=' in main
     assert 'if(feedback&&!feedback.retry_allowed)return' in main
     assert 'canStartOver={!feedback||feedback.retry_allowed}' in main

@@ -34,6 +34,16 @@ describe('interactive Maths Lab',()=>{
     expect(screen.getByText('3 rows × 4 in each row = 12 counters')).toBeTruthy();
   });
 
+  it('offers explanation and alternative-strategy support without exposing an answer',()=>{
+    render(<MathsLab question={{topic:'number',skill:'written_subtraction'}} onClose={()=>{}}/>);
+    fireEvent.click(screen.getByRole('button',{name:'Why?'}));
+    expect(screen.getByText('Why this model helps')).toBeTruthy();
+    expect(screen.getByText(/Aligned columns keep ones, tens, hundreds/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'Show another way'}));
+    expect(screen.getByText('Another strategy to try')).toBeTruthy();
+    expect(screen.queryByText(/correct answer/i)).toBeNull();
+  });
+
   it('links ruler and rectangle dimensions to perimeter and area',()=>{
     render(<MathsLab question={{topic:'measurement',skill:'area'}} onClose={()=>{}}/>);
     fireEvent.change(screen.getByLabelText('Ruler marker'),{target:{value:'10'}});

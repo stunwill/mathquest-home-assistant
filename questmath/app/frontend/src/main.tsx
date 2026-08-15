@@ -6,13 +6,16 @@ import {
 } from 'lucide-react';
 import './styles.css';
 import {APP_VERSION} from './version';
-import {apiRequest as req, createSession, loadActiveWorksheet, rememberActiveWorksheet} from './api';
+import {apiRequest as req, createSession, loadActiveWorksheet, questionDraft, rememberActiveWorksheet, rememberQuestionDraft} from './api';
 import {ErrorNotice, LearningCalendar, StoryAdventures, WorksheetHistory} from './student-foundation';
 import {MathsLab} from './maths-lab';
 import {MissionOutcome, StoryMissionProgress} from './story-adventure';
 import {AdaptiveRecommendation} from './adaptive-recommendation';
 import {HomeAssistantConnection, ParentLearningInsight} from './parent-insight';
 import {ParentTestWorksheets, TestQuestionFeedback, TestWorksheetResult} from './parent-testing';
+import {InterventionCard, InterventionGoal} from './intervention';
+import {QuestionVisual} from './question-visual';
+import {ConfidenceCheck, QuestionTools} from './question-tools';
 
 const API = 'api';
 
@@ -28,7 +31,7 @@ type WorksheetData = {
   id:number; date:string; completed_at:string|null; score:number; total:number; xp_earned:number;
   current_question_id:number|null; current_phase:'main'|'skipped'; elapsed_seconds:number; status:string; selected_topic:string;
   session_kind:string; test_mode:boolean;
-  counts:{correct:number;incorrect:number;skipped:number;remaining:number;hints:number}; questions:Question[];
+  counts:{correct:number;incorrect:number;skipped:number;remaining:number;hints:number;answered?:number;completed?:number}; questions:Question[];
 };
 
 function Brand({compact=false}:{compact?:boolean}){
@@ -108,7 +111,12 @@ function Student({user,logout}:{user:User;logout:()=>void}){
         if(worksheet){setWorking(true)}else{setChoosing(true)}
       }}><Play size={20}/>{worksheet?.completed_at?'Today complete':hasProgress?'Continue Today’s Quest':'Begin Today’s Adventure'}</button>
     </div><div className="level-orb"><small>LEVEL</small><strong>{dashboard.user.level}</strong><span>{dashboard.user.xp%250}/250 XP</span></div></section>
-    {!hasProgress&&<AdaptiveRecommendation data={adaptive} busy={recommendationBusy} onStart={startRecommended}/>}
+    {!hasProgress&&<AdaptiveRecommendation
+      data={adaptive}
+      busy={recommendationBusy}
+      onStart={startRecommended}
+    />}
+    {!hasProgress&&<InterventionCard onOpen={openWorksheet}/>}
     <StoryAdventures onOpen={openWorksheet}/>
     <WorksheetHistory onCreate={()=>setChoosing(true)} onOpen={openWorksheet}/>
     <section className="cards"><Metric icon={<Flame/>} label="Daily streak" value={`${dashboard.streak} days`}/><Metric icon={<CheckCircle2/>} label="Accuracy" value={`${dashboard.accuracy}%`}/><Metric icon={<Star/>} label="Questions" value={dashboard.questions_answered}/><Metric icon={<Trophy/>} label="Highest level" value={dashboard.user.highest_level}/></section>
@@ -133,12 +141,15 @@ function QuestCategoryPicker({start,cancel}:{start:(topic:string,minutes:5|10|15
   const[minutes,setMinutes]=useState<5|10|15>(10);
   const[kind,setKind]=useState<'practice'|'diagnostic'>('practice');
   const[busy,setBusy]=useState(false);
+  const[printBusy,setPrintBusy]=useState(false);
+  const[error,setError]=useState('');
+  async function printWorksheet(){setPrintBusy(true);setError('');try{const blob=await req<Blob>('/worksheets/today/print',{method:'POST',body:JSON.stringify({topic:selected})});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`mathquest-${selected}-worksheet.pdf`;link.click();URL.revokeObjectURL(link.href)}catch(reason:any){setError(reason.message)}finally{setPrintBusy(false)}}
   return <main className="category-page"><section className="category-card">
     <Brand compact/><p className="eyebrow">CHOOSE TODAY’S SESSION</p><h1>How would you like to learn?</h1>
     <div className="session-kind" role="group" aria-label="Session type"><button type="button" className={kind==='practice'?'selected':''} onClick={()=>setKind('practice')}><b>Targeted practice</b><small>Work towards the Level 5 pathway</small></button><button type="button" className={kind==='diagnostic'?'selected':''} onClick={()=>{setKind('diagnostic');setMinutes(15)}}><b>Levels 2–6 diagnostic</b><small>Find a starting point across Number and Algebra</small></button></div>
     {kind==='practice'&&<><p>Choose a session length and learning area.</p><div className="duration-options" role="group" aria-label="Session length">{([5,10,15] as const).map(value=><button type="button" key={value} className={minutes===value?'selected':''} onClick={()=>setMinutes(value)}><b>{value} minutes</b><small>{value===5?'Quick boost':value===10?'Daily session':'Deep practice'}</small></button>)}</div><div className="category-grid">{QUEST_CATEGORIES.map(c=><button type="button" key={c.id} className={'category-option '+(selected===c.id?'selected':'')} onClick={()=>setSelected(c.id)}><span>{c.icon}</span><b>{c.name}</b><small>{c.description}</small></button>)}</div></>}
     {kind==='diagnostic'&&<div className="diagnostic-note"><b>About 15 minutes</b><p>Three short questions at each Victorian Curriculum level from 2 to 6. Results identify a baseline; Level 5 remains the learning target.</p></div>}
-    <div className="category-actions"><button onClick={cancel}>Back</button><button className="primary" disabled={busy} onClick={async()=>{setBusy(true);try{await start(kind==='diagnostic'?'number_algebra':selected,minutes,kind)}finally{setBusy(false)}}}><Play size={20}/>{busy?'Building your session…':kind==='diagnostic'?'Start diagnostic':`Start ${minutes}-minute session`}</button></div>
+    {error&&<p className="category-error" role="alert">{error}</p>}<div className="category-actions"><button onClick={cancel}>Back</button>{kind==='practice'&&<button type="button" disabled={printBusy} onClick={printWorksheet}><Download size={18}/>{printBusy?'Preparing PDF…':'Print worksheet'}</button>}<button className="primary" disabled={busy} onClick={async()=>{setBusy(true);try{await start(kind==='diagnostic'?'number_algebra':selected,minutes,kind)}finally{setBusy(false)}}}><Play size={20}/>{busy?'Building your session…':kind==='diagnostic'?'Start diagnostic':`Start ${minutes}-minute session`}</button></div>
   </section></main>;
 }
 
@@ -176,16 +187,16 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
   const canFinishWithSkipped=ws.questions.every(item=>['correct','incorrect','skipped'].includes(item.status)||(item.skipped_count>0&&!item.attempts.length));
 
   useEffect(()=>{if(q&&q.id!==ws.current_question_id)void safe(()=>goTo(q.id))},[]);
-  useEffect(()=>{setHint(q?.last_hint||null);setSupport(null)},[q?.id]);
+  useEffect(()=>{setHint(q?.last_hint||null);setSupport(null);setAnswer(q?questionDraft(ws.id,q.id):'')},[q?.id,ws.id]);
   async function safe(action:()=>Promise<void>){setActionError('');try{await action()}catch(e:any){setActionError(e.message||'MathQuest could not complete that action.')}}
   function elapsed(){return (Date.now()-sessionStart)/1000}
   async function refresh(updated?:WorksheetData){const data:WorksheetData=updated||await req<WorksheetData>(`/worksheets/${ws.id}/view`);onUpdate(data);setAnswer('');setFeedback(null);setHint(null);setSupport(null);setQuestionStart(Date.now())}
   async function goTo(id:number){const updated=await req(`/worksheets/${ws.id}/navigate/${id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});setOverview(false);await refresh(updated)}
   async function previousQuestion(){if(previous)await goTo(previous.id)}
-  async function submit(){const cleaned=String(answer ?? '').trim();if(!cleaned)return;const result=await req(`/questions/${q.id}/answer`,{method:'POST',body:JSON.stringify({answer:cleaned,seconds:(Date.now()-questionStart)/1000})});setFeedback(result);if(result.correct||!result.retry_allowed){const latest=await req(`/worksheets/${ws.id}/view`);onUpdate(latest)}}
+  async function submit(){const cleaned=String(answer ?? '').trim();if(!cleaned)return;const result=await req(`/questions/${q.id}/answer`,{method:'POST',body:JSON.stringify({answer:cleaned,seconds:(Date.now()-questionStart)/1000})});setFeedback(result);if(result.correct||!result.retry_allowed){rememberQuestionDraft(ws.id,q.id,'');const latest=await req(`/worksheets/${ws.id}/view`);onUpdate(latest)}}
   async function requestHint(){setHintBusy(true);try{const result=await req(`/questions/${q.id}/hint`,{method:'POST'});setHint(result.hint);setSupport(await req(`/questions/${q.id}/guided-support?action=hint`));const latest=await req(`/worksheets/${ws.id}/view`);onUpdate(latest)}finally{setHintBusy(false)}}
   async function requestSupport(action:string){setHintBusy(true);try{setSupport(await req(`/questions/${q.id}/guided-support?action=${action}`))}finally{setHintBusy(false)}}
-  function startOver(){if(feedback&&!feedback.retry_allowed)return;setAnswer('');setFeedback(null);setHint(null);setSupport(null);setQuestionStart(Date.now())}
+  function startOver(){if(feedback&&!feedback.retry_allowed)return;rememberQuestionDraft(ws.id,q.id,'');setAnswer('');setFeedback(null);setHint(null);setSupport(null);setQuestionStart(Date.now())}
   async function skip(){const updated=await req(`/questions/${q.id}/skip`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});const next=nextEligible(updated,q.id);if(next){const moved=await req(`/worksheets/${ws.id}/navigate/${next.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved)}else await refresh(updated)}
   async function next(){const latest:WorksheetData=await req(`/worksheets/${ws.id}/view`);const target=nextEligible(latest,q.id);if(target){const moved=await req(`/worksheets/${ws.id}/navigate/${target.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved);return}const result=await req(`/worksheets/${ws.id}/complete`,{method:'POST'});if(!ws.test_mode)rememberActiveWorksheet(null);onDone(result)}
   async function finish(){const result=await req(`/worksheets/${ws.id}/complete`,{method:'POST'});if(!ws.test_mode)rememberActiveWorksheet(null);onDone(result)}
@@ -197,14 +208,14 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
     <div className="worksheet-header"><button className="ghost danger-text" onClick={()=>setConfirmExit(true)}><X size={20}/> Exit worksheet</button><Brand compact/><button className="ghost" onClick={()=>setOverview(true)}><List size={20}/> Questions</button></div>
     <div className="worksheet-layout"><section className="worksheet-main">
       <div className="worksheet-top"><b>{phase==='skipped'?`Skipped round · ${ws.counts.skipped} remaining`:`Question ${currentNumber} of ${ws.total}`}</b><div className="progress"><i style={{width:`${completed/ws.total*100}%`}}/></div><span>{q.topic} · level {q.level}</span></div>
-      <section className="question-card" key={q.id} data-question-id={q.id} data-guided-tutor-owner="true">{actionError&&<ErrorNotice message={actionError} dismiss={()=>setActionError('')}/>} {q.payload?.adventure&&<StoryMissionProgress adventure={q.payload.adventure}/>}<div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><button type="button" className="open-maths-lab" onClick={()=>setLabOpen(true)}>🧩 Open Maths Lab</button><h1>{q.prompt}</h1>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={setAnswer}/>
+      <section className="question-card" key={`${q.id}:${q.payload?.visual_key||''}`} data-question-id={q.id} data-visual-key={q.payload?.visual_key} data-guided-tutor-owner="true">{actionError&&<ErrorNotice message={actionError} dismiss={()=>setActionError('')}/>} {q.payload?.adventure&&<StoryMissionProgress adventure={q.payload.adventure}/>}<InterventionGoal question={q}/><div className="question-icon">{({number:'🔢',algebra:'□',measurement:'📏',space:'⬡',statistics:'📊',probability:'🎲'} as any)[q.topic]||'✦'}</div><QuestionTools question={q} onOpenLab={()=>setLabOpen(true)}/><h1>{q.prompt}</h1><QuestionVisual question={q}/>{q.payload?.shape&&<FractionShape parts={q.payload.shape.parts} shaded={q.payload.shape.shaded}/>}<Answer q={q} value={answer} setValue={(value:string)=>{setAnswer(value);rememberQuestionDraft(ws.id,q.id,value)}}/>
         {hint&&<div className="hint-box"><Lightbulb size={22}/><div><b>Hint {q.hint_count||1} of 3</b><p>{hint}</p></div></div>}
         <GuidedTutor support={support} busy={hintBusy} canStartOver={!feedback||feedback.retry_allowed} onAction={requestSupport} onStartOver={startOver}/>
         {hint&&q.hint_count>=2&&<StrategyCard card={q.payload?.strategy_card}/>}
-        {!feedback?<><div className="question-navigation"><button type="button" disabled={!previous} onClick={()=>safe(previousQuestion)}><ChevronLeft size={19}/> Previous question</button>{canFinishWithSkipped&&<button type="button" className="finish-skipped" onClick={()=>safe(finish)}>Finish worksheet with skipped questions</button>}</div><div className="support-actions"><button className="hint-button" disabled={hintBusy} onClick={()=>safe(requestHint)}><Lightbulb size={19}/>{hintBusy?'Getting help…':q.hint_count>=3?'Review final hint':q.hint_count===2?'Show worked next step':q.hint_count===1?'Show a strategy':'Give me a hint'}</button><small>Hints become gradually stronger and do not reduce the score.</small></div><div className="question-actions"><button className="skip" onClick={()=>safe(skip)}><SkipForward size={19}/> Skip for now</button><button type="button" className="primary" disabled={!String(answer ?? '').trim()} onClick={()=>safe(submit)}>Check answer</button></div></>:<div className={'feedback '+(feedback.correct?'correct':'wrong')}><h3>{feedback.correct?'✅ Great job!':'❌ '+feedback.message}</h3>{feedback.working&&<p>{feedback.working}</p>}{!feedback.retry_allowed&&ws.test_mode&&<TestQuestionFeedback worksheetId={ws.id} question={q}/>} {feedback.retry_allowed?<button onClick={()=>{setFeedback(null);setAnswer('')}}>Try again</button>:<button className="primary" onClick={()=>safe(next)}>{ws.counts.remaining<=1?'Finish worksheet':'Next question'} <ChevronRight size={18}/></button>}</div>}
+        {!feedback?<><div className="question-navigation"><button type="button" disabled={!previous} onClick={()=>safe(previousQuestion)}><ChevronLeft size={19}/> Previous question</button>{canFinishWithSkipped&&<button type="button" className="finish-skipped" onClick={()=>safe(finish)}>Finish worksheet with skipped questions</button>}</div><div className="support-actions"><button className="hint-button" disabled={hintBusy} onClick={()=>safe(requestHint)}><Lightbulb size={19}/>{hintBusy?'Getting help…':q.hint_count>=3?'Review final hint':q.hint_count===2?'Show worked next step':q.hint_count===1?'Show a strategy':'Give me a hint'}</button><small>Hints become gradually stronger and do not reduce the score.</small></div><div className="question-actions"><button className="skip" onClick={()=>safe(skip)}><SkipForward size={19}/> Skip for now</button><button type="button" className="primary" disabled={!String(answer ?? '').trim()} onClick={()=>safe(submit)}>Check answer</button></div></>:<div className={'feedback '+(feedback.correct?'correct':'wrong')}><h3>{feedback.correct?'✅ Great job!':'❌ '+feedback.message}</h3>{feedback.working&&<p>{feedback.working}</p>}{!feedback.retry_allowed&&ws.test_mode&&<TestQuestionFeedback worksheetId={ws.id} question={q}/>} {!feedback.retry_allowed&&!ws.test_mode&&<ConfidenceCheck questionId={q.id}/>} {feedback.retry_allowed?<button onClick={()=>{setFeedback(null);setAnswer('')}}>Try again</button>:<button className="primary" onClick={()=>safe(next)}>{ws.counts.remaining<=1?'Finish worksheet':'Next question'} <ChevronRight size={18}/></button>}</div>}
       </section>
     </section><WorksheetStatus ws={ws} q={q} open={()=>setOverview(true)}/></div>
-    {overview&&<QuestionOverview ws={ws} activeId={q.id} close={()=>setOverview(false)} goTo={goTo}/>} {confirmExit&&<ConfirmExit cancel={()=>setConfirmExit(false)} exit={exit}/>} {labOpen&&<MathsLab question={q} onClose={()=>setLabOpen(false)}/>}</main>;
+    {overview&&<QuestionOverview ws={ws} activeId={q.id} close={()=>setOverview(false)} goTo={goTo}/>} {confirmExit&&<ConfirmExit cancel={()=>setConfirmExit(false)} exit={exit}/>} {labOpen&&<MathsLab key={`${q.id}:${q.payload?.visual_key||''}`} question={q} onClose={()=>setLabOpen(false)}/>}</main>;
 }
 
 function nextEligible(ws:WorksheetData,afterId?:number){
