@@ -6,29 +6,56 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.25.0
+## Current release scope, 0.26.0
 
-This release gives the parent account a persistent quality-testing workflow for validating worksheets and tracing feedback into later releases.
+This release combines the next agreed educational and reliability work into one testable improvement to Number and Algebra tutoring, interactive models and trustworthy reporting.
 
-- Let a parent create and complete Number, Algebra, Measurement, Space, Statistics, Probability, Number and Algebra, or mixed test worksheets.
-- Generate parent test questions from Sienna's enabled learning areas and adaptive profile while storing the attempt under the parent account.
-- Keep all parent test answers, hints, time, completion and scores out of Sienna's progress, mastery, XP, streak, calendar and recommendations.
-- Let the parent add structured bug, enhancement or general notes after completing each test question.
-- Let the parent add overall notes after completing a test worksheet.
-- Provide a parent test history with in-progress resume, completed test review, question context, answers and saved notes.
-- Track feedback as open, planned, addressed or deferred.
-- Require addressed feedback to identify the semantic release number that delivered the correction or enhancement.
-- Show open and addressed feedback counts and addressed release numbers for every completed test worksheet.
-- Preserve all existing learner worksheets and data while adding a compatible feedback table.
-- Correct parent reporting so one diagnostic does not claim zero measured growth before a repeat diagnostic exists.
-- Add backend and React regression coverage for parent-only access, feedback lifecycle, release traceability, learning-data isolation and responsive presentation.
+### Number and Algebra intervention
 
-## Recently completed release, 0.24.0
+- Deliver a targeted intervention pathway for addition, subtraction, multiplication and division.
+- Build fluent recall through fact families, related facts, decomposition, bridging through tens and efficient mental strategies instead of finger counting.
+- Teach and practise written methods, including place-value alignment, regrouping and exchanging, with question-specific subtraction support.
+- Include unknown-value equations in different positions so Algebra practice tests inverse operations and relational understanding rather than answer recall.
+- Use short diagnostic checks to identify prerequisite gaps and route the session to the appropriate intervention before returning to grade-level work.
+- Support 5, 10 and 15-minute intervention sessions with clear goals, a small number of focused questions and later retrieval checks.
+- Measure independent performance separately from performance completed with hints, tutor support or interactive models.
 
-- Parent reporting for diagnostic and outcome growth, independent and supported accuracy, fluency, retention and review dates.
-- Seven-day learning summaries, recent gains, persistent gaps, practised strategies and recommended sessions.
-- Complete Home Assistant category and outcome learning metrics.
-- Persistent, narrowly scoped Home Assistant service authentication and graceful unavailable states.
+### Interactive learning expansion
+
+- Stack fraction comparison models vertically, align them to the same origin and scale them to an equal whole so relative amounts are visually comparable.
+- Add open number-line jump strategies for addition and subtraction.
+- Add place-value and regrouping models for written addition and subtraction.
+- Add arrays and equal-group models for multiplication and division.
+- Select the model and progressively stronger hints from the operation, question structure and detected misconception.
+- Provide **Why?**, **Show another way** and **Start over** controls without revealing the final answer prematurely.
+- Keep labels, highlights and generated images tied to the current question so the visual never exposes the answer or carries over from a previous question.
+
+### Platform reliability
+
+- Consolidate worksheet creation behind one shared service for learner worksheets, timed sessions, recommendations, Story Adventures and parent tests.
+- Replace remaining MutationObserver feature layers in the worksheet experience with React-owned components and state.
+- Preserve exact question, image, answer draft, elapsed time, skip state and hint state across previous, next, exit and resume actions.
+- Prevent duplicate questions and stale visual payloads across standard, intervention, adventure and parent-test flows.
+- Replace silent failures and browser alerts with accessible in-page errors and recovery actions, including expired-authentication handling.
+- Preserve the existing database, worksheet history, answers, progress, parent test feedback and Home Assistant add-on upgrade path.
+- Add component, interaction, API and end-to-end regression coverage for the affected worksheet paths.
+
+### Reporting corrections
+
+- Reconcile worksheet totals, completed, correct, incorrect, hinted, skipped and remaining counts across the live worksheet, completion summary, calendar and parent reports.
+- Keep parent test activity excluded from Sienna's learning history, mastery, XP, streak, calendar, recommendations and Home Assistant learner metrics.
+- Report growth only when enough comparable evidence exists, and clearly distinguish insufficient evidence from no improvement.
+- Keep independent, hinted and tutor-supported performance separate in parent and Home Assistant reporting.
+- Ensure calendar navigation and worksheet links open the correct day and worksheet, with no duplicated badge panel in the calendar section.
+- Add regression tests that compare the parent dashboard, calendar and Home Assistant statistics against the underlying learner worksheet evidence.
+
+## Recently completed release, 0.25.0
+
+- Parent-only test worksheets using Sienna's learning profile without changing her learning evidence.
+- Structured question and overall notes with open, planned, addressed and deferred states.
+- Completed test review with question context, attempts, correct answers, working, timing and feedback.
+- Semantic release traceability for addressed bugs and enhancements.
+- Corrected diagnostic reporting so a single result does not imply measured zero growth.
 
 ## Feature findings from the supplied recordings
 
@@ -140,7 +167,8 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.22.0 | Story Adventures 2.0 | Merged and released |
 | Completed | 0.23.0 | Adaptive mastery and retention | Merged and released |
 | Completed | 0.24.0 | Parent and Home Assistant insight | Merged and released |
-| Current | 0.25.0 | Parent test worksheets and feedback traceability | Parent testing remains isolated from learning evidence, notes persist with question context, and addressed items show a valid release number |
+| Completed | 0.25.0 | Parent test worksheets and feedback traceability | Merged and released |
+| Current | 0.26.0 | Number and Algebra intervention, interactive learning, platform reliability and reporting corrections | A focused intervention selects appropriate strategies and models, worksheet state remains reliable across navigation and resume, and learner reporting reconciles without parent-test contamination |
 
 ### Continuous delivery loop
 
@@ -162,8 +190,8 @@ No release receives a promised date or week count. The loop may complete several
 - If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
 - Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
 
-Parent Test Worksheets and Feedback Traceability reuses the worksheet experience and question generator, but stores its evidence under the parent account and keeps it separate from Sienna's adaptive learning history.
+The 0.26.0 release builds on the adaptive mastery, guided tutoring, interactive lab and parent-testing foundations. Its four workstreams are delivered together because the intervention must use reliable worksheet state and trustworthy reporting to measure whether the new teaching support improves independent understanding.
 
 ## Recommended priority
 
-The current release should deliver and validate Parent Test Worksheets and Feedback Traceability. The key gate is that Stu can test the real worksheet flow, record actionable question-level and overall feedback, review it later, and see which release addressed each item without changing any of Sienna's learning evidence. No release after 0.25.0 is sufficiently defined yet, so the next release requires a product decision after this release is reviewed and merged.
+The current release should deliver and validate the Number and Algebra intervention, its linked interactive models, the worksheet reliability work needed to support it and corrected reporting. The key gate is that Sienna can complete a focused short session using appropriate strategies and models, then the parent and Home Assistant views accurately distinguish independent understanding from supported completion. No release after 0.26.0 is sufficiently defined yet, so the following release requires a product decision after this release is reviewed and merged.
