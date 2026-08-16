@@ -6,9 +6,54 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.27.0
+## Current release scope, 0.28.0, Math Mentor Foundation
 
-This release addresses the worksheet usability and review problems reported during v0.26.0 testing. It is a focused learner-experience release and does not change the completed v0.26.0 intervention or reporting scope.
+This release turns the existing guided-support building blocks into a visible, consistent **Math Mentor** experience inside every learner worksheet question. It preserves the worksheet, Home Assistant and parent-test workflows while changing the learner path after an incorrect answer from quick answer reveal to guided recovery.
+
+### Math Mentor panel
+
+- Provide a lightweight, collapsible Math Mentor panel on every learner worksheet question, without using a modal.
+- Include **Hint**, **Why?**, **Teach me**, **Worked example**, **Start over** and **Read aloud** actions.
+- Keep the panel question-scoped, keyboard accessible, and visually consistent with the existing MathQuest cards and controls.
+- Reuse the existing question-family, visual and maths-lab capability rather than creating parallel teaching systems.
+
+### Guided Tutor and ask-before-tell flow
+
+- After an incorrect learner answer, automatically open Math Mentor with a guiding question before explaining a method or showing a result.
+- Support the learning sequence: attempt, guiding question, learner retry, hint level 1, hint level 2, hint level 3, different-number worked example, return to the original question.
+- Do not reveal the assessed answer while the mentor sequence remains available. Preserve the conventional parent-test answer lifecycle.
+- Record only the support steps needed for the current question, while keeping Start over as a question-local tutoring reset that never loses worksheet progress or answer history.
+
+### Progressive question-specific support
+
+- Retain three progressive hint levels for every existing question family, including arithmetic, equations, fractions, measurement, grids, time and data.
+- Make the first stage an ask-before-tell guiding question, then increase explicitness without repeating text or exposing the assessed result.
+- Provide concise Why and Teach me explanations, common-mistake cues and memory tips appropriate to the question family.
+- Generate worked examples with different values from the assessed question, include intermediate reasoning, and prevent answer collisions.
+
+### Browser read aloud framework
+
+- Provide one browser text-to-speech framework for questions, hints, mentor explanations and examples.
+- Use the existing `en-AU` speech support where available, and show a clear non-blocking unavailable message where the browser does not support speech synthesis.
+- Do not make speech a dependency for completing a worksheet.
+
+### Release acceptance criteria
+
+- Every learner worksheet question exposes a usable Math Mentor panel.
+- A first incorrect learner answer opens the guiding question and remains retryable without revealing the answer.
+- The three hints, mini-lesson and distinct worked example can be completed before the final reveal path is available.
+- Start over returns the panel to the first mentoring prompt without resetting worksheet progress.
+- Parent tests remain isolated and do not receive altered assessment behaviour.
+- Backend, frontend and accessibility regression tests cover the mentor flow.
+
+## Recently completed release, 0.27.0
+
+- Configuration-managed parent and student credentials that preserve existing account data.
+- Reliable parent-test answer, refresh, navigation, save and completion lifecycle with optional notes.
+- Clear session selection controls, visual rotational-symmetry hints and recent-question duplicate protection.
+- Worksheet review visuals, accessible modal dismissal and keyboard answer-to-next-question flow.
+
+## Earlier completed release, 0.26.0
 
 ### Parent and student credential configuration
 
@@ -191,7 +236,13 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.24.0 | Parent and Home Assistant insight | Merged and released |
 | Completed | 0.25.0 | Parent test worksheets and feedback traceability | Merged and released |
 | Completed | 0.26.0 | Number and Algebra intervention, interactive learning, platform reliability and reporting corrections | Merged and released |
-| Current | 0.27.0 | Credential and parent-test reliability, worksheet usability, visual symmetry hints, review fidelity and keyboard flow | Configuration credentials update existing accounts without losing data, parent tests complete without ownership errors, session choices are visibly selectable, repeated prompts are avoided, reviews reproduce stored visuals, modals dismiss accessibly and Enter supports the complete answer-to-next-question flow |
+| Completed | 0.27.0 | Credential and parent-test reliability, worksheet usability, visual symmetry hints, review fidelity and keyboard flow | Merged and released |
+| Current | 0.28.0 | Math Mentor Foundation: guided tutor, ask-before-tell, progressive support, explanations, worked examples, Start over and browser read aloud | Every learner question has a collapsible mentor panel; incorrect answers start guided recovery before answer reveal; support is question-specific and accessible; parent tests remain conventional |
+| Planned | 0.29.0 | Learning Intelligence: prerequisite skill graph, misconception detection, spaced retrieval, evidence collection, adaptive tutor recommendations and learning-profile improvements | A documented skill graph and evidence model drive personalised session selection without discarding existing learner history |
+| Planned | 0.30.0 | Visual Mathematics: vertically aligned fraction comparison, interactive fraction models, manipulatives, multiple strategies, Show another way and improved visual explanations | Models use equal wholes and do not expose the assessed answer prematurely |
+| Planned | 0.31.0 | Parent Insights: growth reporting, retention analytics, mastery tracking, session recommendations, misconception reports and dashboard enhancements | Parent reporting clearly separates independent, supported and retained understanding |
+| Planned | 0.32.0 | Home Assistant Expansion: dashboard improvements, notifications, automations, widgets and integration enhancements | Home Assistant data remains stable, privacy-preserving and non-blocking to local learning |
+| Planned | 0.33.0 | Story Adventure Expansion: applied mathematics, curriculum adventures, quest progression, unlockables and challenge content | Story content maps to current curriculum goals and does not weaken adaptive learning evidence |
 
 ### Continuous delivery loop
 
@@ -217,4 +268,4 @@ The 0.27.0 release groups the learner-experience findings reported after v0.26.0
 
 ## Recommended priority
 
-The current release should first restore reliable parent and student credential updates and the complete parent-test lifecycle, then deliver and validate the v0.27.0 worksheet usability and review corrections. The key gate is that a configuration credential change updates the existing account without losing its data, a parent can answer, refresh, navigate, annotate and complete a test worksheet without ownership errors, and Sienna can clearly choose a session, receive an appropriate visual symmetry hint, avoid an immediate repeat, use Enter through the answer and continuation flow, then review the exact original question and visual in a modal that dismisses by button, Escape or backdrop click. No release after 0.27.0 is sufficiently defined yet, so the following release requires a product decision after this release is reviewed and merged.
+The immediate priority is v0.28.0, because MathQuest already has guided-support, question-family and read-aloud foundations but does not yet make them a coherent learner-facing mentoring journey. The release must make recovery from an incorrect answer supportive without making assessment misleading or breaking parent testing. After that, v0.29.0 should strengthen the evidence and prerequisite model before broadening visual models in v0.30.0. This order ensures that future interactivity is selected for a learning reason, not merely added as a feature.

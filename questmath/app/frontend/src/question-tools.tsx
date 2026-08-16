@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {apiRequest} from './api';
+import {speakText} from './speech';
 
 export function QuestionTools({question, onOpenLab}: {question: any; onOpenLab: () => void}) {
   const [scratchOpen, setScratchOpen] = useState(false);
@@ -11,11 +12,8 @@ export function QuestionTools({question, onOpenLab}: {question: any; onOpenLab: 
     setError('');
     try {
       const data: any = await apiRequest(`/questions/${question.id}/read-aloud`);
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance([data.text, data.visual_description].filter(Boolean).join('. '));
-        utterance.lang = 'en-AU'; utterance.rate = .92; window.speechSynthesis.speak(utterance);
-      }
+      const result = speakText([data.text, data.visual_description].filter(Boolean).join('. '), data.lang || 'en-AU');
+      if (!result.supported) setError(result.message);
     } catch (reason: any) { setError(reason.message); }
   }
   async function toggleScratch() {
