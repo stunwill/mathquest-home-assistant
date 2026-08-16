@@ -1,4 +1,4 @@
-# MathQuest 0.26.0
+# MathQuest 0.27.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -33,9 +33,15 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
 - React-owned question visuals and support tools with per-question visual identity and saved answer drafts
 - Reconciled worksheet, calendar, parent and Home Assistant evidence counts
+- Configuration-managed parent and student credentials that safely update existing accounts on restart
+- Reliable parent test navigation with optional notes and isolated learner evidence
+- Visual rotational-symmetry hints, recent-question duplicate protection and faithful worksheet-review visuals
+- Accessible review dialogs and keyboard-first answer and continuation flow
 
 ## Upgrade compatibility
 
 The app slug and database path remain `questmath`, preserving the existing Home Assistant app identity and `/data/questmath.db`. The visible product name is MathQuest.
 
 MathQuest persists its JWT signing secret separately at `/data/jwt-signing-secret` and its Home Assistant service token at `/data/ha-service-token`. Upgrading from the public legacy JWT signing value can invalidate existing sessions, so users may need to sign in again. The database is not changed or replaced.
+
+Change parent and student usernames or passwords in the Home Assistant add-on Configuration page, save, then restart MathQuest. Startup reconciles those values with the existing managed accounts without replacing their IDs or learning data.

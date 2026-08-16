@@ -1,3 +1,19 @@
+# MathQuest 0.27.0
+
+- Fixed Home Assistant parent and student credential changes so existing managed accounts are updated on restart without changing their IDs or losing worksheet data.
+- Fixed parent test worksheets returning **Worksheet not found** after a correctly accepted answer.
+- Made question-level and overall parent test notes explicitly optional without blocking navigation, completion or return to the dashboard.
+- Corrected duplicated wording such as **Use use a known double** in addition feedback.
+- Added shared worksheet lifecycle authorisation for learner worksheets and parent-owned test worksheets.
+- Made session type, duration and learning-area choices visibly selectable with persistent, accessible selected states.
+- Added regular-polygon visuals and before-and-after rotation hints for rotational-symmetry questions, including reduced-motion support.
+- Removed Story Adventure chapter and challenge prefixes from maths prompts while retaining mission context separately.
+- Added recent learner-history duplicate protection and more statistical-survey question variants while excluding parent tests from learner history.
+- Added stored question visuals to completed learner and parent-test worksheet reviews.
+- Added Escape-key, backdrop-click and focus-return behaviour to worksheet review dialogs.
+- Added Enter-key support for both submitting typed answers and moving to the next question or finishing a worksheet.
+- Added backend and React regression coverage for credential upgrades, parent-test completion, optional notes, session choices, symmetry hints, duplicate avoidance, review fidelity and keyboard flow.
+
 # MathQuest 0.26.0
 
 - Added targeted 5, 10 and 15-minute Number and Algebra intervention sessions.

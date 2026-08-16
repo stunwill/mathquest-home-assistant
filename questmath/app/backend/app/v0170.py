@@ -53,7 +53,7 @@ def _addition_fact(rng: random.Random):
         strategy = 'Make 10 first'; rule = f'Move {to_ten} from {b} to {a} to make 10.'
         steps = [f'Split {b} into {to_ten} and the amount left.', f'Combine {a} and {to_ten} to make 10.', 'Add the remaining part using the new 10 fact.']
     payload = {'operation': 'addition', 'fact_key': f'{min(a,b)}+{max(a,b)}', 'strategy_card': _card('Addition fact strategy', strategy, rule, steps, 'Example: 8 + 5 → 10 + 3', 'addition')}
-    return legacy.q('VC2M4N06', 'fact_recall_addition', f'Calculate {a} + {b}.', 'number', payload, a + b, f'Use {strategy.lower()}: {a} + {b} = {a+b}.')
+    return legacy.q('VC2M4N06', 'fact_recall_addition', f'Calculate {a} + {b}.', 'number', payload, a + b, f'{strategy}: {a} + {b} = {a+b}.')
 
 
 def _subtraction_fact(rng: random.Random):

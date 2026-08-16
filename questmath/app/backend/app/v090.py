@@ -116,8 +116,7 @@ def _mission_facts(theme: str, rng: random.Random) -> dict[str, Any]:
 def _mission_question(theme: str, topic: str, index: int, chapter: str,
                       facts: dict[str, Any], rng: random.Random):
     """Build a theme-specific applied question from shared mission data."""
-    icon = ADVENTURES[theme]['icon']
-    prefix = f'{icon} {chapter}, challenge {index + 1}. '
+    prefix = ''
     if topic == 'number':
         containers = facts['containers'] + index
         each = facts['items_per_container']
@@ -292,14 +291,24 @@ def apply_adventure(wid:int,payload:AdventureIn,user:legacy.User=Depends(legacy.
     topic_plan=priority+priority+[topic for topic in story['topics'] if topic not in priority]
     facts=_mission_facts(payload.theme,rng)
     mission_id=f'{payload.theme}-{ws.id}'
+    recent_questions=list(session.scalars(select(legacy.Question).join(legacy.Worksheet).where(
+        legacy.Worksheet.student_id==user.id,legacy.Worksheet.session_kind=='adventure',legacy.Worksheet.id!=ws.id,
+    ).order_by(legacy.Worksheet.started_at.desc(),legacy.Question.position.asc()).limit(120)).all())
+    recent={legacy.stored_question_identity(question) for question in recent_questions}
+    seen=set()
     changed=0
     for index,q in enumerate(available):
         topic=topic_plan[index%len(topic_plan)]
         chapter_index=min(len(story['chapters'])-1,index*len(story['chapters'])//max(1,len(available)))
         chapter=story['chapters'][chapter_index]
-        skill,prompt,atype,question_payload,answer,working=_mission_question(
-            payload.theme,topic,index,chapter,facts,rng
-        )
+        for attempt in range(25):
+            variant_index=index+attempt*len(available)
+            skill,prompt,atype,question_payload,answer,working=_mission_question(
+                payload.theme,topic,variant_index,chapter,facts,rng
+            )
+            identity=legacy.question_identity(prompt,question_payload)
+            if identity not in seen and (identity not in recent or attempt>=20): break
+        seen.add(identity)
         adventure={
             'version':2,'mission_id':mission_id,'theme':payload.theme,'title':story['title'],
             'mission':story['mission'],'objective':story['objective'],'outcome':story['outcome'],

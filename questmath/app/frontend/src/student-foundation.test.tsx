@@ -73,4 +73,22 @@ describe('v0.18 worksheet foundation', () => {
     fireEvent.click(screen.getByRole('button', {name: /Try again/i}));
     expect(retry).toHaveBeenCalledOnce();
   });
+
+  it('reviews the stored question visual and closes by Escape or backdrop click', async () => {
+    const row = {id: 7, date: '2026-08-16', completed_at: '2026-08-16T01:00:00', display_title: 'Space', answered: 1, total: 1, score: 1, skipped: 0, hints: 0, xp_earned: 10, elapsed_seconds: 20, progress: 100, restartable_skipped: false};
+    const review = {selected_topic: 'space', date: '2026-08-16', score: 1, total: 1, counts: {hints: 0}, questions: [{id: 3, position: 0, prompt: 'Which square?', payload: {visual_key: '7:3', visual: {type: 'grid', columns: ['A', 'B'], rows: 2, target: 'B2'}}, student_answers: [{answer: 'B2'}], correct_answer: 'B2', working: 'Read across then down.'}]};
+    vi.spyOn(globalThis, 'fetch').mockImplementation(input => String(input).endsWith('/review') ? response(review) : response([row]));
+    render(<WorksheetHistory onCreate={vi.fn()} onOpen={vi.fn()}/>);
+    const open = await screen.findByRole('button', {name: 'View worksheet'});
+    fireEvent.click(open);
+    expect(await screen.findByRole('dialog', {name: /space/i})).toBeInTheDocument();
+    expect(screen.getByRole('group', {name: /Grid reference diagram/i})).toBeInTheDocument();
+    fireEvent.keyDown(window, {key: 'Escape'});
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    fireEvent.click(open);
+    const dialog = await screen.findByRole('dialog');
+    const backdrop = dialog.parentElement as HTMLElement;
+    fireEvent.mouseDown(backdrop, {target: backdrop});
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
 });

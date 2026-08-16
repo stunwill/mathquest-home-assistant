@@ -38,9 +38,24 @@ describe('parent test worksheets', () => {
       id: 7, question_id: 3, feedback_type: 'bug', note: 'The image is stale.', status: 'open',
     }));
     render(<TestQuestionFeedback worksheetId={2} question={{id: 3}}/>);
+    const noteField = screen.getByLabelText(/Note.*optional/i);
+    expect(noteField.closest('label')).toHaveTextContent('optional');
     fireEvent.change(screen.getByLabelText('Feedback type'), {target: {value: 'bug'}});
-    fireEvent.change(screen.getByLabelText('Note'), {target: {value: 'The image is stale.'}});
+    fireEvent.change(noteField, {target: {value: 'The image is stale.'}});
     fireEvent.click(screen.getByRole('button', {name: 'Save question note'}));
     expect(await screen.findByText('The image is stale.')).toBeInTheDocument();
+  });
+
+  it('shows stored visuals in the test review and closes accessibly', async () => {
+    const item = {id: 8, selected_topic: 'space', started_at: '2026-08-16T01:00:00', answered: 1, total: 1, feedback_count: 0, open_feedback: 0, addressed_feedback: 0, addressed_releases: [], completed_at: '2026-08-16T01:01:00'};
+    const detail = {...item, score: 1, feedback: [], questions: [{id: 4, position: 0, prompt: 'Which grid reference?', attempts: [{answer: 'A1'}], correct_answer: 'A1', working: 'Read the axes.', payload: {visual_key: '8:4', visual: {type: 'grid', columns: ['A', 'B'], rows: 2, target: 'A1'}}}]};
+    vi.spyOn(globalThis, 'fetch').mockImplementation(input => String(input) === 'api/testing/worksheets/8' ? response(detail) : response([item]));
+    render(<ParentTestWorksheets onOpen={vi.fn()}/>);
+    fireEvent.click(await screen.findByRole('button', {name: 'View test and notes'}));
+    expect(await screen.findByRole('dialog', {name: /Space/i})).toBeInTheDocument();
+    fireEvent.click(screen.getByText('1. Which grid reference?'));
+    expect(screen.getByRole('group', {name: /Grid reference diagram/i})).toBeInTheDocument();
+    fireEvent.keyDown(window, {key: 'Escape'});
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

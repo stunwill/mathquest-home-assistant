@@ -88,7 +88,8 @@ def test_story_adventure_builds_and_contextualises_a_dedicated_worksheet():
     assert raw.selected_topic == 'Space Mission'
     assert {question.topic for question in raw.questions} <= {'space', 'number', 'measurement', 'statistics'}
     assert all(json.loads(question.payload)['adventure']['theme'] == 'space' for question in raw.questions)
-    assert all(question.prompt.startswith('🚀') for question in raw.questions)
+    assert all('challenge' not in question.prompt.lower() for question in raw.questions)
+    assert all(not question.prompt.startswith('🚀') for question in raw.questions)
     close(session)
 
 

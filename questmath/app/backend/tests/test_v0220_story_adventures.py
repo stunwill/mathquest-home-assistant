@@ -74,7 +74,8 @@ def test_story_adventure_builds_one_coherent_adaptive_mission():
     assert {story['chapter'] for story in stories} == set(result['chapters'])
     assert len({question.prompt for question in raw.questions}) == raw.total
     assert any(payload.get('applied_steps', 0) >= 2 for payload in payloads)
-    assert all(question.prompt.startswith('🚀') for question in raw.questions)
+    assert all('challenge' not in question.prompt.lower() for question in raw.questions)
+    assert all(not question.prompt.startswith('🚀') for question in raw.questions)
     grid_payloads = [payload for payload in payloads if payload.get('visual', {}).get('type') == 'grid']
     assert grid_payloads
     assert all(payload['visual']['columns'] == ['A', 'B', 'C', 'D'] for payload in grid_payloads)
