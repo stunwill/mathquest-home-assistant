@@ -22,10 +22,10 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     changelog = (ROOT / 'questmath/CHANGELOG.md').read_text(encoding='utf-8')
     notes = module.extract_release_notes(changelog, current_version)
-    assert notes.startswith('- Added targeted 5, 10 and 15-minute Number and Algebra intervention sessions')
-    assert 'React worksheet experience' in notes
-    assert 'independent accuracy from supported accuracy' in notes
-    assert 'parent test evidence excluded' in notes
+    assert notes.startswith('- Fixed Home Assistant parent and student credential changes')
+    assert 'Worksheet not found' in notes
+    assert 'parent test notes explicitly optional' in notes
+    assert 'Enter-key support' in notes
     assert 'Added a short Number and Algebra diagnostic' not in notes
     assert '# MathQuest' not in notes
 
@@ -33,7 +33,7 @@ def test_release_notes_extract_current_version_section_only():
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.26.0'}
+    assert set(versions.values()) == {'0.27.0'}
 
 
 def test_release_workflow_validates_versions_before_publishing():

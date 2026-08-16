@@ -64,6 +64,14 @@ def test_parent_can_complete_a_test_worksheet_and_trace_feedback_without_changin
         'answer': first.correct_answer, 'seconds': 4,
     })
     assert answer.status_code == 200
+    refreshed = client.get(f'/api/worksheets/{stored.id}/view', headers=headers(parent))
+    assert refreshed.status_code == 200
+    assert refreshed.json()['counts']['correct'] == 1
+    second = stored.questions[1]
+    moved = client.post(f'/api/worksheets/{stored.id}/navigate/{second.id}', headers=headers(parent), json={
+        'elapsed_seconds': 5,
+    })
+    assert moved.status_code == 200
     question_note = client.post(f'/api/testing/worksheets/{stored.id}/feedback', headers=headers(parent), json={
         'question_id': first.id, 'feedback_type': 'bug', 'note': 'The visual did not match the prompt.',
     })
@@ -123,6 +131,19 @@ def test_test_feedback_is_parent_only_and_addressed_release_is_validated():
         'feedback_type': 'bug', 'note': 'Check this question.', 'status': 'addressed', 'addressed_release': 'next release',
     })
     assert invalid.status_code == 400
+    close(session)
+
+
+def test_parent_test_view_does_not_allow_another_parent_or_learner_worksheet():
+    client, session, parent, student = make_client()
+    other = legacy.User(username='other-parent', password_hash='x', role='parent', display_name='Other')
+    session.add(other); session.commit()
+    created = client.post('/api/testing/worksheets', headers=headers(parent), json={'topic': 'number', 'question_count': 5})
+    worksheet_id = created.json()['id']
+    assert client.get(f'/api/worksheets/{worksheet_id}/view', headers=headers(other)).status_code == 404
+    learner = legacy.create_worksheet(session, student.id, 'number', question_count=5)
+    assert client.get(f'/api/worksheets/{learner.id}/view', headers=headers(parent)).status_code == 200
+    assert client.post(f'/api/worksheets/{learner.id}/save', headers=headers(parent), json={'elapsed_seconds': 1}).status_code == 404
     close(session)
 
 

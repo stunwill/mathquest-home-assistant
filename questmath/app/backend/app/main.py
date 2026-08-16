@@ -35,7 +35,7 @@ BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 HA_SERVICE_TOKEN = load_ha_service_token(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.26.0'
+APP_VERSION = '0.27.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -217,16 +217,31 @@ def migrate_database():
                     conn.execute(f'ALTER TABLE {table} ADD COLUMN {name} {definition}')
         conn.commit()
 
+def _managed_user(s:Session, role:str, username:str, password:str, display_name:str) -> User:
+    desired=s.scalar(select(User).where(User.username==username))
+    if desired and desired.role!=role:
+        raise RuntimeError(f'Configured {role} username is already used by another account role')
+    user=desired or s.scalar(select(User).where(User.role==role).order_by(User.id.asc()))
+    if not user:
+        user=User(username=username,password_hash=pwd.hash(password),role=role,display_name=display_name)
+        s.add(user);s.flush()
+        return user
+    user.username=username
+    user.display_name=display_name
+    try: password_matches=pwd.verify(password,user.password_hash)
+    except (TypeError,ValueError): password_matches=False
+    if not password_matches: user.password_hash=pwd.hash(password)
+    return user
+
 def seed():
     Base.metadata.create_all(engine)
     migrate_database()
     with SessionLocal() as s:
-        if not s.scalar(select(User).where(User.username==os.getenv('PARENT_USERNAME','parent'))):
-            s.add(User(username=os.getenv('PARENT_USERNAME','parent'),password_hash=pwd.hash(os.getenv('PARENT_PASSWORD','ChangeMeParent!')),role='parent',display_name='Parent'))
-        student=s.scalar(select(User).where(User.username==os.getenv('STUDENT_USERNAME','student')))
-        if not student:
-            student=User(username=os.getenv('STUDENT_USERNAME','student'),password_hash=pwd.hash(os.getenv('STUDENT_PASSWORD','ChangeMeStudent!')),role='student',display_name=os.getenv('STUDENT_DISPLAY_NAME','Math Explorer'))
-            s.add(student); s.flush(); s.add(Setting(student_id=student.id))
+        _managed_user(s,'parent',os.getenv('PARENT_USERNAME','parent'),os.getenv('PARENT_PASSWORD','ChangeMeParent!'),'Parent')
+        existing_student=s.scalar(select(User).where(User.role=='student').order_by(User.id.asc()))
+        student=_managed_user(s,'student',os.getenv('STUDENT_USERNAME','student'),os.getenv('STUDENT_PASSWORD','ChangeMeStudent!'),os.getenv('STUDENT_DISPLAY_NAME','Math Explorer'))
+        if not existing_student:
+            s.add(Setting(student_id=student.id))
             for t in LEVEL4_STRANDS: s.add(Skill(student_id=student.id,topic=t))
         if student:
             st=s.scalar(select(Setting).where(Setting.student_id==student.id))
@@ -349,7 +364,14 @@ def make_question(topic:str, level:int, rng:random.Random):
             return q(code,'data_frequency',f'The survey results are {data}. Which value occurs most often?','number',{},mode,f'Count each value. {mode} has the greatest frequency.')
         if code=='VC2M4ST02':
             return q(code,'choose_data_display','Which display is usually best for comparing the number of students choosing different favourite sports?','choice',{'choices':['column graph','line graph over time','clock face']},'column graph','A column graph clearly compares frequencies across categories.')
-        return q(code,'statistical_investigation','Which question is suitable for a class survey?','choice',{'choices':['What is every student’s favourite fruit?','What will happen exactly next year?','Is 7 × 8 equal to 56?']},'What is every student’s favourite fruit?','A statistical question anticipates varied responses that can be collected and analysed.')
+        survey_questions=[
+            ('Which question is suitable for a class survey?','Which after-school activity does each student prefer?', ['Which after-school activity does each student prefer?','Will it rain on this exact date next year?','Is 7 × 8 equal to 56?']),
+            ('Which question would produce varied data from the class?','How many books did each student read this month?', ['How many books did each student read this month?','What is 12 + 9?','Is a square a polygon?']),
+            ('Which question is suitable for a statistical investigation?','How long does each student take to travel to school?', ['How long does each student take to travel to school?','What will the temperature be at exactly noon next year?','Does 5 × 4 equal 20?']),
+            ('Which survey question could have different answers from different students?','How many pets does each student have?', ['How many pets does each student have?','Is 10 an even number?','What is half of 8?']),
+        ]
+        prompt,answer,choices=rng.choice(survey_questions);rng.shuffle(choices)
+        return q(code,'statistical_investigation',prompt,'choice',{'choices':choices},answer,'A statistical question anticipates varied responses that can be collected and analysed.')
 
     code=rng.choice(['VC2M4P01','VC2M4P02'])
     if code=='VC2M4P01':
@@ -375,6 +397,14 @@ def question_identity(prompt:str, payload:dict[str,Any]) -> tuple[str,tuple[str,
     choice_key=tuple(sorted(str(value).strip().casefold() for value in choices)) if isinstance(choices,list) else ()
     return (' '.join((prompt or '').split()).casefold(),choice_key)
 
+def stored_question_identity(question:Question) -> tuple[str,tuple[str,...]]:
+    try: payload=json.loads(question.payload or '{}')
+    except (TypeError,ValueError): payload={}
+    return question_identity(question.prompt,payload if isinstance(payload,dict) else {})
+
+def worksheet_accessible(u:User, ws:Worksheet|None) -> bool:
+    return bool(ws and ws.student_id==u.id and (u.role=='student' or (u.role=='parent' and ws.session_kind=='parent_test')))
+
 def create_worksheet(s:Session,sid:int,selected:str, *, question_count:int|None=None,
                      session_kind:str='practice', target_minutes:int|None=None,
                      learning_profile_id:int|None=None) -> Worksheet:
@@ -392,17 +422,21 @@ def create_worksheet(s:Session,sid:int,selected:str, *, question_count:int|None=
     ws=Worksheet(student_id=sid,worksheet_date=date.today(),total=total,selected_topic=selected,
                  session_kind=session_kind,target_minutes=target_minutes);s.add(ws);s.flush()
     topic_weights=weights(s,profile_id,topics); seen:set[tuple[str,tuple[str,...]]]=set()
+    recent_questions=list(s.scalars(select(Question).join(Worksheet).where(
+        Worksheet.student_id==profile_id,Worksheet.session_kind!='parent_test',Worksheet.id!=ws.id,
+    ).order_by(Worksheet.started_at.desc(),Question.position.asc()).limit(120)).all())
+    recent={stored_question_identity(item) for item in recent_questions}
     for pos in range(total):
         candidate=None
         forced_topic=focus_topics[pos] if selected=='number_algebra' and pos < len(focus_topics) else None
-        for _ in range(50):
+        for attempt in range(60):
             topic=forced_topic or rng.choices(topics,weights=topic_weights,k=1)[0]
             sk=s.scalar(select(Skill).where(Skill.student_id==profile_id,Skill.topic==topic))
             lvl=(sk.level if sk else 1) if st.adaptive_mode else levels.get(topic,1)
             if rng.random()<.2: lvl=max(1,lvl-1)
             skill,prompt,atype,payload,ans,working=make_question(topic,min(4,lvl),rng)
             key=question_identity(prompt,payload)
-            if key not in seen:
+            if key not in seen and (key not in recent or attempt>=45):
                 candidate=(topic,lvl,skill,prompt,atype,payload,ans,working,key)
                 break
         if candidate is None:
@@ -489,9 +523,7 @@ def request_hint(qid:int,u:User=Depends(current_user),s:Session=Depends(db)):
     q=s.get(Question,qid)
     if not q: raise HTTPException(404,'Question not found')
     ws=s.get(Worksheet,q.worksheet_id)
-    if not ws or ws.student_id!=u.id: raise HTTPException(403,'Question does not belong to this student')
-    if u.role!='student' and not (u.role=='parent' and ws.session_kind=='parent_test'):
-        raise HTTPException(403,'Student or parent test access required')
+    if not worksheet_accessible(u,ws): raise HTTPException(403,'Question does not belong to this worksheet account')
     if question_status(q) in ('correct','incorrect'): raise HTTPException(400,'Completed questions do not need hints')
     next_number=(q.hint_count or 0)+1
     if next_number>3:
@@ -508,7 +540,7 @@ def answer(qid:int,data:AnswerIn,u:User=Depends(current_user),s:Session=Depends(
     q=s.get(Question,qid)
     if not q: raise HTTPException(404,'Question not found')
     ws=s.get(Worksheet,q.worksheet_id)
-    if not ws or ws.student_id!=u.id: raise HTTPException(403,'Question does not belong to this student')
+    if not worksheet_accessible(u,ws): raise HTTPException(403,'Question does not belong to this worksheet account')
     count=s.scalar(select(func.count(Attempt.id)).where(Attempt.question_id==qid,Attempt.student_id==u.id)) or 0
     if count>=2: raise HTTPException(400,'No attempts remaining')
     correct=normalise(data.answer)==normalise(q.correct_answer)
@@ -524,7 +556,7 @@ def skip_question(qid:int,data:NavigateIn,u:User=Depends(current_user),s:Session
     q=s.get(Question,qid)
     if not q: raise HTTPException(404,'Question not found')
     ws=s.get(Worksheet,q.worksheet_id)
-    if not ws or ws.student_id!=u.id: raise HTTPException(403,'Question does not belong to this student')
+    if not worksheet_accessible(u,ws): raise HTTPException(403,'Question does not belong to this worksheet account')
     if question_status(q) in ('correct','incorrect'): raise HTTPException(400,'Completed questions cannot be skipped')
     q.state='skipped'; q.skipped_count=(q.skipped_count or 0)+1
     ws.elapsed_seconds=max(ws.elapsed_seconds or 0,data.elapsed_seconds); ws.last_active_at=datetime.utcnow(); s.commit()
@@ -533,7 +565,7 @@ def skip_question(qid:int,data:NavigateIn,u:User=Depends(current_user),s:Session
 @app.post('/api/worksheets/{wid}/navigate/{qid}')
 def navigate(wid:int,qid:int,data:NavigateIn,u:User=Depends(current_user),s:Session=Depends(db)):
     ws=s.get(Worksheet,wid); q=s.get(Question,qid)
-    if not ws or ws.student_id!=u.id or not q or q.worksheet_id!=wid: raise HTTPException(404,'Worksheet question not found')
+    if not worksheet_accessible(u,ws) or not q or q.worksheet_id!=wid: raise HTTPException(404,'Worksheet question not found')
     if question_status(q) in ('correct','incorrect'): raise HTTPException(400,'Completed questions are read-only')
     for other in ws.questions:
         if other.id!=q.id and other.state=='active' and question_status(other)=='current': other.state='not_started'
@@ -545,13 +577,13 @@ def navigate(wid:int,qid:int,data:NavigateIn,u:User=Depends(current_user),s:Sess
 @app.post('/api/worksheets/{wid}/save')
 def save_progress(wid:int,data:NavigateIn,u:User=Depends(current_user),s:Session=Depends(db)):
     ws=s.get(Worksheet,wid)
-    if not ws or ws.student_id!=u.id: raise HTTPException(404,'Worksheet not found')
+    if not worksheet_accessible(u,ws): raise HTTPException(404,'Worksheet not found')
     ws.elapsed_seconds=max(ws.elapsed_seconds or 0,data.elapsed_seconds); ws.last_active_at=datetime.utcnow(); ws.status='in_progress'; s.commit(); return {'ok':True}
 
 @app.post('/api/worksheets/{wid}/complete')
 def complete(wid:int,u:User=Depends(current_user),s:Session=Depends(db)):
     ws=s.get(Worksheet,wid)
-    if not ws or ws.student_id!=u.id: raise HTTPException(404,'Worksheet not found')
+    if not worksheet_accessible(u,ws): raise HTTPException(404,'Worksheet not found')
     if ws.completed_at: return summary(s,ws,u)
     unresolved=[q for q in ws.questions if question_status(q) not in ('correct','incorrect')]
     unskipped=[q for q in unresolved if question_status(q)!='skipped' and not (q.skipped_count and not q.attempts)]

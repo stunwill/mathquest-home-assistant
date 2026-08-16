@@ -156,9 +156,11 @@ def worksheet_review(worksheet_id: int, user: legacy.User = Depends(legacy.curre
 @app.get('/api/worksheets/{worksheet_id}/view')
 def worksheet_view_any(worksheet_id: int, user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
     """Read a worksheet without changing its date or current/today status."""
-    sid = student_id(user, session)
     ws = session.get(legacy.Worksheet, worksheet_id)
-    if not ws or ws.student_id != sid:
+    if legacy.worksheet_accessible(user, ws):
+        return legacy.worksheet_view(ws)
+    sid = student_id(user, session)
+    if not ws or ws.student_id != sid or ws.session_kind == 'parent_test':
         raise HTTPException(404, 'Worksheet not found')
     return legacy.worksheet_view(ws)
 

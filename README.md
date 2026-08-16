@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.26.0`
+Version `0.27.0`
 
 ## Features
 
@@ -33,10 +33,15 @@ Version `0.26.0`
 - Long-lived Home Assistant service authentication plus complete category and outcome learning metrics
 - Parent-only test worksheets with question notes, overall feedback and addressed-release traceability
 - Targeted Number and Algebra interventions with React-owned visuals, reliable resume state and reconciled reporting
+- Configuration-managed credentials, reliable parent test completion and optional testing notes
+- Visual symmetry hints, recent-question duplicate protection and original visuals in worksheet reviews
+- Accessible review dialogs and Enter-key answer-to-next-question flow
 
 ## Security and upgrades
 
 MathQuest generates a secure JWT signing secret on first start and stores it at `/data/jwt-signing-secret`, separate from the application image and the existing `/data/questmath.db`. It also generates a dedicated Home Assistant service token at `/data/ha-service-token`. Both values persist through restart and upgrade with restrictive permissions where supported. Explicit `SECRET_KEY` and `HA_SERVICE_TOKEN` values of at least 32 characters are honoured.
+
+Parent and student usernames and passwords are managed from the Home Assistant add-on Configuration page. Save any credential change and restart the MathQuest add-on to apply it to the existing account. The account ID, worksheets, progress and feedback remain unchanged.
 
 Upgrading to `0.16.2` rotates installations that previously used the legacy secret. Existing JWTs may stop working and users may need to sign in again. No worksheet, progress, account or database data is reset or removed.
 

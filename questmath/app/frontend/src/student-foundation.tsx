@@ -1,6 +1,7 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {AlertCircle, BookOpen, Play, RefreshCw, X} from 'lucide-react';
 import {apiRequest, createWorksheet, rememberActiveWorksheet} from './api';
+import {QuestionVisual} from './question-visual';
 import './v0160.css';
 import './v090.css';
 
@@ -35,6 +36,7 @@ export function WorksheetHistory({onCreate, onOpen}:{onCreate: () => void; onOpe
   const [rows, setRows] = useState<WorksheetSummary[] | null>(null);
   const [error, setError] = useState('');
   const [review, setReview] = useState<any>(null);
+  const reviewOpener = useRef<HTMLElement|null>(null);
   const load = () => { setError(''); apiRequest<WorksheetSummary[]>('/worksheets/history-v0160').then(setRows).catch((e: Error) => setError(e.message)); };
   useEffect(load, []);
 
@@ -56,9 +58,17 @@ export function WorksheetHistory({onCreate, onOpen}:{onCreate: () => void; onOpe
   }
   async function view(id: number) {
     setError('');
+    reviewOpener.current = document.activeElement as HTMLElement|null;
     try { setReview(await apiRequest(`/worksheets/${id}/review`)); }
     catch (e: any) { setError(e.message); }
   }
+  function closeReview() { setReview(null); setTimeout(() => reviewOpener.current?.focus(), 0); }
+  useEffect(() => {
+    if (!review) return;
+    const keydown = (event: KeyboardEvent) => { if (event.key === 'Escape') closeReview(); };
+    window.addEventListener('keydown', keydown);
+    return () => window.removeEventListener('keydown', keydown);
+  }, [review]);
 
   const today = (rows || []).filter(row => row.date === localDate());
   const totals = useMemo(() => ({
@@ -74,7 +84,7 @@ export function WorksheetHistory({onCreate, onOpen}:{onCreate: () => void; onOpe
       <div className="mq-v0160-summary"><article><small>Worksheets today</small><strong>{today.length}</strong></article><article><small>Questions</small><strong>{totals.answered}</strong></article><article><small>Accuracy</small><strong>{totals.answered ? `${Math.round(totals.score / totals.answered * 100)}%` : '—'}</strong></article><article><small>Hints</small><strong>{totals.hints}</strong></article><article><small>XP</small><strong>{totals.xp}</strong></article></div>
       <div className="mq-v0160-list">{(rows || []).slice(0, 20).map(row => <article className="mq-v0160-row" key={row.id}><div className="meta"><b>{row.display_title}{row.display_time ? ` · ${row.display_time}` : ''}</b><small>{dateLabel(row.date)} · {row.answered}/{row.total} answered · {row.skipped || 0} skipped · {row.hints} hints · {minutes(row.elapsed_seconds)}</small></div><span className="status">{row.completed_at ? `Completed · ${row.score}/${row.total}` : `In progress · ${Math.round(row.progress)}%`}</span><div className="mq-v0160-row-actions"><button type="button" onClick={() => row.completed_at ? view(row.id) : open(row.id)}>{row.completed_at ? 'View worksheet' : 'Continue worksheet'}</button>{row.restartable_skipped && <button type="button" onClick={() => restart(row.id)}>Restart {row.skipped} skipped</button>}</div></article>)}</div>
     </>}
-    {review && <div className="mq-v0160-review" role="dialog" aria-modal="true"><section><button className="close" type="button" aria-label="Close review" onClick={() => setReview(null)}>×</button><p className="eyebrow">WORKSHEET REVIEW</p><h2>{review.selected_topic?.replaceAll('_', ' ')} · {dateLabel(review.date)}</h2><p><strong>{review.score}/{review.total}</strong> · {review.counts?.hints || 0} hints</p>{review.questions?.map((question: any) => <details key={question.id}><summary>{question.position + 1}. {question.prompt}</summary><p>Your answer: <strong>{question.student_answers?.map((answer: any) => answer.answer).join(' → ') || 'No answer'}</strong></p><p>Correct answer: <strong>{question.correct_answer}</strong></p><p>{question.working}</p></details>)}</section></div>}
+    {review && <div className="mq-v0160-review" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) closeReview(); }}><section role="dialog" aria-modal="true" aria-labelledby="worksheet-review-title"><button className="close" type="button" aria-label="Close review" onClick={closeReview}>×</button><p className="eyebrow">WORKSHEET REVIEW</p><h2 id="worksheet-review-title">{review.selected_topic?.replaceAll('_', ' ')} · {dateLabel(review.date)}</h2><p><strong>{review.score}/{review.total}</strong> · {review.counts?.hints || 0} hints</p>{review.questions?.map((question: any) => <details key={question.id}><summary>{question.position + 1}. {question.prompt}</summary><div className="question-card review-question-visual"><QuestionVisual question={question}/></div><p>Your answer: <strong>{question.student_answers?.map((answer: any) => answer.answer).join(' → ') || 'No answer'}</strong></p><p>Correct answer: <strong>{question.correct_answer}</strong></p><p>{question.working}</p></details>)}</section></div>}
   </section>;
 }
 

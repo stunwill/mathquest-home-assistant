@@ -37,6 +37,22 @@ function NumberLine({visual}: {visual: any}) {
   return <div className="mq-visual number-line" role="img" aria-label="Number line for this question"><div className="line-track">{Array.from({length: steps + 1}, (_, index) => <span key={index}><i/><b>{index === 0 ? '0' : index === steps ? '1' : ''}</b></span>)}</div></div>;
 }
 
+function polygonPoints(sides: number) {
+  return Array.from({length: sides}, (_, index) => {
+    const angle = -Math.PI / 2 + index * Math.PI * 2 / sides;
+    return `${60 + Math.cos(angle) * 45},${60 + Math.sin(angle) * 45}`;
+  }).join(' ');
+}
+
+function RotationalSymmetry({visual, hinted}: {visual: any; hinted: boolean}) {
+  const sides = Math.max(3, Math.min(12, Number(visual?.sides) || 6));
+  const shape = <svg viewBox="0 0 120 120" aria-hidden="true"><polygon points={polygonPoints(sides)}/><circle cx="60" cy="60" r="4"/></svg>;
+  return <div className={`mq-visual rotational-symmetry${hinted ? ' hinted' : ''}`} role="img" aria-label={hinted ? `A regular ${sides}-sided polygon shown before and after a partial rotation for comparison` : `A regular ${sides}-sided polygon`}>
+    <figure><span>{shape}</span>{hinted && <figcaption>Starting position</figcaption>}</figure>
+    {hinted && <><b className="rotation-arrow" aria-hidden="true">↻</b><figure><span className="rotated" style={{'--mq-rotation': `${360 / sides}deg`} as React.CSSProperties}>{shape}</span><figcaption>After one matching turn</figcaption></figure></>}
+  </div>;
+}
+
 export function QuestionVisual({question}: {question: any}) {
   const visual = question?.payload?.visual;
   if (!visual) return null;
@@ -47,5 +63,6 @@ export function QuestionVisual({question}: {question: any}) {
   if (visual.type === 'angle') return <Angle key={key} visual={visual}/>;
   if (visual.type === 'bar_chart') return <BarChart key={key} visual={visual}/>;
   if (visual.type === 'number_line') return <NumberLine key={key} visual={visual}/>;
+  if (visual.type === 'rotational_symmetry') return <RotationalSymmetry key={key} visual={visual} hinted={Number(question?.hint_count) > 0}/>;
   return <div className="mq-visual visual-unavailable" role="status"><b>Visual unavailable</b><p>Skip this question and ask a parent to add a test note.</p></div>;
 }

@@ -68,6 +68,9 @@ def _operation_values(prompt: str) -> list[int]:
 def _annotate_question(question: legacy.Question, worksheet: legacy.Worksheet) -> None:
     payload = _safe_payload(question)
     payload['visual_key'] = f'{worksheet.id}:{question.id}'
+    if 'rotational_symmetry' in question.skill:
+        values = _operation_values(question.prompt)
+        payload['visual'] = {'type': 'rotational_symmetry', 'sides': values[0] if values else 6}
     payload.setdefault('recommended_model', _recommended_model(question))
     values = _operation_values(question.prompt)
     if values:

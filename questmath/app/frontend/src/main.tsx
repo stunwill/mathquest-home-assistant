@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   CheckCircle2, ChevronLeft, ChevronRight, Database, Download, Eye, Flame, Lightbulb, List,
@@ -136,7 +136,7 @@ const QUEST_CATEGORIES=[
   {id:'mixed',icon:'✨',name:'Mixed Adventure',description:'A balanced quest across all learning areas'}
 ];
 
-function QuestCategoryPicker({start,cancel}:{start:(topic:string,minutes:5|10|15,kind:'practice'|'diagnostic')=>Promise<void>;cancel:()=>void}){
+export function QuestCategoryPicker({start,cancel}:{start:(topic:string,minutes:5|10|15,kind:'practice'|'diagnostic')=>Promise<void>;cancel:()=>void}){
   const[selected,setSelected]=useState('mixed');
   const[minutes,setMinutes]=useState<5|10|15>(10);
   const[kind,setKind]=useState<'practice'|'diagnostic'>('practice');
@@ -146,8 +146,8 @@ function QuestCategoryPicker({start,cancel}:{start:(topic:string,minutes:5|10|15
   async function printWorksheet(){setPrintBusy(true);setError('');try{const blob=await req<Blob>('/worksheets/today/print',{method:'POST',body:JSON.stringify({topic:selected})});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`mathquest-${selected}-worksheet.pdf`;link.click();URL.revokeObjectURL(link.href)}catch(reason:any){setError(reason.message)}finally{setPrintBusy(false)}}
   return <main className="category-page"><section className="category-card">
     <Brand compact/><p className="eyebrow">CHOOSE TODAY’S SESSION</p><h1>How would you like to learn?</h1>
-    <div className="session-kind" role="group" aria-label="Session type"><button type="button" className={kind==='practice'?'selected':''} onClick={()=>setKind('practice')}><b>Targeted practice</b><small>Work towards the Level 5 pathway</small></button><button type="button" className={kind==='diagnostic'?'selected':''} onClick={()=>{setKind('diagnostic');setMinutes(15)}}><b>Levels 2–6 diagnostic</b><small>Find a starting point across Number and Algebra</small></button></div>
-    {kind==='practice'&&<><p>Choose a session length and learning area.</p><div className="duration-options" role="group" aria-label="Session length">{([5,10,15] as const).map(value=><button type="button" key={value} className={minutes===value?'selected':''} onClick={()=>setMinutes(value)}><b>{value} minutes</b><small>{value===5?'Quick boost':value===10?'Daily session':'Deep practice'}</small></button>)}</div><div className="category-grid">{QUEST_CATEGORIES.map(c=><button type="button" key={c.id} className={'category-option '+(selected===c.id?'selected':'')} onClick={()=>setSelected(c.id)}><span>{c.icon}</span><b>{c.name}</b><small>{c.description}</small></button>)}</div></>}
+    <div className="session-kind" role="group" aria-label="Session type"><button type="button" aria-pressed={kind==='practice'} className={kind==='practice'?'selected':''} onClick={()=>setKind('practice')}><b>Targeted practice</b><small>Work towards the Level 5 pathway</small></button><button type="button" aria-pressed={kind==='diagnostic'} className={kind==='diagnostic'?'selected':''} onClick={()=>{setKind('diagnostic');setMinutes(15)}}><b>Levels 2–6 diagnostic</b><small>Find a starting point across Number and Algebra</small></button></div>
+    {kind==='practice'&&<><p>Choose a session length and learning area.</p><div className="duration-options" role="group" aria-label="Session length">{([5,10,15] as const).map(value=><button type="button" aria-pressed={minutes===value} key={value} className={minutes===value?'selected':''} onClick={()=>setMinutes(value)}><b>{value} minutes</b><small>{value===5?'Quick boost':value===10?'Daily session':'Deep practice'}</small></button>)}</div><div className="category-grid" role="group" aria-label="Learning area">{QUEST_CATEGORIES.map(c=><button type="button" aria-pressed={selected===c.id} key={c.id} className={'category-option '+(selected===c.id?'selected':'')} onClick={()=>setSelected(c.id)}><span>{c.icon}</span><b>{c.name}</b><small>{c.description}</small></button>)}</div></>}
     {kind==='diagnostic'&&<div className="diagnostic-note"><b>About 15 minutes</b><p>Three short questions at each Victorian Curriculum level from 2 to 6. Results identify a baseline; Level 5 remains the learning target.</p></div>}
     {error&&<p className="category-error" role="alert">{error}</p>}<div className="category-actions"><button onClick={cancel}>Back</button>{kind==='practice'&&<button type="button" disabled={printBusy} onClick={printWorksheet}><Download size={18}/>{printBusy?'Preparing PDF…':'Print worksheet'}</button>}<button className="primary" disabled={busy} onClick={async()=>{setBusy(true);try{await start(kind==='diagnostic'?'number_algebra':selected,minutes,kind)}finally{setBusy(false)}}}><Play size={20}/>{busy?'Building your session…':kind==='diagnostic'?'Start diagnostic':`Start ${minutes}-minute session`}</button></div>
   </section></main>;
@@ -166,7 +166,7 @@ function GuidedTutor({support,onAction,onStartOver,busy,canStartOver}:{support:a
   </section>
 }
 
-function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:WorksheetData)=>void;onExit:()=>void;onDone:(x:any)=>void}){
+export function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:WorksheetData)=>void;onExit:()=>void;onDone:(x:any)=>void}){
   const[answer,setAnswer]=useState('');
   const[feedback,setFeedback]=useState<any>(null);
   const[hint,setHint]=useState<string|null>(null);
@@ -178,6 +178,7 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
   const[confirmExit,setConfirmExit]=useState(false);
   const[labOpen,setLabOpen]=useState(false);
   const[actionError,setActionError]=useState('');
+  const actionBusy=useRef(false);
 
   const active=useMemo(()=>ws.questions.find(q=>q.id===ws.current_question_id)||nextEligible(ws),[ws]);
   const q=active;
@@ -188,7 +189,7 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
 
   useEffect(()=>{if(q&&q.id!==ws.current_question_id)void safe(()=>goTo(q.id))},[]);
   useEffect(()=>{setHint(q?.last_hint||null);setSupport(null);setAnswer(q?questionDraft(ws.id,q.id):'')},[q?.id,ws.id]);
-  async function safe(action:()=>Promise<void>){setActionError('');try{await action()}catch(e:any){setActionError(e.message||'MathQuest could not complete that action.')}}
+  async function safe(action:()=>Promise<void>){if(actionBusy.current)return;actionBusy.current=true;setActionError('');try{await action()}catch(e:any){setActionError(e.message||'MathQuest could not complete that action.')}finally{actionBusy.current=false}}
   function elapsed(){return (Date.now()-sessionStart)/1000}
   async function refresh(updated?:WorksheetData){const data:WorksheetData=updated||await req<WorksheetData>(`/worksheets/${ws.id}/view`);onUpdate(data);setAnswer('');setFeedback(null);setHint(null);setSupport(null);setQuestionStart(Date.now())}
   async function goTo(id:number){const updated=await req(`/worksheets/${ws.id}/navigate/${id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});setOverview(false);await refresh(updated)}
@@ -201,6 +202,18 @@ function Worksheet({ws,onUpdate,onExit,onDone}:{ws:WorksheetData;onUpdate:(x:Wor
   async function next(){const latest:WorksheetData=await req(`/worksheets/${ws.id}/view`);const target=nextEligible(latest,q.id);if(target){const moved=await req(`/worksheets/${ws.id}/navigate/${target.id}`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});await refresh(moved);return}const result=await req(`/worksheets/${ws.id}/complete`,{method:'POST'});if(!ws.test_mode)rememberActiveWorksheet(null);onDone(result)}
   async function finish(){const result=await req(`/worksheets/${ws.id}/complete`,{method:'POST'});if(!ws.test_mode)rememberActiveWorksheet(null);onDone(result)}
   async function exit(){await req(`/worksheets/${ws.id}/save`,{method:'POST',body:JSON.stringify({elapsed_seconds:elapsed()})});onExit()}
+
+  useEffect(()=>{
+    const keydown=(event:KeyboardEvent)=>{
+      if(event.key!=='Enter'||event.repeat||actionBusy.current||overview||confirmExit||labOpen)return;
+      const target=event.target as HTMLElement|null;
+      if(!target||target.closest('textarea,select,button,[contenteditable="true"],.modal-backdrop,.lab-backdrop'))return;
+      if(feedback&&!feedback.retry_allowed){event.preventDefault();void safe(next);return;}
+      if(!feedback&&target instanceof HTMLInputElement&&String(answer??'').trim()){event.preventDefault();void safe(submit);}
+    };
+    window.addEventListener('keydown',keydown);
+    return()=>window.removeEventListener('keydown',keydown);
+  });
 
   if(!q)return <div className="splash">Preparing your next question…</div>;
   const currentNumber=q.position+1;
@@ -240,7 +253,7 @@ function statusLabel(status:QuestionStatus){return({not_started:'Not started',cu
 function QuestionOverview({ws,activeId,close,goTo}:{ws:WorksheetData;activeId:number;close:()=>void;goTo:(id:number)=>void}){return <div className="modal-backdrop"><section className="overview-modal"><div className="modal-title"><div><p className="eyebrow">WORKSHEET MAP</p><h2>All questions</h2></div><button className="icon-button" onClick={close}><X/></button></div><div className="question-table"><div className="question-table-head"><b>#</b><b>Question</b><b>Status</b></div>{ws.questions.map(q=>{const locked=['correct','incorrect'].includes(q.status);return <button key={q.id} className={'question-row '+(q.id===activeId?'active':'')} disabled={locked} onClick={()=>goTo(q.id)}><span>{q.position+1}</span><span><b>{q.summary}</b><small>{q.topic} · {q.skill.replaceAll('_',' ')}{q.hint_count?` · 💡 ${q.hint_count}`:''}</small></span><span className={'status-pill '+q.status}>{statusLabel(q.status)}</span></button>})}</div><p className="overview-note">Completed questions are read-only. Skipped and unanswered questions can be opened.</p></section></div>}
 function ConfirmExit({cancel,exit}:{cancel:()=>void;exit:()=>void}){return <div className="modal-backdrop"><section className="confirm-modal"><div className="question-icon">💾</div><h2>Exit today’s worksheet?</h2><p>Your progress, answers, hints, skipped questions and current position will be saved. You can continue later.</p><div className="modal-actions"><button onClick={cancel}>Keep working</button><button className="primary" onClick={exit}>Save and exit</button></div></section></div>}
 
-function Answer({q,value,setValue}:any){if(q.answer_type==='choice')return <div className="choices">{q.payload.choices.map((x:string)=><button type="button" className={value===x?'selected':''} onClick={()=>setValue(String(x))} key={x}>{x}</button>)}</div>;const capture=(e:any)=>setValue(String(e.currentTarget.value));return <div className="answer-row">{q.answer_type==='money'&&<span>$</span>}<input inputMode={q.answer_type==='text'?'text':'decimal'} value={value} onInput={capture} onChange={capture} onKeyDown={(e:any)=>{if(e.key==='Enter'){e.preventDefault();const button=e.currentTarget.closest('.question-card')?.querySelector('.question-actions .primary:not(:disabled)') as HTMLButtonElement|null;button?.click()}}} autoComplete="off" placeholder="Type your answer"/>{q.payload.unit&&<span>{q.payload.unit}</span>}</div>}
+function Answer({q,value,setValue}:any){if(q.answer_type==='choice')return <div className="choices">{q.payload.choices.map((x:string)=><button type="button" className={value===x?'selected':''} onClick={()=>setValue(String(x))} key={x}>{x}</button>)}</div>;const capture=(e:any)=>setValue(String(e.currentTarget.value));return <div className="answer-row">{q.answer_type==='money'&&<span>$</span>}<input inputMode={q.answer_type==='text'?'text':'decimal'} value={value} onInput={capture} onChange={capture} autoComplete="off" placeholder="Type your answer"/>{q.payload.unit&&<span>{q.payload.unit}</span>}</div>}
 function FractionShape({parts,shaded}:any){return <div className="fraction-shape">{Array.from({length:parts},(_,i)=><i className={i<shaded?'shade':''} key={i}/>)}</div>}
 function Result({data,back}:any){return <main className="result"><section><MissionOutcome adventure={data.adventure}/><div className="result-score">{data.score}/{data.total}</div><h1>{data.message}</h1><p>{data.accuracy}% accuracy · +{data.xp_earned} XP</p><div className="result-grid"><Metric label="Strongest" value={data.strongest_topic}/><Metric label="Practise next" value={data.weakest_topic}/><Metric icon={<Lightbulb/>} label="Hints used" value={data.hints_used||0}/><Metric label="Level" value={data.level}/></div><button className="primary" onClick={back}>Back to dashboard</button></section></main>}
 
@@ -270,4 +283,5 @@ function Parent({user,logout}:{user:User;logout:()=>void}){
   <section className="panel"><h2>Recent incorrect answers</h2>{d.recent_incorrect.length?<div className="incorrect-list">{d.recent_incorrect.map((x:any,i:number)=><details key={i}><summary><b>{x.code||'Practice'}</b> {x.prompt}</summary><p>Student answer: <strong>{x.student_answer}</strong></p><p>Correct answer: <strong>{x.correct_answer}</strong></p><p>{x.working}</p></details>)}</div>:<p>No incorrect answers recorded yet.</p>}</section>
   <section className="grid2"><HomeAssistantConnection/><section className="panel"><h2><Database size={20}/> Backups</h2><button onClick={backup}>Create backup now</button><div className="backup-list">{backups.map(b=><span key={b.filename}>{b.filename} · {(b.size/1024).toFixed(0)} KB</span>)}</div></section></section></main></>}
 
-createRoot(document.getElementById('root')!).render(<App/>);
+const rootElement=document.getElementById('root');
+if(rootElement)createRoot(rootElement).render(<App/>);
