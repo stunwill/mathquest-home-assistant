@@ -6,56 +6,54 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.26.0
+## Current release scope, 0.27.0
 
-This release combines the next agreed educational and reliability work into one testable improvement to Number and Algebra tutoring, interactive models and trustworthy reporting.
+This release addresses the worksheet usability and review problems reported during v0.26.0 testing. It is a focused learner-experience release and does not change the completed v0.26.0 intervention or reporting scope.
 
-### Number and Algebra intervention
+### Session selection clarity
 
-- Deliver a targeted intervention pathway for addition, subtraction, multiplication and division.
-- Build fluent recall through fact families, related facts, decomposition, bridging through tens and efficient mental strategies instead of finger counting.
-- Teach and practise written methods, including place-value alignment, regrouping and exchanging, with question-specific subtraction support.
-- Include unknown-value equations in different positions so Algebra practice tests inverse operations and relational understanding rather than answer recall.
-- Use short diagnostic checks to identify prerequisite gaps and route the session to the appropriate intervention before returning to grade-level work.
-- Support 5, 10 and 15-minute intervention sessions with clear goals, a small number of focused questions and later retrieval checks.
-- Measure independent performance separately from performance completed with hints, tutor support or interactive models.
+- Restyle **Targeted practice**, **Levels 2–6 diagnostic**, session-length choices and learning-area choices as unmistakably interactive controls.
+- Use the current MathQuest design tokens instead of undefined legacy CSS variables.
+- Give the selected option a persistent border, background and accessible selected state that remains clear with keyboard focus and on mobile.
+- Add interaction tests proving each choice updates the session configuration used when the worksheet starts.
 
-### Interactive learning expansion
+### Visual hints for symmetry
 
-- Stack fraction comparison models vertically, align them to the same origin and scale them to an equal whole so relative amounts are visually comparable.
-- Add open number-line jump strategies for addition and subtraction.
-- Add place-value and regrouping models for written addition and subtraction.
-- Add arrays and equal-group models for multiplication and division.
-- Select the model and progressively stronger hints from the operation, question structure and detected misconception.
-- Provide **Why?**, **Show another way** and **Start over** controls without revealing the final answer prematurely.
-- Keep labels, highlights and generated images tied to the current question so the visual never exposes the answer or carries over from a previous question.
+- Add a reusable regular-polygon visual to rotational-symmetry questions.
+- When a hint is requested, show the original and rotated positions or an accessible rotation animation so Sienna can compare whether the shape matches itself.
+- Respect reduced-motion preferences and provide an equivalent static before-and-after representation.
+- Keep the hint progressive and avoid stating the assessed answer before the permitted reveal stage.
 
-### Platform reliability
+### Question naming and repetition
 
-- Consolidate worksheet creation behind one shared service for learner worksheets, timed sessions, recommendations, Story Adventures and parent tests.
-- Replace remaining MutationObserver feature layers in the worksheet experience with React-owned components and state.
-- Preserve exact question, image, answer draft, elapsed time, skip state and hint state across previous, next, exit and resume actions.
-- Prevent duplicate questions and stale visual payloads across standard, intervention, adventure and parent-test flows.
-- Replace silent failures and browser alerts with accessible in-page errors and recovery actions, including expired-authentication handling.
-- Preserve the existing database, worksheet history, answers, progress, parent test feedback and Home Assistant add-on upgrade path.
-- Add component, interaction, API and end-to-end regression coverage for the affected worksheet paths.
+- Display Story Adventure chapter and challenge context as a separate label instead of embedding phrases such as a chapter name and **challenge 1** in the mathematical question prompt.
+- Keep the core question wording concise in live worksheets and completed worksheet reviews while preserving existing historical records.
+- Extend duplicate protection beyond a single worksheet so an identical prompt and choice set is not selected again from Sienna's recent learner history.
+- Apply recent-history duplicate protection to standard, timed, recommended, intervention and Story Adventure creation without including parent tests in learner history.
+- Add more than one statistical-investigation survey variant so the fixed favourite-fruit question is not repeatedly selected.
+- Use a bounded recent-history window and a safe fallback so small question banks can still create a complete worksheet.
 
-### Reporting corrections
+### Worksheet review and modal accessibility
 
-- Reconcile worksheet totals, completed, correct, incorrect, hinted, skipped and remaining counts across the live worksheet, completion summary, calendar and parent reports.
-- Keep parent test activity excluded from Sienna's learning history, mastery, XP, streak, calendar, recommendations and Home Assistant learner metrics.
-- Report growth only when enough comparable evidence exists, and clearly distinguish insufficient evidence from no improvement.
-- Keep independent, hinted and tutor-supported performance separate in parent and Home Assistant reporting.
-- Ensure calendar navigation and worksheet links open the correct day and worksheet, with no duplicated badge panel in the calendar section.
-- Add regression tests that compare the parent dashboard, calendar and Home Assistant statistics against the underlying learner worksheet evidence.
+- Render each question's stored visual payload in **View worksheet**, using the same React visual component as the live worksheet.
+- Preserve the exact historical visual rather than generating a new one during review.
+- Close worksheet-review and parent-test-review modals with the close button, the Escape key or a click on the backdrop outside the dialog.
+- Keep clicks inside the dialog from closing it, restore focus to the opener and expose an accessible dialog label.
 
-## Recently completed release, 0.25.0
+### Keyboard worksheet flow
 
-- Parent-only test worksheets using Sienna's learning profile without changing her learning evidence.
-- Structured question and overall notes with open, planned, addressed and deferred states.
-- Completed test review with question context, attempts, correct answers, working, timing and feedback.
-- Semantic release traceability for addressed bugs and enhancements.
-- Corrected diagnostic reporting so a single result does not imply measured zero growth.
+- Let Enter submit the current typed answer when **Check answer** is available.
+- After final feedback is displayed, let Enter activate **Next question** or **Finish worksheet**.
+- Do not trigger worksheet actions while focus is in the scratchpad, a multiline note, another modal or an unrelated control.
+- Prevent repeated keydown events or a held key from submitting twice or skipping past feedback.
+- Add React interaction coverage for typed, choice, retry, final-answer and final-question keyboard paths.
+
+## Recently completed release, 0.26.0
+
+- Targeted Number and Algebra interventions with 5, 10 and 15-minute sessions.
+- Interactive fraction, number-line, place-value, array and grid models with question-specific visual identity.
+- React-owned worksheet tools, saved answer drafts and reduced legacy DOM enhancement layers.
+- Reconciled learner evidence with independent and supported results separated and parent tests excluded.
 
 ## Feature findings from the supplied recordings
 
@@ -130,6 +128,9 @@ This release combines the next agreed educational and reliability work into one 
 - Accessible mobile and Home Assistant layouts.
 - Reliable offline/local operation with clear recovery messages.
 - Replace browser alerts with in-page error and recovery states.
+- Clear selected and keyboard-focus states for session, duration and learning-area controls.
+- Keyboard submission and continuation across the full worksheet feedback flow.
+- Dismissible, focus-managed worksheet review dialogs with original question visuals.
 
 ### Parent insight and Home Assistant
 
@@ -148,6 +149,7 @@ This release combines the next agreed educational and reliability work into one 
 - Replace MutationObserver feature layers with React-owned components and state.
 - Add frontend component, interaction and end-to-end tests.
 - Keep duplicate-question protection in every worksheet and adventure flow.
+- Prevent exact recent-history repeats across consecutive learner worksheets while retaining a bounded fallback.
 - Improve authentication expiry handling and eliminate silent or alert-only failures.
 - Preserve existing database, worksheet history, answers, progress and Home Assistant add-on upgrades.
 - Parent-only test worksheets with question and overall feedback, status tracking and addressed-release traceability.
@@ -168,7 +170,8 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.23.0 | Adaptive mastery and retention | Merged and released |
 | Completed | 0.24.0 | Parent and Home Assistant insight | Merged and released |
 | Completed | 0.25.0 | Parent test worksheets and feedback traceability | Merged and released |
-| Current | 0.26.0 | Number and Algebra intervention, interactive learning, platform reliability and reporting corrections | A focused intervention selects appropriate strategies and models, worksheet state remains reliable across navigation and resume, and learner reporting reconciles without parent-test contamination |
+| Completed | 0.26.0 | Number and Algebra intervention, interactive learning, platform reliability and reporting corrections | Merged and released |
+| Current | 0.27.0 | Worksheet usability, visual symmetry hints, review fidelity and keyboard flow | Session choices are visibly selectable, repeated prompts are avoided, reviews reproduce stored visuals, modals dismiss accessibly and Enter supports the complete answer-to-next-question flow |
 
 ### Continuous delivery loop
 
@@ -190,8 +193,8 @@ No release receives a promised date or week count. The loop may complete several
 - If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
 - Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
 
-The 0.26.0 release builds on the adaptive mastery, guided tutoring, interactive lab and parent-testing foundations. Its four workstreams are delivered together because the intervention must use reliable worksheet state and trustworthy reporting to measure whether the new teaching support improves independent understanding.
+The 0.27.0 release groups the seven findings reported after v0.26.0 because they affect one end-to-end path: choosing a session, understanding a question, using a hint, completing it efficiently and reviewing the original result accurately.
 
 ## Recommended priority
 
-The current release should deliver and validate the Number and Algebra intervention, its linked interactive models, the worksheet reliability work needed to support it and corrected reporting. The key gate is that Sienna can complete a focused short session using appropriate strategies and models, then the parent and Home Assistant views accurately distinguish independent understanding from supported completion. No release after 0.26.0 is sufficiently defined yet, so the following release requires a product decision after this release is reviewed and merged.
+The current release should deliver and validate the v0.27.0 worksheet usability and review corrections. The key gate is that Sienna can clearly choose a session, receive an appropriate visual symmetry hint, avoid an immediate repeat, use Enter through the answer and continuation flow, then review the exact original question and visual in a modal that dismisses by button, Escape or backdrop click. No release after 0.27.0 is sufficiently defined yet, so the following release requires a product decision after this release is reviewed and merged.
