@@ -1,3 +1,15 @@
+# MathQuest 0.28.0
+
+- Added the Math Mentor, a lightweight collapsible tutoring panel on every worksheet question.
+- Added ask-before-tell guided recovery after an incorrect learner answer, keeping the question retryable before an answer is revealed.
+- Added progressive, question-family-specific support for arithmetic, equations, fractions, measurement, grids, time and data.
+- Added Math Mentor **Hint**, **Why?**, **Teach me**, **Worked example**, **Start over** and **Read aloud** actions.
+- Added distinct-number worked examples, common-mistake cues and family-specific memory tips without exposing the assessed answer.
+- Added browser read aloud fallback messaging so unsupported browsers retain the complete worksheet flow.
+- Kept parent test assessment behaviour unchanged while allowing parent test questions to inspect Math Mentor content.
+- Added backend, interaction and accessibility regression coverage for mentor progression, restart and read-aloud fallback.
+- Updated the canonical roadmap with the approved v0.28.0 to v0.33.0 release sequence.
+
 # MathQuest 0.27.0
 
 - Fixed Home Assistant parent and student credential changes so existing managed accounts are updated on restart without changing their IDs or losing worksheet data.

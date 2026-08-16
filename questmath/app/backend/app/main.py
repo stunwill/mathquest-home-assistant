@@ -35,7 +35,7 @@ BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = load_signing_secret(DATA_DIR)
 HA_SERVICE_TOKEN = load_ha_service_token(DATA_DIR)
 ALGORITHM = 'HS256'
-APP_VERSION = '0.27.0'
+APP_VERSION = '0.28.0'
 logger = logging.getLogger('mathquest.security')
 login_rate_limiter = LoginRateLimiter()
 
@@ -138,6 +138,9 @@ class Question(Base):
     state: Mapped[str] = mapped_column(String(30), default='not_started')
     skipped_count: Mapped[int] = mapped_column(default=0)
     hint_count: Mapped[int] = mapped_column(default=0)
+    mentor_started: Mapped[bool] = mapped_column(Boolean, default=False)
+    mentor_stage: Mapped[int] = mapped_column(default=0)
+    mentor_example_seen: Mapped[bool] = mapped_column(Boolean, default=False)
     first_viewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     answered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     attempts: Mapped[list['Attempt']] = relationship(cascade='all, delete-orphan')
@@ -206,7 +209,9 @@ def migrate_database():
         ],
         'questions': [
             ('state', "VARCHAR(30) DEFAULT 'not_started'"), ('skipped_count', 'INTEGER DEFAULT 0'),
-            ('hint_count', 'INTEGER DEFAULT 0'), ('first_viewed_at', 'DATETIME'), ('answered_at', 'DATETIME')
+            ('hint_count', 'INTEGER DEFAULT 0'), ('mentor_started', 'BOOLEAN DEFAULT 0'),
+            ('mentor_stage', 'INTEGER DEFAULT 0'), ('mentor_example_seen', 'BOOLEAN DEFAULT 0'),
+            ('first_viewed_at', 'DATETIME'), ('answered_at', 'DATETIME')
         ]
     }
     with sqlite3.connect(DB_PATH) as conn:
@@ -467,6 +472,7 @@ def get_today(u:User=Depends(current_user),s:Session=Depends(db)):
 def question_status(q):
     attempts=sorted(q.attempts,key=lambda a:a.attempt_number)
     if any(a.correct for a in attempts): return 'correct'
+    if q.state=='mentor_active': return 'current'
     if len(attempts)>=2: return 'incorrect'
     if q.state=='skipped': return 'skipped'
     if q.state=='active': return 'current'
@@ -495,6 +501,8 @@ def worksheet_view(ws):
             'summary':q.prompt if len(q.prompt)<=55 else q.skill.replace('_',' ').title(),
             'answer_type':q.answer_type,'payload':json.loads(q.payload),'position':q.position,
             'status':statuses[q.id],'skipped_count':q.skipped_count or 0,'hint_count':getattr(q,'hint_count',0) or 0,
+            'mentor': {'started': bool(getattr(q, 'mentor_started', False)), 'stage': getattr(q, 'mentor_stage', 0) or 0,
+                       'worked_example_seen': bool(getattr(q, 'mentor_example_seen', False))},
             'last_hint':sorted(q.hints,key=lambda h:h.hint_number)[-1].hint_text if q.hints else None,
             'attempts':[{'answer':a.answer,'correct':a.correct,'attempt_number':a.attempt_number} for a in sorted(q.attempts,key=lambda a:a.attempt_number)]
         } for q in questions]
@@ -531,6 +539,7 @@ def request_hint(qid:int,u:User=Depends(current_user),s:Session=Depends(db)):
         return {'hint':last.hint_text if last else hint_text(q,3),'hint_count':q.hint_count or 0,'more_available':False}
     text=hint_text(q,next_number)
     q.hint_count=next_number
+    q.mentor_started=True; q.mentor_stage=max(q.mentor_stage or 0, next_number)
     s.add(HintEvent(question_id=q.id,student_id=u.id,topic=q.topic,hint_number=next_number,hint_text=text))
     ws.last_active_at=datetime.utcnow(); s.commit()
     return {'hint':text,'hint_count':next_number,'more_available':next_number<3}
@@ -542,14 +551,28 @@ def answer(qid:int,data:AnswerIn,u:User=Depends(current_user),s:Session=Depends(
     ws=s.get(Worksheet,q.worksheet_id)
     if not worksheet_accessible(u,ws): raise HTTPException(403,'Question does not belong to this worksheet account')
     count=s.scalar(select(func.count(Attempt.id)).where(Attempt.question_id==qid,Attempt.student_id==u.id)) or 0
-    if count>=2: raise HTTPException(400,'No attempts remaining')
+    mentor_mode=u.role=='student' and ws.session_kind!='parent_test'
+    if mentor_mode and count==1 and not q.mentor_started:
+        raise HTTPException(409,'Open the Math Mentor guiding question before trying again')
+    if mentor_mode and count==2 and (q.mentor_stage or 0)<1:
+        raise HTTPException(409,'Use Math Mentor hint 1 before the next attempt')
+    if mentor_mode and count==3 and (q.mentor_stage or 0)<2:
+        raise HTTPException(409,'Use Math Mentor hint 2 before the next attempt')
+    if mentor_mode and count==4 and (q.mentor_stage or 0)<3:
+        raise HTTPException(409,'Use Math Mentor hint 3 before the next attempt')
+    if mentor_mode and count==5 and not q.mentor_example_seen:
+        raise HTTPException(409,'Open the Math Mentor worked example before the final attempt')
+    if count>= (6 if mentor_mode else 2): raise HTTPException(400,'No attempts remaining')
     correct=normalise(data.answer)==normalise(q.correct_answer)
     s.add(Attempt(question_id=q.id,student_id=u.id,answer=str(data.answer),correct=correct,attempt_number=count+1,seconds=max(0,data.seconds)))
-    reveal=correct or count+1>=2
-    q.state='answered_correct' if correct else ('answered_incorrect' if reveal else 'active')
+    reveal=correct or (count+1>=6 if mentor_mode else count+1>=2)
+    q.state='answered_correct' if correct else ('answered_incorrect' if reveal else 'mentor_active' if mentor_mode else 'active')
     if reveal: q.answered_at=datetime.utcnow()
     ws.last_active_at=datetime.utcnow(); s.commit()
-    return {'correct':correct,'attempt_number':count+1,'retry_allowed':not reveal,'correct_answer':q.correct_answer if reveal else None,'working':q.working if reveal else None,'message':'Great job!' if correct else ('Not quite. Try once more.' if not reveal else 'Here is how to solve it.')}
+    next_support = None
+    if mentor_mode and not correct and not reveal:
+        next_support = ('guiding_question' if count == 0 else f'hint_{min(3, count)}' if count < 4 else 'worked_example')
+    return {'correct':correct,'attempt_number':count+1,'retry_allowed':not reveal,'correct_answer':q.correct_answer if reveal else None,'working':q.working if reveal else None,'mentor_required':bool(next_support),'next_support':next_support,'message':'Great job!' if correct else ('Let’s use Math Mentor, then try again.' if mentor_mode and not reveal else 'Here is how to solve it.')}
 
 @app.post('/api/questions/{qid}/skip')
 def skip_question(qid:int,data:NavigateIn,u:User=Depends(current_user),s:Session=Depends(db)):
