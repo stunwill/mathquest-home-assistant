@@ -23,11 +23,12 @@ This release addresses the worksheet usability and review problems reported duri
 ### Parent test worksheet lifecycle reliability
 
 - Let a parent complete a parent-owned test worksheet through the same answer, refresh, navigation, skip, save, resume and completion lifecycle used by the worksheet interface.
+- Make question-level and overall test notes explicitly optional. Keep **Next question**, **Finish worksheet** and **Return to parent dashboard** available without entering or saving a note, and label the note fields as optional.
 - Authorise the generic worksheet view used after an answer when the signed-in parent owns the worksheet and its `session_kind` is `parent_test`, while continuing to reject access to another user's worksheet.
 - Keep the accepted answer and displayed feedback consistent when a follow-up refresh fails, without reporting the successfully answered question as lost.
 - Audit every worksheet lifecycle endpoint through one shared ownership rule so parent tests do not pass one action and fail on the next request.
 - Preserve parent-test isolation from Sienna's XP, mastery, recommendations, calendar, streak and learner evidence.
-- Add an end-to-end regression that creates a parent test, answers its first question correctly, refreshes it, advances through the remaining questions, saves notes and completes the worksheet.
+- Add end-to-end regressions that create a parent test, answer its first question correctly, refresh it, advance without a note, optionally save question and overall notes, and complete the worksheet.
 
 ### Session selection clarity
 
