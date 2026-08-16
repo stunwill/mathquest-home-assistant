@@ -10,6 +10,25 @@ The target experience is not a digital worksheet. Each session should diagnose, 
 
 This release addresses the worksheet usability and review problems reported during v0.26.0 testing. It is a focused learner-experience release and does not change the completed v0.26.0 intervention or reporting scope.
 
+### Parent and student credential configuration
+
+- Treat the Home Assistant add-on `parent_username`, `parent_password`, `student_username` and `student_password` options as the authoritative credentials for the managed accounts.
+- On add-on startup, update the existing managed parent and student account credentials instead of applying configuration values only when an account is first created.
+- Preserve the existing user IDs, worksheet ownership, progress, parent test feedback and all related data when a configured username or password changes.
+- Do not create a second parent or student account when the configured username changes.
+- Reuse an existing password hash when the configured password already verifies, and never log or return plaintext credentials.
+- Document that saving changed credentials requires an add-on restart before the new login is active.
+- Add upgrade regression tests covering password changes, username changes, unchanged credentials, existing learner data and duplicate-account prevention.
+
+### Parent test worksheet lifecycle reliability
+
+- Let a parent complete a parent-owned test worksheet through the same answer, refresh, navigation, skip, save, resume and completion lifecycle used by the worksheet interface.
+- Authorise the generic worksheet view used after an answer when the signed-in parent owns the worksheet and its `session_kind` is `parent_test`, while continuing to reject access to another user's worksheet.
+- Keep the accepted answer and displayed feedback consistent when a follow-up refresh fails, without reporting the successfully answered question as lost.
+- Audit every worksheet lifecycle endpoint through one shared ownership rule so parent tests do not pass one action and fail on the next request.
+- Preserve parent-test isolation from Sienna's XP, mastery, recommendations, calendar, streak and learner evidence.
+- Add an end-to-end regression that creates a parent test, answers its first question correctly, refreshes it, advances through the remaining questions, saves notes and completes the worksheet.
+
 ### Session selection clarity
 
 - Restyle **Targeted practice**, **Levels 2–6 diagnostic**, session-length choices and learning-area choices as unmistakably interactive controls.
@@ -171,7 +190,7 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.24.0 | Parent and Home Assistant insight | Merged and released |
 | Completed | 0.25.0 | Parent test worksheets and feedback traceability | Merged and released |
 | Completed | 0.26.0 | Number and Algebra intervention, interactive learning, platform reliability and reporting corrections | Merged and released |
-| Current | 0.27.0 | Worksheet usability, visual symmetry hints, review fidelity and keyboard flow | Session choices are visibly selectable, repeated prompts are avoided, reviews reproduce stored visuals, modals dismiss accessibly and Enter supports the complete answer-to-next-question flow |
+| Current | 0.27.0 | Credential and parent-test reliability, worksheet usability, visual symmetry hints, review fidelity and keyboard flow | Configuration credentials update existing accounts without losing data, parent tests complete without ownership errors, session choices are visibly selectable, repeated prompts are avoided, reviews reproduce stored visuals, modals dismiss accessibly and Enter supports the complete answer-to-next-question flow |
 
 ### Continuous delivery loop
 
@@ -193,8 +212,8 @@ No release receives a promised date or week count. The loop may complete several
 - If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
 - Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
 
-The 0.27.0 release groups the seven findings reported after v0.26.0 because they affect one end-to-end path: choosing a session, understanding a question, using a hint, completing it efficiently and reviewing the original result accurately.
+The 0.27.0 release groups the learner-experience findings reported after v0.26.0 with the high-priority managed-account credential and parent-test lifecycle corrections. Together they restore parent access, make test worksheets reliably completable and improve one end-to-end path: choosing a session, understanding a question, using a hint, completing it efficiently and reviewing the original result accurately.
 
 ## Recommended priority
 
-The current release should deliver and validate the v0.27.0 worksheet usability and review corrections. The key gate is that Sienna can clearly choose a session, receive an appropriate visual symmetry hint, avoid an immediate repeat, use Enter through the answer and continuation flow, then review the exact original question and visual in a modal that dismisses by button, Escape or backdrop click. No release after 0.27.0 is sufficiently defined yet, so the following release requires a product decision after this release is reviewed and merged.
+The current release should first restore reliable parent and student credential updates and the complete parent-test lifecycle, then deliver and validate the v0.27.0 worksheet usability and review corrections. The key gate is that a configuration credential change updates the existing account without losing its data, a parent can answer, refresh, navigate, annotate and complete a test worksheet without ownership errors, and Sienna can clearly choose a session, receive an appropriate visual symmetry hint, avoid an immediate repeat, use Enter through the answer and continuation flow, then review the exact original question and visual in a modal that dismisses by button, Escape or backdrop click. No release after 0.27.0 is sufficiently defined yet, so the following release requires a product decision after this release is reviewed and merged.
