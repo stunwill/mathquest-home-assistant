@@ -22,13 +22,29 @@ def extract_release_notes(changelog: str, version: str) -> str:
     return notes
 
 
+def release_notes_for(version: str, changelog_path: Path = Path('questmath/CHANGELOG.md')) -> str:
+    changelog = changelog_path.read_text(encoding='utf-8')
+    try:
+        return extract_release_notes(changelog, version)
+    except ValueError:
+        corrective = changelog_path.parent / f'RELEASE_NOTES_{version}.md'
+        if not corrective.exists():
+            raise
+        text = corrective.read_text(encoding='utf-8').strip()
+        first_heading_end = text.find('\n')
+        notes = text[first_heading_end + 1:].strip() if first_heading_end >= 0 else text
+        if not notes:
+            raise ValueError(f'Release notes for {version} are empty')
+        return notes
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('version')
     parser.add_argument('--changelog', type=Path, default=Path('questmath/CHANGELOG.md'))
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
-    notes = extract_release_notes(args.changelog.read_text(encoding='utf-8'), args.version)
+    notes = release_notes_for(args.version, args.changelog)
     if args.output:
         args.output.write_text(notes + '\n', encoding='utf-8')
     else:
