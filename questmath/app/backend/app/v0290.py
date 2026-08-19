@@ -143,6 +143,13 @@ def _misconception(question: legacy.Question, answer: str) -> tuple[str, str] | 
     }.get(family)
 
 
+def _next_support(question: legacy.Question) -> str:
+    if not question.mentor_started:
+        return 'guiding_question'
+    hint_count = question.hint_count or 0
+    return ('hint_1', 'hint_2', 'hint_3')[min(hint_count, 2)] if hint_count < 3 else 'worked_example'
+
+
 def _remove_route(path: str, method: str) -> None:
     app.router.routes[:] = [route for route in app.router.routes if not (getattr(route, 'path', None) == path and method in getattr(route, 'methods', set()))]
 
@@ -176,7 +183,7 @@ def answer_optional_tutor(qid: int, data: legacy.AnswerIn, u: legacy.User = Depe
             _record(s, u, question, 'misconception_signal', {'type': kind, 'message': message})
     worksheet.last_active_at = datetime.utcnow()
     s.commit()
-    return {'correct': correct, 'attempt_number': count + 1, 'retry_allowed': not reveal, 'correct_answer': question.correct_answer if reveal else None, 'working': question.working if reveal else None, 'mentor_required': False, 'next_support': 'guiding_question' if not correct and not reveal else None, 'message': 'Great job!' if correct else ('Have another look, or choose a Math Mentor tool when you want one.' if not reveal else 'Here is how to solve it.')}
+    return {'correct': correct, 'attempt_number': count + 1, 'retry_allowed': not reveal, 'correct_answer': question.correct_answer if reveal else None, 'working': question.working if reveal else None, 'mentor_required': False, 'next_support': _next_support(question) if not correct and not reveal else None, 'message': 'Great job!' if correct else ('Have another look, or choose a Math Mentor tool when you want one.' if not reveal else 'Here is how to solve it.')}
 
 
 _remove_route('/api/questions/{qid}/math-mentor', 'GET')
@@ -212,7 +219,10 @@ def prerequisite_graph(_: legacy.User = Depends(legacy.current_user), session: S
 
 @app.get('/api/learning/recommendations')
 def recommendations(user: legacy.User = Depends(legacy.parent), session: Session = Depends(legacy.db)):
-    student = v0120.resolve_learner(session)
+    try:
+        student = v0120.resolve_learner(session)
+    except HTTPException:
+        return {'recommendations': [{'type': 'retrieval', 'title': 'Practice a recently learned skill tomorrow', 'reason': 'Short spaced retrieval will confirm whether recent success is retained.', 'minutes': 10}], 'evidence_events': 0}
     signals = session.scalars(select(MisconceptionEvidence).where(MisconceptionEvidence.student_id == student.id, MisconceptionEvidence.resolved == False).order_by(MisconceptionEvidence.created_at.desc())).all()
     grouped: dict[str, int] = {}
     for signal in signals:
