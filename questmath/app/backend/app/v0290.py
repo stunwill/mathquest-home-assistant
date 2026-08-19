@@ -197,6 +197,9 @@ def math_mentor_v0290(qid: int, action: str = 'guide', user: legacy.User = Depen
     worksheet = session.get(legacy.Worksheet, question.worksheet_id)
     if not legacy.worksheet_accessible(user, worksheet):
         raise HTTPException(403, 'Question does not belong to this worksheet account')
+    if action == 'guide':
+        question.mentor_started = True
+        session.commit()
     if action == 'worked_example':
         question.mentor_example_seen = True
         session.commit()
