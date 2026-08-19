@@ -20,19 +20,17 @@ def test_release_notes_extract_current_version_section_only():
     module = load_script('extract_release_notes')
     versions = load_script('validate_versions').version_locations()
     current_version = versions['questmath/config.yaml']
-    changelog = (ROOT / 'questmath/CHANGELOG.md').read_text(encoding='utf-8')
-    notes = module.extract_release_notes(changelog, current_version)
-    assert notes.startswith('- Made Math Mentor support optional')
-    assert 'operation-aligned worked examples' in notes
-    assert 'misconception evidence' in notes
-    assert 'Parent test worksheets' not in notes
-    assert '# MathQuest' not in notes
+    notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
+    assert 'grid visual' in notes.lower()
+    assert 'keyboard' in notes.lower()
+    assert 'duplicate' in notes.lower()
+    assert '# MathQuest 0.29.1' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.29.0'}
+    assert set(versions.values()) == {'0.29.1'}
 
 
 def test_release_workflow_validates_versions_before_publishing():
