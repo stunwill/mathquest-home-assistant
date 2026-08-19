@@ -6,9 +6,50 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.28.0, Math Mentor Foundation
+## Current release scope, 0.29.0, Learning Intelligence
 
-This release turns the existing guided-support building blocks into a visible, consistent **Math Mentor** experience inside every learner worksheet question. It preserves the worksheet, Home Assistant and parent-test workflows while changing the learner path after an incorrect answer from quick answer reveal to guided recovery.
+This release builds on the v0.28.0 Math Mentor foundation. It makes tutoring optional after an incorrect answer, aligns worked examples with the displayed question, reduces over-simple worksheet items, and introduces the first persisted learning-intelligence layer.
+
+### Natural Math Mentor workflow
+
+- Keep answer entry and **Check answer** available immediately after an incorrect response.
+- Show a lightweight, question-specific prompt beneath the question, such as “Have another look before checking the hint.”
+- Let the learner retry immediately or choose Hint, Why?, Teach me, Worked example, Start over or Read aloud.
+- Never require a tutor action before another answer can be entered.
+- Preserve the existing parent-test assessment flow and keyboard navigation.
+
+### Question-aligned worked examples
+
+- Generate examples for the same mathematical concept, operation, representation, strategy and difficulty as the displayed question.
+- Use different values and never reuse the assessed question or reveal its answer.
+- Validate examples by question family before returning them to the frontend.
+
+### Better difficulty and variety
+
+- Reduce very-easy fact questions while retaining occasional confidence-building items.
+- Increase moderate, challenging, multi-step and application questions for the Level 5 pathway.
+- Alternate difficulty intentionally across a worksheet and prevent predictable repeated patterns.
+
+### Learning Intelligence foundation
+
+- Map each generated question to a prerequisite skill path, for example fractions → equivalent fractions → multiplication facts → division facts.
+- Record structured misconception evidence rather than only a wrong-answer count, including likely place-value, regrouping, denominator and multiplication-fact errors.
+- Record evidence for first-attempt success, later success, retries, hints, worked examples and confidence trend.
+- Generate parent-visible recommendations for review due, apparent mastery and recurring misconceptions.
+- Keep parent-test activity excluded from Sienna’s adaptive profile.
+
+### Release acceptance criteria
+
+- An incorrect learner answer leaves the answer field usable and permits an immediate retry without opening or completing a tutor action.
+- Tutor prompts, hints and examples remain optional, question-specific and keyboard accessible.
+- Automated validation rejects a worked example whose family, operation or strategy does not match the assessed question.
+- Worksheet generation contains fewer very-easy items and a measurable mix of moderate, challenging, confidence-building and application questions.
+- Parent insight APIs expose prerequisite, misconception and evidence summaries without changing existing learner history.
+- Backend, frontend, adaptive-logic and accessibility tests cover the release.
+
+## Recently completed release, 0.28.0, Math Mentor Foundation
+
+This release turned the existing guided-support building blocks into a visible, consistent **Math Mentor** experience inside every learner worksheet question.
 
 ### Math Mentor panel
 
@@ -237,8 +278,8 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.25.0 | Parent test worksheets and feedback traceability | Merged and released |
 | Completed | 0.26.0 | Number and Algebra intervention, interactive learning, platform reliability and reporting corrections | Merged and released |
 | Completed | 0.27.0 | Credential and parent-test reliability, worksheet usability, visual symmetry hints, review fidelity and keyboard flow | Merged and released |
-| Current | 0.28.0 | Math Mentor Foundation: guided tutor, ask-before-tell, progressive support, explanations, worked examples, Start over and browser read aloud | Every learner question has a collapsible mentor panel; incorrect answers start guided recovery before answer reveal; support is question-specific and accessible; parent tests remain conventional |
-| Planned | 0.29.0 | Learning Intelligence: prerequisite skill graph, misconception detection, spaced retrieval, evidence collection, adaptive tutor recommendations and learning-profile improvements | A documented skill graph and evidence model drive personalised session selection without discarding existing learner history |
+| Completed | 0.28.0 | Math Mentor Foundation: guided tutor, ask-before-tell, progressive support, explanations, worked examples, Start over and browser read aloud | Merged and released |
+| Current | 0.29.0 | Learning Intelligence: natural optional tutoring, question-aligned worked examples, difficulty balancing, prerequisite skill graph, misconception detection, evidence collection and parent recommendations | Incorrect answers remain immediately retryable; aligned examples and difficulty distribution are validated; adaptive evidence is persisted without discarding existing learner history |
 | Planned | 0.30.0 | Visual Mathematics: vertically aligned fraction comparison, interactive fraction models, manipulatives, multiple strategies, Show another way and improved visual explanations | Models use equal wholes and do not expose the assessed answer prematurely |
 | Planned | 0.31.0 | Parent Insights: growth reporting, retention analytics, mastery tracking, session recommendations, misconception reports and dashboard enhancements | Parent reporting clearly separates independent, supported and retained understanding |
 | Planned | 0.32.0 | Home Assistant Expansion: dashboard improvements, notifications, automations, widgets and integration enhancements | Home Assistant data remains stable, privacy-preserving and non-blocking to local learning |

@@ -1,3 +1,14 @@
+# MathQuest 0.29.0
+
+- Made Math Mentor support optional after an incorrect answer. Sienna can immediately edit and resubmit an answer without opening a hint or completing a tutoring step.
+- Added question-specific, operation-aligned worked examples that use different values and the same reasoning strategy as the displayed question.
+- Reduced very-easy arithmetic items outside occasional confidence-building positions and increased moderate, challenging and application generation.
+- Added persisted learning evidence for attempts, first-attempt success, hints, worked examples, retries and misconception evidence signals.
+- Added prerequisite skill links for core Number, Algebra, Measurement and fraction outcomes.
+- Added parent-only early recommendations for recurring misconceptions and spaced retrieval.
+- Added backend and frontend regression coverage for optional tutoring, aligned examples, misconception detection, prerequisite graphs, recommendations and worksheet difficulty balance.
+- Updated the canonical roadmap and release metadata to v0.29.0.
+
 # MathQuest 0.28.0
 
 - Added the Math Mentor, a lightweight collapsible tutoring panel on every worksheet question.
