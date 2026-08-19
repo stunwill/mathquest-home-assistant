@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import Depends, HTTPException
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, select
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, UniqueConstraint, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from . import main as legacy
@@ -44,8 +44,9 @@ class MisconceptionEvidence(legacy.Base):
 
 class PrerequisiteLink(legacy.Base):
     __tablename__ = 'prerequisite_links'
+    __table_args__ = (UniqueConstraint('skill', 'prerequisite', name='uq_prerequisite_skill_pair'),)
     id: Mapped[int] = mapped_column(primary_key=True)
-    skill: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    skill: Mapped[str] = mapped_column(String(80), index=True)
     prerequisite: Mapped[str] = mapped_column(String(80))
     depth: Mapped[int] = mapped_column(default=1)
 
@@ -163,8 +164,8 @@ def answer_optional_tutor(qid: int, data: legacy.AnswerIn, u: legacy.User = Depe
         raise HTTPException(400, 'No attempts remaining')
     correct = legacy.normalise(data.answer) == legacy.normalise(question.correct_answer)
     s.add(legacy.Attempt(question_id=qid, student_id=u.id, answer=str(data.answer), correct=correct, attempt_number=count + 1, seconds=max(0, data.seconds)))
-    reveal = correct or count + 1 >= max_attempts or worksheet.session_kind == 'parent_test'
-    question.state = 'answered_correct' if correct else 'answered_incorrect' if reveal else 'active'
+    reveal = correct or count + 1 >= max_attempts
+    question.state = 'answered_correct' if correct else 'answered_incorrect' if reveal else 'mentor_active'
     question.answered_at = datetime.utcnow() if reveal else question.answered_at
     _record(s, u, question, 'first_attempt_success' if count == 0 and correct else 'attempt', {'attempt_number': count + 1, 'correct': correct, 'hints_used': question.hint_count or 0, 'worked_example_seen': bool(question.mentor_example_seen)})
     if not correct:
@@ -175,7 +176,7 @@ def answer_optional_tutor(qid: int, data: legacy.AnswerIn, u: legacy.User = Depe
             _record(s, u, question, 'misconception_signal', {'type': kind, 'message': message})
     worksheet.last_active_at = datetime.utcnow()
     s.commit()
-    return {'correct': correct, 'attempt_number': count + 1, 'retry_allowed': not reveal, 'correct_answer': question.correct_answer if reveal else None, 'working': question.working if reveal else None, 'mentor_required': False, 'next_support': None, 'message': 'Great job!' if correct else ('Have another look, or choose a Math Mentor tool when you want one.' if not reveal else 'Here is how to solve it.')}
+    return {'correct': correct, 'attempt_number': count + 1, 'retry_allowed': not reveal, 'correct_answer': question.correct_answer if reveal else None, 'working': question.working if reveal else None, 'mentor_required': False, 'next_support': 'guiding_question' if not correct and not reveal else None, 'message': 'Great job!' if correct else ('Have another look, or choose a Math Mentor tool when you want one.' if not reveal else 'Here is how to solve it.')}
 
 
 _remove_route('/api/questions/{qid}/math-mentor', 'GET')
@@ -200,10 +201,11 @@ def math_mentor_v0290(qid: int, action: str = 'guide', user: legacy.User = Depen
 
 @app.get('/api/learning/prerequisite-graph')
 def prerequisite_graph(_: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
-    for skill, prerequisites in GRAPH.items():
-        for depth, prerequisite in enumerate(prerequisites, 1):
-            if not session.scalar(select(PrerequisiteLink).where(PrerequisiteLink.skill == skill, PrerequisiteLink.prerequisite == prerequisite)):
-                session.add(PrerequisiteLink(skill=skill, prerequisite=prerequisite, depth=depth))
+    with session.no_autoflush:
+        for skill, prerequisites in GRAPH.items():
+            for depth, prerequisite in enumerate(prerequisites, 1):
+                if not session.scalar(select(PrerequisiteLink).where(PrerequisiteLink.skill == skill, PrerequisiteLink.prerequisite == prerequisite)):
+                    session.add(PrerequisiteLink(skill=skill, prerequisite=prerequisite, depth=depth))
     session.commit()
     return {'graph': [{'skill': skill, 'prerequisites': prerequisites} for skill, prerequisites in GRAPH.items()]}
 
