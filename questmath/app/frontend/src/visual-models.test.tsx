@@ -1,7 +1,7 @@
 import React from 'react';
 import {afterEach, expect, it} from 'vitest';
 import {cleanup, fireEvent, render, screen} from '@testing-library/react';
-import {ArrayModel, EquivalentFractionModel, FractionComparison, FractionNumberLine, NumberLineModel, PlaceValueModel} from './visual-models';
+import {ArrayModel, EquivalentFractionModel, FractionComparison, FractionNumberLine, NumberLineModel, PlaceValueModel, type FractionValue} from './visual-models';
 import './test-setup';
 
 afterEach(cleanup);
@@ -18,7 +18,7 @@ it('renders fraction comparison with equal whole rows and written notation',()=>
 });
 
 it('keeps interactive numerator and denominator synchronised',()=>{
-  let current=[{label:'First',numerator:1,denominator:2},{label:'Second',numerator:2,denominator:4}];
+  let current:FractionValue[]=[{label:'First',numerator:1,denominator:2},{label:'Second',numerator:2,denominator:4}];
   const {rerender}=render(<FractionComparison items={current} interactive onChange={next=>{current=next;rerender(<FractionComparison items={current} interactive onChange={()=>{}}/>)}}/>);
   fireEvent.change(screen.getByLabelText('First numerator'),{target:{value:'2'}});
   expect(screen.getByText('2/2')).toBeInTheDocument();
