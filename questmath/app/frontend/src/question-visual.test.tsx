@@ -12,8 +12,8 @@ describe('React-owned question visuals', () => {
       {label: 'Jack', numerator: 4, denominator: 5}, {label: 'Margaret', numerator: 2, denominator: 3},
     ]}}}}/>);
     expect(screen.getByRole('group', {name: /equal-sized wholes/i})).toBeInTheDocument();
-    expect(container.querySelectorAll('.fraction-row')).toHaveLength(2);
-    expect(container.querySelectorAll('.fraction-bar')).toHaveLength(2);
+    expect(container.querySelectorAll('.vm-fraction-row')).toHaveLength(2);
+    expect(container.querySelectorAll('.vm-fraction-bar')).toHaveLength(2);
   });
 
   it('labels grid axes but does not print the answer inside the highlighted square', () => {
