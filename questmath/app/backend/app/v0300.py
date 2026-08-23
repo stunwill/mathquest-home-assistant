@@ -33,6 +33,10 @@ def _numbers(prompt: str) -> list[int]:
     return [int(value) for value in re.findall(r'\d+', prompt or '')]
 
 
+def _learner_id(user: legacy.User, session: Session) -> int:
+    return user.id if user.role == 'student' else v0120.resolve_learner(session).id
+
+
 def visual_model_for(question: legacy.Question) -> str:
     skill = _skill(question)
     prompt = (question.prompt or '').lower()
@@ -205,11 +209,10 @@ def question_visual_mathematics(qid: int, user: legacy.User = Depends(legacy.cur
     if not legacy.worksheet_accessible(user, worksheet):
         raise HTTPException(403, 'Question does not belong to this worksheet account')
     assessment = worksheet.session_kind == 'parent_test'
-    learner_id = user.id if user.role == 'student' else worksheet.learning_profile_id or worksheet.student_id
     return {
         'visual': _safe_visual_payload(question, worksheet),
         'strategies': [] if assessment else _strategy_set(question),
-        'recommendation': None if assessment else evidence_visual_recommendation(session, learner_id, question),
+        'recommendation': None if assessment else evidence_visual_recommendation(session, _learner_id(user, session), question),
         'answer_preserved': True,
         'mentor_state_preserved': True,
         'lab_state_client_owned': True,
@@ -227,7 +230,6 @@ def math_mentor_visual(qid: int, action: str = 'guide', user: legacy.User = Depe
     payload = v0290.math_mentor_v0290(qid, action, user, session)
     assessment = worksheet.session_kind == 'parent_test'
     model = visual_model_for(question)
-    learner_id = user.id if user.role == 'student' else worksheet.learning_profile_id or worksheet.student_id
     payload['visual_recommendation'] = None if assessment else {
         'model': model,
         'message': f'Try the {model.replace("-", " ")} model. {visual_reason(model)}',
@@ -235,7 +237,7 @@ def math_mentor_visual(qid: int, action: str = 'guide', user: legacy.User = Depe
     }
     payload['visual_connection'] = visual_reason(model)
     payload['strategies'] = [] if assessment else _strategy_set(question)
-    payload['evidence_visual_recommendation'] = None if assessment else evidence_visual_recommendation(session, learner_id, question)
+    payload['evidence_visual_recommendation'] = None if assessment else evidence_visual_recommendation(session, _learner_id(user, session), question)
     return payload
 
 
