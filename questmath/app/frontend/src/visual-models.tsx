@@ -47,7 +47,7 @@ export function NumberLineModel({min=0,max=100,value=30,onChange}:{min?:number;m
 
 export function ArrayModel({rows,columns}:{rows:number;columns:number}){
   const r=Math.max(1,Math.min(12,rows)),c=Math.max(1,Math.min(12,columns));
-  return <div className="vm-array-wrap"><div className="vm-array" style={{gridTemplateColumns:`repeat(${c},1fr)`}} role="img" aria-label={`${r} equal rows with ${c} in each row`}>{Array.from({length:r*c},(_,index)=><i key={index}/>)}</div><output>{r} × {c} = {r*c}</output></div>;
+  return <div className="vm-array-wrap"><div className="vm-array" style={{gridTemplateColumns:`repeat(${c},1fr)`}} role="img" aria-label={`${r} equal rows with ${c} in each row`}>{Array.from({length:r*c},(_,index)=><i key={index}/>)}</div><output>{r} rows × {c} in each row = {r*c} counters</output></div>;
 }
 
 export function PlaceValueModel({value}:{value:number}){
