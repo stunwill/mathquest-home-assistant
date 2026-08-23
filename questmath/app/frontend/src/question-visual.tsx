@@ -1,10 +1,5 @@
 import React from 'react';
-
-function FractionComparison({items}: {items: any[]}) {
-  return <div className="mq-visual fraction-compare" role="group" aria-label="Fraction comparison using equal-sized wholes">
-    {(items || []).map((item, row) => { const numerator = Math.max(0, Number(item.numerator) || 0), denominator = Math.max(1, Number(item.denominator) || 1); return <div className="fraction-row" key={`${row}-${numerator}-${denominator}`}><b>{item.label}</b><div className="fraction-bar" role="img" aria-label={`${numerator} of ${denominator} equal parts shaded`}>{Array.from({length: denominator}, (_, index) => <span className={index < numerator ? 'on' : ''} key={index}/>)}</div><small>{numerator}/{denominator}</small></div>; })}
-  </div>;
-}
+import {FractionComparison, NumberLineModel, ArrayModel, PlaceValueModel, MeasurementModel} from './visual-models';
 
 function GridReference({visual}: {visual: any}) {
   const rows: string[] = Array.isArray(visual?.columns) ? visual.columns.map(String) : [];
@@ -32,7 +27,8 @@ function BarChart({visual}: {visual: any}) {
   return <div className="mq-visual bar-chart" role="img" aria-label="Bar chart for this question">{(visual.labels || []).map((label: string, index: number) => <div key={`${label}-${index}`}><span style={{height: `${Math.max(12, values[index] / maximum * 120)}px`}}/><b>{values[index]}</b><small>{label}</small></div>)}</div>;
 }
 
-function NumberLine({visual}: {visual: any}) {
+function StaticNumberLine({visual}: {visual:any}) {
+  if(Number.isFinite(Number(visual?.min)) || Number.isFinite(Number(visual?.max))) return <div className="mq-visual"><NumberLineModel min={Number(visual?.min)||0} max={Number(visual?.max)||100} value={Number(visual?.marker)||Number(visual?.min)||0}/></div>;
   const steps = Math.max(1, Number(visual.steps) || 1);
   return <div className="mq-visual number-line" role="img" aria-label="Number line for this question"><div className="line-track">{Array.from({length: steps + 1}, (_, index) => <span key={index}><i/><b>{index === 0 ? '0' : index === steps ? '1' : ''}</b></span>)}</div></div>;
 }
@@ -57,12 +53,15 @@ export function QuestionVisual({question}: {question: any}) {
   const visual = question?.payload?.visual;
   if (!visual) return null;
   const key = question?.payload?.visual_key || question?.id;
-  if (visual.type === 'fraction_compare') return <FractionComparison key={key} items={visual.items}/>;
+  if (visual.type === 'fraction_compare') return <div className="mq-visual" key={key}><FractionComparison items={visual.items || []}/></div>;
   if (visual.type === 'grid') return <GridReference key={key} visual={visual}/>;
   if (visual.type === 'clock') return <Clock key={key} visual={visual}/>;
   if (visual.type === 'angle') return <Angle key={key} visual={visual}/>;
   if (visual.type === 'bar_chart') return <BarChart key={key} visual={visual}/>;
-  if (visual.type === 'number_line') return <NumberLine key={key} visual={visual}/>;
+  if (visual.type === 'number_line') return <StaticNumberLine key={key} visual={visual}/>;
+  if (visual.type === 'array') return <div className="mq-visual" key={key}><ArrayModel rows={Number(visual.rows)||3} columns={Number(visual.columns)||4}/></div>;
+  if (visual.type === 'place_value') return <div className="mq-visual" key={key}><PlaceValueModel value={Number(visual.value)||0}/></div>;
+  if (visual.type === 'measurement') return <div className="mq-visual" key={key}><MeasurementModel length={Number(visual.length)||1} width={Number(visual.width)||1} unit={visual.unit||'cm'}/></div>;
   if (visual.type === 'rotational_symmetry') return <RotationalSymmetry key={key} visual={visual} hinted={Number(question?.hint_count) > 0}/>;
   return <div className="mq-visual visual-unavailable" role="status"><b>Visual unavailable</b><p>Skip this question and ask a parent to add a test note.</p></div>;
 }
