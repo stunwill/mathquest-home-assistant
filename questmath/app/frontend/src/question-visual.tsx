@@ -1,5 +1,6 @@
 import React from 'react';
 import {FractionComparison, NumberLineModel, ArrayModel, PlaceValueModel, MeasurementModel} from './visual-models';
+import './visual-models.css';
 
 function GridReference({visual}: {visual: any}) {
   const rows: string[] = Array.isArray(visual?.columns) ? visual.columns.map(String) : [];
