@@ -1,7 +1,10 @@
 import React from 'react';
-import {fireEvent, render, screen} from '@testing-library/react';
-import '@testing-library/jest-dom';
+import {afterEach, expect, it} from 'vitest';
+import {cleanup, fireEvent, render, screen} from '@testing-library/react';
 import {ArrayModel, EquivalentFractionModel, FractionComparison, FractionNumberLine, NumberLineModel, PlaceValueModel} from './visual-models';
+import './test-setup';
+
+afterEach(cleanup);
 
 it('renders fraction comparison with equal whole rows and written notation',()=>{
   const {container}=render(<FractionComparison items={[{label:'First',numerator:3,denominator:4},{label:'Second',numerator:5,denominator:8}]}/>);
