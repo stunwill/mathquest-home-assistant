@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 import json
-import math
 import re
 from typing import Any
 
-from fastapi import Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0120, v0200, v0260, v0290, v0291
+from . import v0120, v0260, v0290, v0291
 
 app = v0291.app
 app.version = '0.30.0'
 legacy.APP_VERSION = '0.30.0'
+router = APIRouter()
 
 
 def _payload(question: legacy.Question) -> dict[str, Any]:
@@ -181,7 +181,7 @@ def annotate_visual_mathematics(session: Session, worksheet: legacy.Worksheet) -
     for question in worksheet.questions:
         payload = _payload(question)
         payload['visual_mathematics'] = _safe_visual_payload(question, worksheet)
-        payload['solution_strategies'] = _strategy_set(question)
+        payload['solution_strategies'] = [] if worksheet.session_kind == 'parent_test' else _strategy_set(question)
         question.payload = json.dumps(payload)
     session.commit()
     session.refresh(worksheet)
@@ -196,7 +196,7 @@ def create_worksheet_v0300(session: Session, student_id: int, selected: str, **k
     return annotate_visual_mathematics(session, worksheet)
 
 
-@app.get('/api/questions/{qid}/visual-mathematics')
+@router.get('/api/questions/{qid}/visual-mathematics')
 def question_visual_mathematics(qid: int, user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
     question = session.get(legacy.Question, qid)
     if not question:
@@ -204,19 +204,19 @@ def question_visual_mathematics(qid: int, user: legacy.User = Depends(legacy.cur
     worksheet = session.get(legacy.Worksheet, question.worksheet_id)
     if not legacy.worksheet_accessible(user, worksheet):
         raise HTTPException(403, 'Question does not belong to this worksheet account')
-    visual = _safe_visual_payload(question, worksheet)
-    recommendation = None if worksheet.session_kind == 'parent_test' else evidence_visual_recommendation(session, user.id, question)
+    assessment = worksheet.session_kind == 'parent_test'
+    learner_id = user.id if user.role == 'student' else worksheet.learning_profile_id or worksheet.student_id
     return {
-        'visual': visual,
-        'strategies': _strategy_set(question),
-        'recommendation': recommendation,
+        'visual': _safe_visual_payload(question, worksheet),
+        'strategies': [] if assessment else _strategy_set(question),
+        'recommendation': None if assessment else evidence_visual_recommendation(session, learner_id, question),
         'answer_preserved': True,
         'mentor_state_preserved': True,
         'lab_state_client_owned': True,
     }
 
 
-@app.get('/api/questions/{qid}/math-mentor-v0300')
+@router.get('/api/questions/{qid}/math-mentor-v0300')
 def math_mentor_visual(qid: int, action: str = 'guide', user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
     question = session.get(legacy.Question, qid)
     if not question:
@@ -225,22 +225,21 @@ def math_mentor_visual(qid: int, action: str = 'guide', user: legacy.User = Depe
     if not legacy.worksheet_accessible(user, worksheet):
         raise HTTPException(403, 'Question does not belong to this worksheet account')
     payload = v0290.math_mentor_v0290(qid, action, user, session)
+    assessment = worksheet.session_kind == 'parent_test'
     model = visual_model_for(question)
-    payload['visual_recommendation'] = {
+    learner_id = user.id if user.role == 'student' else worksheet.learning_profile_id or worksheet.student_id
+    payload['visual_recommendation'] = None if assessment else {
         'model': model,
         'message': f'Try the {model.replace("-", " ")} model. {visual_reason(model)}',
         'automatic_open': False,
     }
     payload['visual_connection'] = visual_reason(model)
-    payload['strategies'] = _strategy_set(question)
-    if worksheet.session_kind != 'parent_test':
-        payload['evidence_visual_recommendation'] = evidence_visual_recommendation(session, user.id, question)
-    else:
-        payload['evidence_visual_recommendation'] = None
+    payload['strategies'] = [] if assessment else _strategy_set(question)
+    payload['evidence_visual_recommendation'] = None if assessment else evidence_visual_recommendation(session, learner_id, question)
     return payload
 
 
-@app.get('/api/v0300/capabilities')
+@router.get('/api/v0300/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
     return {
         'version': '0.30.0',
@@ -253,9 +252,11 @@ def capabilities(_: legacy.User = Depends(legacy.current_user)):
         'learning_evidence_visual_recommendations': True,
         'parent_test_teaching_aids_hidden': True,
         'retry_first_preserved': True,
+        'apirouter_composition': True,
         'inherits_v0291': True,
     }
 
 
+app.include_router(router)
 legacy.create_worksheet = create_worksheet_v0300
 v0120._move_spa_fallback_to_end()
