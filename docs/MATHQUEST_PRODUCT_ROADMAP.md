@@ -6,237 +6,154 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.29.0, Learning Intelligence
+## Current implemented release, 0.30.0, Visual Mathematics
 
-This release builds on the v0.28.0 Math Mentor foundation. It makes tutoring optional after an incorrect answer, aligns worked examples with the displayed question, reduces over-simple worksheet items, and introduces the first persisted learning-intelligence layer.
+This release builds on v0.29.1 Learning Intelligence and its corrective safeguards. It turns the existing worksheet visuals, Interactive Maths Lab, Math Mentor and learning evidence into one reusable Visual Mathematics system.
 
-### Natural Math Mentor workflow
+### Equal-whole fraction comparison
 
-- Keep answer entry and **Check answer** available immediately after an incorrect response.
-- Show a lightweight, question-specific prompt beneath the question, such as “Have another look before checking the hint.”
-- Let the learner retry immediately or choose Hint, Why?, Teach me, Worked example, Start over or Read aloud.
-- Never require a tutor action before another answer can be entered.
-- Preserve the existing parent-test assessment flow and keyboard navigation.
+- Compare fractions against equal-sized wholes, vertically aligned to the same origin.
+- Preserve visible denominator partitions, numerator shading and written fraction notation.
+- Support fraction-bar, equivalent-fraction and shared number-line representations.
+- Keep mathematical proportions accurate across desktop, tablet, mobile and Home Assistant ingress.
 
-### Question-aligned worked examples
+### Interactive fraction models
 
-- Generate examples for the same mathematical concept, operation, representation, strategy and difficulty as the displayed question.
-- Use different values and never reuse the assessed question or reveal its answer.
-- Validate examples by question family before returning them to the frontend.
+- Let the learner change numerator and denominator values while the written fraction and visual model remain synchronised.
+- Show equivalent forms such as 1/2 and 2/4 without filling the assessed answer.
+- Place fractions on a common number line and support improper fractions using repeated equal-sized wholes.
+- Keep manipulatives learner-controlled and optional.
 
-### Better difficulty and variety
+### Reusable visual systems
 
-- Reduce very-easy fact questions while retaining occasional confidence-building items.
-- Increase moderate, challenging, multi-step and application questions for the Level 5 pathway.
-- Alternate difficulty intentionally across a worksheet and prevent predictable repeated patterns.
+- Share reusable fraction, number-line, array, place-value and measurement components between worksheet visuals and the Maths Lab.
+- Continue existing clock, grid, angle, chart and symmetry visuals without creating a third parallel rendering system.
+- Keep question data responsible for describing the mathematics while components render it.
 
-### Learning Intelligence foundation
+### Multiple solution strategies
 
-- Map each generated question to a prerequisite skill path, for example fractions → equivalent fractions → multiplication facts → division facts.
-- Record structured misconception evidence rather than only a wrong-answer count, including likely place-value, regrouping, denominator and multiplication-fact errors.
-- Record evidence for first-attempt success, later success, retries, hints, worked examples and confidence trend.
-- Generate parent-visible recommendations for review due, apparent mastery and recurring misconceptions.
-- Keep parent-test activity excluded from Sienna’s adaptive profile.
+- Provide suitable questions with more than one valid strategy, including partitioning, compensation, place value, arrays, inverse relationships, equivalent fractions and number lines.
+- Show one alternative strategy at a time through **Show another way**.
+- Preserve the current answer, worksheet position, Math Mentor state and Maths Lab state when another strategy is viewed.
+
+### Math Mentor and learning evidence
+
+- Recommend a question-appropriate visual model and explain how the representation matches the calculation.
+- Use repeated v0.29 misconception evidence to suggest optional visual support when practical.
+- Prefer recommendations such as “Try comparing these with equal-whole fraction bars” instead of opening tools automatically.
+- Keep retry-first behaviour unchanged after incorrect answers.
+
+### Assessment integrity and accessibility
+
+- Use different values for teaching examples and never generate a teaching payload that deliberately reuses the assessed values.
+- Suppress the new teaching strategies, visual recommendations and evidence-driven recommendations in parent tests.
+- Preserve v0.29.1 grid answer-leakage protections, grouped-unit wording, duplicate-question repair and keyboard autofocus.
+- Provide accessible names and mathematical descriptions for new visual models, keyboard-operable controls and reduced-motion-safe styling.
+
+### Architecture
+
+- Add v0.30 endpoints through an explicit FastAPI `APIRouter` rather than adding another route-list mutation workaround.
+- Keep the existing version-layer architecture intact for compatibility during this focused release.
+- Defer a broader version-wrapper and route-composition consolidation until it can be isolated behind comprehensive endpoint regression coverage.
 
 ### Release acceptance criteria
 
-- An incorrect learner answer leaves the answer field usable and permits an immediate retry without opening or completing a tutor action.
-- Tutor prompts, hints and examples remain optional, question-specific and keyboard accessible.
-- Automated validation rejects a worked example whose family, operation or strategy does not match the assessed question.
-- Worksheet generation contains fewer very-easy items and a measurable mix of moderate, challenging, confidence-building and application questions.
-- Parent insight APIs expose prerequisite, misconception and evidence summaries without changing existing learner history.
-- Backend, frontend, adaptive-logic and accessibility tests cover the release.
+- Fraction comparison uses equal-sized wholes and clear partitions.
+- Fraction manipulatives remain synchronised with written values and support equivalent and number-line representations.
+- Major visual families reuse shared components.
+- Suitable questions expose multiple strategies one at a time without losing learner state.
+- Math Mentor and learning evidence can recommend appropriate optional visual support.
+- Parent tests do not receive the new teaching aids automatically.
+- Retry-first, keyboard-first and v0.29.1 corrective behaviour remain intact.
+- Complete backend, frontend, build, release and validation suites pass before merge.
+
+## Recently completed release, 0.29.1, Learning Intelligence corrective release
+
+- Preserved the v0.29.0 optional tutoring, prerequisite graph, misconception evidence and difficulty balancing.
+- Restored labelled grid visuals for grid-reference questions.
+- Added keyboard autofocus when a new typed-answer question becomes active.
+- Added final semantic duplicate-question prevention after worksheet transformations.
+- Clarified grouped word-problem units, including the reviewed meal-portion wording.
+
+## Recently completed release, 0.29.0, Learning Intelligence
+
+- Kept answer entry and **Check answer** available immediately after an incorrect response.
+- Aligned worked examples to the same mathematical concept and strategy while using different values.
+- Reduced very-easy arithmetic while retaining occasional confidence-building questions.
+- Added prerequisite skill links, structured misconception evidence, learning events and parent recommendations.
+- Kept parent-test activity excluded from Sienna’s adaptive profile.
 
 ## Recently completed release, 0.28.0, Math Mentor Foundation
 
-This release turned the existing guided-support building blocks into a visible, consistent **Math Mentor** experience inside every learner worksheet question.
-
-### Math Mentor panel
-
-- Provide a lightweight, collapsible Math Mentor panel on every learner worksheet question, without using a modal.
-- Include **Hint**, **Why?**, **Teach me**, **Worked example**, **Start over** and **Read aloud** actions.
-- Keep the panel question-scoped, keyboard accessible, and visually consistent with the existing MathQuest cards and controls.
-- Reuse the existing question-family, visual and maths-lab capability rather than creating parallel teaching systems.
-
-### Guided Tutor and ask-before-tell flow
-
-- After an incorrect learner answer, automatically open Math Mentor with a guiding question before explaining a method or showing a result.
-- Support the learning sequence: attempt, guiding question, learner retry, hint level 1, hint level 2, hint level 3, different-number worked example, return to the original question.
-- Do not reveal the assessed answer while the mentor sequence remains available. Preserve the conventional parent-test answer lifecycle.
-- Record only the support steps needed for the current question, while keeping Start over as a question-local tutoring reset that never loses worksheet progress or answer history.
-
-### Progressive question-specific support
-
-- Retain three progressive hint levels for every existing question family, including arithmetic, equations, fractions, measurement, grids, time and data.
-- Make the first stage an ask-before-tell guiding question, then increase explicitness without repeating text or exposing the assessed result.
-- Provide concise Why and Teach me explanations, common-mistake cues and memory tips appropriate to the question family.
-- Generate worked examples with different values from the assessed question, include intermediate reasoning, and prevent answer collisions.
-
-### Browser read aloud framework
-
-- Provide one browser text-to-speech framework for questions, hints, mentor explanations and examples.
-- Use the existing `en-AU` speech support where available, and show a clear non-blocking unavailable message where the browser does not support speech synthesis.
-- Do not make speech a dependency for completing a worksheet.
-
-### Release acceptance criteria
-
-- Every learner worksheet question exposes a usable Math Mentor panel.
-- A first incorrect learner answer opens the guiding question and remains retryable without revealing the answer.
-- The three hints, mini-lesson and distinct worked example can be completed before the final reveal path is available.
-- Start over returns the panel to the first mentoring prompt without resetting worksheet progress.
-- Parent tests remain isolated and do not receive altered assessment behaviour.
-- Backend, frontend and accessibility regression tests cover the mentor flow.
-
-## Recently completed release, 0.27.0
-
-- Configuration-managed parent and student credentials that preserve existing account data.
-- Reliable parent-test answer, refresh, navigation, save and completion lifecycle with optional notes.
-- Clear session selection controls, visual rotational-symmetry hints and recent-question duplicate protection.
-- Worksheet review visuals, accessible modal dismissal and keyboard answer-to-next-question flow.
-
-## Earlier completed release, 0.26.0
-
-### Parent and student credential configuration
-
-- Treat the Home Assistant add-on `parent_username`, `parent_password`, `student_username` and `student_password` options as the authoritative credentials for the managed accounts.
-- On add-on startup, update the existing managed parent and student account credentials instead of applying configuration values only when an account is first created.
-- Preserve the existing user IDs, worksheet ownership, progress, parent test feedback and all related data when a configured username or password changes.
-- Do not create a second parent or student account when the configured username changes.
-- Reuse an existing password hash when the configured password already verifies, and never log or return plaintext credentials.
-- Document that saving changed credentials requires an add-on restart before the new login is active.
-- Add upgrade regression tests covering password changes, username changes, unchanged credentials, existing learner data and duplicate-account prevention.
-
-### Parent test worksheet lifecycle reliability
-
-- Let a parent complete a parent-owned test worksheet through the same answer, refresh, navigation, skip, save, resume and completion lifecycle used by the worksheet interface.
-- Make question-level and overall test notes explicitly optional. Keep **Next question**, **Finish worksheet** and **Return to parent dashboard** available without entering or saving a note, and label the note fields as optional.
-- Authorise the generic worksheet view used after an answer when the signed-in parent owns the worksheet and its `session_kind` is `parent_test`, while continuing to reject access to another user's worksheet.
-- Keep the accepted answer and displayed feedback consistent when a follow-up refresh fails, without reporting the successfully answered question as lost.
-- Audit every worksheet lifecycle endpoint through one shared ownership rule so parent tests do not pass one action and fail on the next request.
-- Preserve parent-test isolation from Sienna's XP, mastery, recommendations, calendar, streak and learner evidence.
-- Add end-to-end regressions that create a parent test, answer its first question correctly, refresh it, advance without a note, optionally save question and overall notes, and complete the worksheet.
-
-### Session selection clarity
-
-- Restyle **Targeted practice**, **Levels 2–6 diagnostic**, session-length choices and learning-area choices as unmistakably interactive controls.
-- Use the current MathQuest design tokens instead of undefined legacy CSS variables.
-- Give the selected option a persistent border, background and accessible selected state that remains clear with keyboard focus and on mobile.
-- Add interaction tests proving each choice updates the session configuration used when the worksheet starts.
-
-### Visual hints for symmetry
-
-- Add a reusable regular-polygon visual to rotational-symmetry questions.
-- When a hint is requested, show the original and rotated positions or an accessible rotation animation so Sienna can compare whether the shape matches itself.
-- Respect reduced-motion preferences and provide an equivalent static before-and-after representation.
-- Keep the hint progressive and avoid stating the assessed answer before the permitted reveal stage.
-
-### Question naming and repetition
-
-- Display Story Adventure chapter and challenge context as a separate label instead of embedding phrases such as a chapter name and **challenge 1** in the mathematical question prompt.
-- Keep the core question wording concise in live worksheets and completed worksheet reviews while preserving existing historical records.
-- Extend duplicate protection beyond a single worksheet so an identical prompt and choice set is not selected again from Sienna's recent learner history.
-- Apply recent-history duplicate protection to standard, timed, recommended, intervention and Story Adventure creation without including parent tests in learner history.
-- Add more than one statistical-investigation survey variant so the fixed favourite-fruit question is not repeatedly selected.
-- Use a bounded recent-history window and a safe fallback so small question banks can still create a complete worksheet.
-
-### Worksheet review and modal accessibility
-
-- Render each question's stored visual payload in **View worksheet**, using the same React visual component as the live worksheet.
-- Preserve the exact historical visual rather than generating a new one during review.
-- Close worksheet-review and parent-test-review modals with the close button, the Escape key or a click on the backdrop outside the dialog.
-- Keep clicks inside the dialog from closing it, restore focus to the opener and expose an accessible dialog label.
-
-### Keyboard worksheet flow
-
-- Let Enter submit the current typed answer when **Check answer** is available.
-- After final feedback is displayed, let Enter activate **Next question** or **Finish worksheet**.
-- Do not trigger worksheet actions while focus is in the scratchpad, a multiline note, another modal or an unrelated control.
-- Prevent repeated keydown events or a held key from submitting twice or skipping past feedback.
-- Add React interaction coverage for typed, choice, retry, final-answer and final-question keyboard paths.
-
-## Recently completed release, 0.26.0
-
-- Targeted Number and Algebra interventions with 5, 10 and 15-minute sessions.
-- Interactive fraction, number-line, place-value, array and grid models with question-specific visual identity.
-- React-owned worksheet tools, saved answer drafts and reduced legacy DOM enhancement layers.
-- Reconciled learner evidence with independent and supported results separated and parent tests excluded.
+- Added a consistent learner-facing Math Mentor panel.
+- Added Hint, Why?, Teach me, Worked example, Start over and Read aloud actions.
+- Added ask-before-tell support with progressive question-family-specific hints.
+- Kept parent tests isolated from altered learner assessment behaviour.
 
 ## Feature findings from the supplied recordings
 
-### Dynamic visual learning, inspired by the percentage demonstration
+### Dynamic visual learning
 
-- Interactive percentage bars with draggable endpoints and linked numeric values.
-- Multiple representations of the same concept, such as percentage, fraction, bar length and quantity.
-- Immediate visual feedback when a model is changed.
+- Interactive percentage bars with linked percentage, fraction, decimal and quantity values.
+- Multiple representations of the same concept with immediate feedback when a model changes.
 - A visible learning pathway with small lessons and mastery checkpoints.
-- A **Why?** explanation that can be opened without leaving the problem.
-- **Start over** for resetting a model and trying a different strategy.
-- Progressive examples that move from simple benchmark percentages to less obvious values.
-- Correctness feedback attached to the model, not only to a text answer.
+- Why? explanations and Start over controls that do not leave the question.
 
-### Guided tutoring and manipulatives, inspired by the fraction demonstration
+### Guided tutoring and manipulatives
 
-- Brief concept explanation followed immediately by a comprehension check.
-- Tutor dialogue that asks Sienna to reason instead of revealing the answer.
-- Virtual fraction tiles and area models that can be copied, split, moved and compared.
-- On-demand manipulatives selected for the current misconception.
+- Brief concept explanation followed by a comprehension check.
+- Tutor dialogue that asks the learner to reason instead of revealing the answer.
+- Virtual fraction, area, number-line, array and place-value models selected for the concept.
 - A sequence of explain, try, inspect, prompt, retry and reflect.
-- Optional read-aloud narration with synchronised visual steps.
-- Positive feedback and small moments of celebration without distracting from the maths.
-- Mixed response modes, including manipulation, multiple choice, typed values and spoken reasoning later.
 
 ## Consolidated feature backlog
 
 ### Learning foundation
 
-- Diagnostic baseline mapped to Victorian Curriculum outcomes across Levels 2–6.
-- Level 5 target pathway with prerequisite links to earlier concepts.
-- Time-based 5, 10 and 15-minute sessions instead of relying only on fixed 20-question worksheets.
-- Outcome-level mastery based on accuracy, independence, hint use, fluency and retention.
-- Real spaced-retrieval scheduling with due dates for each skill.
-- Automatic selection of prerequisite teaching when a misconception is detected.
-- Number and Algebra intervention pathway covering all four operations, fact families, written methods and unknown-value equations.
+- Continue strengthening diagnostic baselines and Level 5 prerequisite pathways.
+- Expand spaced retrieval and retention evidence across more outcomes.
+- Improve automatic prerequisite teaching selection where misconception evidence is strong.
+- Continue upper Grade 5 difficulty calibration across all learning areas.
 
 ### Teaching and hints
 
-- Three-stage hints: a conceptual cue, a strategy or visual prompt, then a worked next step.
-- Question-type-specific hints for arithmetic, fractions, measurement, grids, time, data and equations.
-- Guided tutor mode that asks one question at a time and does not expose the final answer prematurely.
-- Short worked examples using different numbers from the assessed question.
-- **Why?**, **Teach me this**, **Show another way** and **Start over** actions.
-- Read-aloud for prompts, hints and explanations.
-- Confidence and misconception checks that influence the current session.
+- Expand visual recommendations to more question families with stronger misconception-to-model mapping.
+- Add richer visual worked examples that animate or step through transformations without using assessed values.
+- Improve explanation quality testing so written guidance must reference visible model elements.
+- Add spoken reasoning only when privacy, browser support and assessment rules are clear.
 
 ### Interactive mathematical models
 
-- Fraction tiles, fraction walls, area models and equivalent-fraction builders.
-- Fraction-comparison bars stacked vertically, aligned to the same origin and scaled to an equal whole so relative amounts can be compared directly.
-- Percentage bars linked to fractions, decimals and quantities.
-- Open number lines and jump strategies for addition and subtraction.
-- Place-value blocks and regrouping models for written operations.
-- Arrays and equal-group models for multiplication and division.
-- Interactive analogue clocks, rulers, grids, coordinates, angles and data charts.
-- Scratchpad, drawing and reusable manipulatives available from every question.
+Implemented in v0.30.0:
+
+- Equal-whole fraction comparison bars.
+- Interactive numerator and denominator fraction models.
+- Equivalent-fraction and common number-line representations.
+- Reusable number-line, array, place-value and measurement components.
+- Learner-selected multiple strategies and question-specific visual recommendations.
+
+Follow-up candidates:
+
+- Fraction tiles that can be copied, split and moved.
+- Area models for multiplication and fraction multiplication when curriculum scope reaches them.
+- Richer equal-sharing division manipulatives.
+- Explicit base-ten regrouping animation using hundreds, tens and ones blocks.
+- More interactive rulers, scaled number lines, data charts and geometry models.
+- A visual explanation contract that validates diagram labels against written explanation references.
 
 ### Applied practice and engagement
 
-- Story Adventures 2.0 with a coherent multi-question narrative, themed data and a final mission outcome.
-- Story difficulty and learning outcomes selected from Sienna's current goals.
-- Everyday word problems involving money, time, recipes, travel, sport and data.
-- Choice of standard practice, guided lesson, Story Adventure or review session.
-- Meaningful progress celebrations tied to mastery and persistence rather than only XP.
+- Continue Story Adventures with coherent multi-question narratives and real mathematical dependencies.
+- Expand everyday applications involving money, time, recipes, travel, sport and data.
+- Keep celebrations tied to mastery, persistence and independent improvement.
 
 ### Learner experience
 
-- Clear session goal and estimated duration before starting.
-- Previous, next, skip, finish-with-skipped and restart-skipped lifecycle.
+- Keep session goals and durations clear before starting.
+- Preserve previous, next, skip, finish-with-skipped and restart-skipped lifecycle.
 - Resume the exact worksheet, question, answer draft and elapsed time.
-- Accessible mobile and Home Assistant layouts.
-- Reliable offline/local operation with clear recovery messages.
-- Replace browser alerts with in-page error and recovery states.
-- Clear selected and keyboard-focus states for session, duration and learning-area controls.
-- Keyboard submission and continuation across the full worksheet feedback flow.
-- Dismissible, focus-managed worksheet review dialogs with original question visuals.
+- Continue accessibility improvements for mobile and Home Assistant ingress.
+- Add stronger automated responsive-layout checks for mathematical diagrams.
 
 ### Parent insight and Home Assistant
 
@@ -246,19 +163,14 @@ This release turned the existing guided-support building blocks into a visible, 
 - Clear recommendations for the next 5, 10 or 15-minute session.
 - Weekly summaries of gains, persistent gaps and strategies used.
 - Stable `/api/ha/stats` and `/api/ha/summary` data with graceful unavailable states.
-- Long-lived Home Assistant service authentication so dashboard entities do not expire daily.
-- Category and outcome progress for Number, Algebra, Measurement, Space, Statistics and Probability.
 
 ### Platform reliability
 
-- Consolidate the three worksheet-creation paths into one service.
-- Replace MutationObserver feature layers with React-owned components and state.
+- Continue replacing legacy version-specific route mutation with explicit router composition when touched by feature work.
+- Plan a separate endpoint-composition consolidation rather than rewriting the version stack inside a learner feature release.
 - Add frontend component, interaction and end-to-end tests.
 - Keep duplicate-question protection in every worksheet and adventure flow.
-- Prevent exact recent-history repeats across consecutive learner worksheets while retaining a bounded fallback.
-- Improve authentication expiry handling and eliminate silent or alert-only failures.
-- Preserve existing database, worksheet history, answers, progress and Home Assistant add-on upgrades.
-- Parent-only test worksheets with question and overall feedback, status tracking and addressed-release traceability.
+- Preserve existing database, worksheet history, answers, progress and Home Assistant upgrades.
 
 ## Release sequence and delivery gates
 
@@ -278,9 +190,10 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 | Completed | 0.25.0 | Parent test worksheets and feedback traceability | Merged and released |
 | Completed | 0.26.0 | Number and Algebra intervention, interactive learning, platform reliability and reporting corrections | Merged and released |
 | Completed | 0.27.0 | Credential and parent-test reliability, worksheet usability, visual symmetry hints, review fidelity and keyboard flow | Merged and released |
-| Completed | 0.28.0 | Math Mentor Foundation: guided tutor, ask-before-tell, progressive support, explanations, worked examples, Start over and browser read aloud | Merged and released |
-| Current | 0.29.0 | Learning Intelligence: natural optional tutoring, question-aligned worked examples, difficulty balancing, prerequisite skill graph, misconception detection, evidence collection and parent recommendations | Incorrect answers remain immediately retryable; aligned examples and difficulty distribution are validated; adaptive evidence is persisted without discarding existing learner history |
-| Planned | 0.30.0 | Visual Mathematics: vertically aligned fraction comparison, interactive fraction models, manipulatives, multiple strategies, Show another way and improved visual explanations | Models use equal wholes and do not expose the assessed answer prematurely |
+| Completed | 0.28.0 | Math Mentor Foundation | Merged and released |
+| Completed | 0.29.0 | Learning Intelligence | Merged and released |
+| Completed | 0.29.1 | Corrective grid, autofocus, duplicate and grouped-unit safeguards | Merged and released |
+| Current | 0.30.0 | Visual Mathematics: equal-whole fractions, manipulatives, shared visual models, multiple strategies and visual recommendations | Review and Home Assistant test gate before merge |
 | Planned | 0.31.0 | Parent Insights: growth reporting, retention analytics, mastery tracking, session recommendations, misconception reports and dashboard enhancements | Parent reporting clearly separates independent, supported and retained understanding |
 | Planned | 0.32.0 | Home Assistant Expansion: dashboard improvements, notifications, automations, widgets and integration enhancements | Home Assistant data remains stable, privacy-preserving and non-blocking to local learning |
 | Planned | 0.33.0 | Story Adventure Expansion: applied mathematics, curriculum adventures, quest progression, unlockables and challenge content | Story content maps to current curriculum goals and does not weaken adaptive learning evidence |
@@ -290,23 +203,20 @@ Calendar estimates are intentionally excluded. MathQuest releases can be develop
 1. Lock the next release to a small, independently testable scope.
 2. Develop the complete scope, including version references, changelog and documentation.
 3. Run backend tests, frontend type/build checks, release validation and the relevant regression tests.
-4. Open a draft pull request and stop for Stu's testing and review.
+4. Open a pull request and stop for Stu's testing and review.
 5. Fix findings on that same release branch until it passes.
 6. After Stu merges the pull request, detect the merge and begin the next release in the queue.
 
-No release receives a promised date or week count. The loop may complete several times in a day when development, automated checks and Stu's testing are all completed quickly. A release remains at its gate for as long as testing or correction requires.
+No release receives a promised date or week count. A release remains at its gate for as long as testing or correction requires.
 
 ### How new work enters the queue
 
 - Critical security, data-loss or blocking reliability defects may interrupt the queue as a tightly scoped patch release.
-- Ad-hoc bugs and enhancements reported during an active release are assessed and added to the next planned release development, rather than interrupting or reshuffling the release already underway.
-- Related ad-hoc items may be grouped into that upcoming release when this makes implementation and testing more coherent.
-- The active release remains scope-locked unless Stu explicitly asks to include an item, or the item is required for that release to function correctly.
-- If a security, data-loss or application-blocking defect appears serious enough to interrupt the queue, raise it for Stu's decision before changing the release sequence.
-- Every Home Assistant-delivered release must bump all required version references and changelog entries so the add-on detects the update.
+- Ad-hoc bugs and enhancements reported during an active release are assessed and added to the next planned release rather than silently expanding the active release.
+- Related ad-hoc items may be grouped into the upcoming release when this makes implementation and testing more coherent.
+- The active release remains scope-locked unless explicitly expanded or required for release correctness.
+- Every Home Assistant-delivered release must bump all required version references and changelog entries so the app detects the update.
 
-The 0.27.0 release groups the learner-experience findings reported after v0.26.0 with the high-priority managed-account credential and parent-test lifecycle corrections. Together they restore parent access, make test worksheets reliably completable and improve one end-to-end path: choosing a session, understanding a question, using a hint, completing it efficiently and reviewing the original result accurately.
+## Recommended priority after v0.30.0
 
-## Recommended priority
-
-The immediate priority is v0.28.0, because MathQuest already has guided-support, question-family and read-aloud foundations but does not yet make them a coherent learner-facing mentoring journey. The release must make recovery from an incorrect answer supportive without making assessment misleading or breaking parent testing. After that, v0.29.0 should strengthen the evidence and prerequisite model before broadening visual models in v0.30.0. This order ensures that future interactivity is selected for a learning reason, not merely added as a feature.
+After Visual Mathematics passes the Home Assistant review gate, the next release remains v0.31.0 Parent Insights. It should turn the existing learning evidence into clearer growth, retention and misconception reporting without expanding v0.30.0 into unrelated parent-dashboard work.
