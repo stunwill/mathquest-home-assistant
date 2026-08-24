@@ -6,12 +6,13 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.30.1`
+Version `0.31.0`
 
 ## Features
 
 - Student and parent logins
 - Responsive student dashboard
+- Tablet-optimised worksheet and tutoring flow
 - Multiple daily worksheets with save, exact resume, review and skip support
 - Duplicate-safe adaptive question generation and visual learning guardrails
 - Victorian Curriculum F–10 Version 2.0 Level 4 alignment
@@ -24,203 +25,26 @@ Version `0.30.1`
 - Dashboard-friendly Home Assistant statistics API
 - Installation-specific JWT signing and failed-login throttling
 - Recommended Number & Algebra Focus quests with fact-recall, efficient-strategy and retention support
+- Adaptive arithmetic that increasingly uses hundreds, regrouping and decomposition when learner evidence supports it
 - Question-specific strategy cards for addition, subtraction, multiplication, division and unknown equations
-- Three-stage guided hints with Why?, Teach me this, Show another way and Start over support
+- Three-stage guided hints with distinct nudge, strategy and worked-next-step roles
+- Question-specific Teach me mini-lessons that use the current operands without revealing the assessed answer
 - Interactive Maths Lab with linked fractions, percentages, number lines, place value, arrays, clocks, grids and measurement models
 - Shared Visual Mathematics components for equal-whole fraction comparison, number lines, arrays, place value and measurement
-- Interactive fraction bars with number-line and equivalent-fraction representations that remain mathematically synchronised
 - Optional question-specific visual recommendations and multiple solution strategies without changing the learner's answer
-- Math Mentor visual-model recommendations connected to the calculation and informed by repeated learning-evidence signals
 - Story Adventures 2.0 with adaptive learning goals, connected mission chapters, shared themed data and final outcomes
 - Outcome-level mastery, spaced-review scheduling, prerequisite routing and personalised 5, 10 or 15-minute next-session recommendations
 - Parent insight showing level and outcome growth, independent versus supported performance, retention, review dates and weekly recommendations
-- Long-lived Home Assistant service authentication plus complete category and outcome learning metrics
 - Parent-only test worksheets with question notes, overall feedback and addressed-release traceability
-- Targeted Number and Algebra interventions with React-owned visuals, reliable resume state and reconciled reporting
 - Configuration-managed credentials, reliable parent test completion and optional testing notes
-- Visual symmetry hints, recent-question duplicate protection and original visuals in worksheet reviews
 - Accessible review dialogs and Enter-key answer-to-next-question flow
-- Math Mentor panels on every worksheet question with ask-before-tell tutoring, progressive hints, Why?, Teach me, worked examples, Start over and browser read aloud
-- Optional retry-first tutoring, operation-aligned worked examples, prerequisite skill links, misconception evidence and parent-only learning recommendations
-- v0.29.1 corrective safeguards for grid visuals, keyboard autofocus, semantic duplicate prevention and explicit grouped-unit wording
-- v0.30.1 corrective safeguards for learner-history completion recommendations, question-family diversity, denominator-accurate fraction number lines and relevant Probability visual guidance
+- v0.30.1 learner-wide completion recommendations, semantic question-family diversity, corrected fraction number lines and Probability visual relevance safeguards
 
 ## Security and upgrades
 
 MathQuest generates a secure JWT signing secret on first start and stores it at `/data/jwt-signing-secret`, separate from the application image and the existing `/data/questmath.db`. It also generates a dedicated Home Assistant service token at `/data/ha-service-token`. Both values persist through restart and upgrade with restrictive permissions where supported. Explicit `SECRET_KEY` and `HA_SERVICE_TOKEN` values of at least 32 characters are honoured.
 
-Parent and student usernames and passwords are managed from the Home Assistant add-on Configuration page. Save any credential change and restart the MathQuest add-on to apply it to the existing account. The account ID, worksheets, progress and feedback remain unchanged.
-
-Upgrading to `0.16.2` rotates installations that previously used the legacy secret. Existing JWTs may stop working and users may need to sign in again. No worksheet, progress, account or database data is reset or removed.
-
-## Home Assistant Dashboard Integration
-
-MathQuest exposes current learner statistics without duplicating the adaptive/mastery calculation logic.
-
-### API endpoints
-
-- `GET /api/ha/summary` is the lightweight polling endpoint recommended for dashboard headline values.
-- `GET /api/ha/stats` includes headline values, weekly values and category statistics.
-- Both endpoints accept a normal MathQuest login token or the dedicated Home Assistant service token.
-- The service token does not have the normal 24-hour login expiry and only authorises these Home Assistant statistics endpoints.
-- A parent can reveal and copy it from **Parent View → Home Assistant Connection**.
-- Recommended polling interval: **30–60 seconds**.
-- `app_path` is returned as `/`, which is relative to MathQuest itself. Home Assistant should use the add-on's configured ingress/sidebar route rather than inventing a hard-coded ingress URL.
-
-Example summary response:
-
-```json
-{
-  "available": true,
-  "questions_today": 18,
-  "accuracy_today": 88.9,
-  "hints_used_today": 3,
-  "activities_completed_today": 2,
-  "streak_days": 7,
-  "xp_today": 120,
-  "xp_total": 2450,
-  "recommended_topic": "Fractions",
-  "last_activity": "2026-08-09T14:30:00",
-  "app_path": "/",
-  "learning": {
-    "estimated_level": {"baseline": 3, "current": 4, "target": 5, "growth": 1},
-    "summary": {"mastered": 2, "secure": 4, "developing": 5, "needs_support": 3, "review_due": 2},
-    "recommendation": {"title": "Review efficient calculation strategies", "minutes": 10, "mode": "review"}
-  }
-}
-```
-
-The full endpoint additionally returns `correct_today`, `incorrect_today`, weekly totals, all six `categories`, `outcome_categories` and the complete `outcomes` list. Outcome values include independent and supported accuracy, mastery, fluency, retention, growth and review-due dates. Values are `null` where MathQuest genuinely has no data yet.
-
-### Recommended Home Assistant REST sensors
-
-MathQuest is an ingress add-on rather than a Home Assistant integration, so it does not register entities directly. Use REST sensors against a network-reachable MathQuest URL. Copy the complete authorization value shown in the parent dashboard, including the `Bearer ` prefix, and store it in `secrets.yaml` as `mathquest_authorization`.
-
-```yaml
-rest:
-  - resource: "http://HOME_ASSISTANT_HOST:8080/api/ha/stats"
-    scan_interval: 30
-    headers:
-      Authorization: !secret mathquest_authorization
-    sensor:
-      - name: MathQuest Summary
-        unique_id: mathquest_summary
-        value_template: "{{ 'online' if value_json.available else 'unavailable' }}"
-        attributes:
-          - questions_today
-          - correct_today
-          - incorrect_today
-          - accuracy_today
-          - hints_used_today
-          - activities_completed_today
-          - streak_days
-          - xp_today
-          - xp_total
-          - recommended_topic
-          - last_activity
-          - categories
-          - learning
-          - outcome_categories
-          - outcomes
-      - name: MathQuest Questions Today
-        unique_id: mathquest_questions_today
-        value_template: "{{ value_json.questions_today }}"
-      - name: MathQuest Accuracy Today
-        unique_id: mathquest_accuracy_today
-        unit_of_measurement: "%"
-        value_template: "{{ value_json.accuracy_today }}"
-      - name: MathQuest Hints Today
-        unique_id: mathquest_hints_today
-        value_template: "{{ value_json.hints_used_today }}"
-      - name: MathQuest Activities Completed Today
-        unique_id: mathquest_activities_completed_today
-        value_template: "{{ value_json.activities_completed_today }}"
-      - name: MathQuest Streak
-        unique_id: mathquest_streak
-        unit_of_measurement: "days"
-        value_template: "{{ value_json.streak_days }}"
-      - name: MathQuest XP Today
-        unique_id: mathquest_xp_today
-        unit_of_measurement: "XP"
-        value_template: "{{ value_json.xp_today }}"
-      - name: MathQuest XP Total
-        unique_id: mathquest_xp_total
-        unit_of_measurement: "XP"
-        value_template: "{{ value_json.xp_total }}"
-      - name: MathQuest Recommended Topic
-        unique_id: mathquest_recommended_topic
-        value_template: "{{ value_json.learning.recommendation.title if value_json.learning is defined else (value_json.recommended_topic or 'None') }}"
-      - name: MathQuest Last Activity
-        unique_id: mathquest_last_activity
-        device_class: timestamp
-        value_template: "{{ value_json.last_activity }}"
-```
-
-Category sensors can use the same REST response. For example:
-
-```yaml
-      - name: MathQuest Number Progress
-        unique_id: mathquest_number_progress
-        unit_of_measurement: "%"
-        value_template: "{{ value_json.categories.number.progress }}"
-      - name: MathQuest Number Accuracy
-        unique_id: mathquest_number_accuracy
-        unit_of_measurement: "%"
-        value_template: "{{ value_json.categories.number.accuracy }}"
-```
-
-Repeat that pair for `algebra`, `measurement`, `space`, `statistics` and `probability` if separate dashboard entities are desired. If the add-on port is not exposed, use a suitable internal/reverse-proxy route instead. Do not copy an ingress token URL into configuration because Home Assistant ingress URLs are session-specific.
-
-### Example dashboard card
-
-```yaml
-type: entities
-title: MathQuest
-entities:
-  - entity: sensor.mathquest_questions_today
-    name: Questions Today
-  - entity: sensor.mathquest_accuracy_today
-    name: Accuracy
-  - entity: sensor.mathquest_hints_today
-    name: Hints Used
-  - entity: sensor.mathquest_activities_completed_today
-    name: Activities Completed
-  - entity: sensor.mathquest_streak
-    name: Current Streak
-  - entity: sensor.mathquest_xp_total
-    name: XP
-  - entity: sensor.mathquest_recommended_topic
-    name: Recommended Topic
-```
-
-If MathQuest cannot be reached, Home Assistant's REST integration marks the REST-backed sensors unavailable. A missing optional statistic inside a valid response is returned as `null` and does not fail the other statistics.
-
-## Repository layout
-
-```text
-.
-├── repository.yaml
-├── README.md
-├── LICENSE
-├── .gitignore
-├── .github/workflows/validate.yml
-└── questmath/
-    ├── config.yaml
-    ├── build.yaml
-    ├── Dockerfile
-    ├── CHANGELOG.md
-    ├── README.md
-    ├── app/
-    └── rootfs/
-```
-
-## Install in Home Assistant
-
-1. Open **Settings → Apps → App store**.
-2. Open the three-dot menu and select **Repositories**.
-3. Add the repository URL shown on this GitHub project.
-4. Refresh the app store.
-5. Install MathQuest.
+Parent and student usernames and passwords are managed from the Home Assistant add-on Configuration page. Save any credential change and restart MathQuest to apply it to the existing account. Existing account IDs, worksheets, progress and feedback remain unchanged.
 
 ## Development workflow
 
