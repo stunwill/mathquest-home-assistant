@@ -23,7 +23,7 @@ def test_release_notes_extract_current_version_section_only():
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     assert 'tablet' in notes.lower()
     assert 'teach me' in notes.lower()
-    assert 'worked-next-step' in notes.lower()
+    assert 'worked next step' in notes.lower()
     assert 'hundreds' in notes.lower()
     assert '# MathQuest 0.30.1' not in notes
 
