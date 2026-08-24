@@ -79,18 +79,149 @@ Example summary response:
   "streak_days": 7,
   "xp_today": 120,
   "xp_total": 2450,
-  "level": 10,
-  "highest_level": 10,
-  "recommended_next": "Review equivalent fractions"
+  "recommended_topic": "Fractions",
+  "last_activity": "2026-08-09T14:30:00",
+  "app_path": "/",
+  "learning": {
+    "estimated_level": {"baseline": 3, "current": 4, "target": 5, "growth": 1},
+    "summary": {"mastered": 2, "secure": 4, "developing": 5, "needs_support": 3, "review_due": 2},
+    "recommendation": {"title": "Review efficient calculation strategies", "minutes": 10, "mode": "review"}
+  }
 }
 ```
 
-## Installation
+The full endpoint additionally returns `correct_today`, `incorrect_today`, weekly totals, all six `categories`, `outcome_categories` and the complete `outcomes` list. Outcome values include independent and supported accuracy, mastery, fluency, retention, growth and review-due dates. Values are `null` where MathQuest genuinely has no data yet.
 
-Add the repository to Home Assistant and install MathQuest from the app store. The application runs locally and stores its database under `/data`, so Home Assistant backups preserve learner data.
+### Recommended Home Assistant REST sensors
 
-## Development
+MathQuest is an ingress add-on rather than a Home Assistant integration, so it does not register entities directly. Use REST sensors against a network-reachable MathQuest URL. Copy the complete authorization value shown in the parent dashboard, including the `Bearer ` prefix, and store it in `secrets.yaml` as `mathquest_authorization`.
 
-The application consists of a FastAPI backend and React/Vite frontend. Pull requests are validated with backend tests, frontend tests, TypeScript compilation, production build, YAML validation and version consistency checks.
+```yaml
+rest:
+  - resource: "http://HOME_ASSISTANT_HOST:8080/api/ha/stats"
+    scan_interval: 30
+    headers:
+      Authorization: !secret mathquest_authorization
+    sensor:
+      - name: MathQuest Summary
+        unique_id: mathquest_summary
+        value_template: "{{ 'online' if value_json.available else 'unavailable' }}"
+        attributes:
+          - questions_today
+          - correct_today
+          - incorrect_today
+          - accuracy_today
+          - hints_used_today
+          - activities_completed_today
+          - streak_days
+          - xp_today
+          - xp_total
+          - recommended_topic
+          - last_activity
+          - categories
+          - learning
+          - outcome_categories
+          - outcomes
+      - name: MathQuest Questions Today
+        unique_id: mathquest_questions_today
+        value_template: "{{ value_json.questions_today }}"
+      - name: MathQuest Accuracy Today
+        unique_id: mathquest_accuracy_today
+        unit_of_measurement: "%"
+        value_template: "{{ value_json.accuracy_today }}"
+      - name: MathQuest Hints Today
+        unique_id: mathquest_hints_today
+        value_template: "{{ value_json.hints_used_today }}"
+      - name: MathQuest Activities Completed Today
+        unique_id: mathquest_activities_completed_today
+        value_template: "{{ value_json.activities_completed_today }}"
+      - name: MathQuest Streak
+        unique_id: mathquest_streak
+        unit_of_measurement: "days"
+        value_template: "{{ value_json.streak_days }}"
+      - name: MathQuest XP Today
+        unique_id: mathquest_xp_today
+        unit_of_measurement: "XP"
+        value_template: "{{ value_json.xp_today }}"
+      - name: MathQuest XP Total
+        unique_id: mathquest_xp_total
+        unit_of_measurement: "XP"
+        value_template: "{{ value_json.xp_total }}"
+      - name: MathQuest Recommended Topic
+        unique_id: mathquest_recommended_topic
+        value_template: "{{ value_json.learning.recommendation.title if value_json.learning is defined else (value_json.recommended_topic or 'None') }}"
+      - name: MathQuest Last Activity
+        unique_id: mathquest_last_activity
+        device_class: timestamp
+        value_template: "{{ value_json.last_activity }}"
+```
 
-See `CONTRIBUTING.md` and `docs/MATHQUEST_PRODUCT_ROADMAP.md` for development guidance and the product roadmap.
+Category sensors can use the same REST response. For example:
+
+```yaml
+      - name: MathQuest Number Progress
+        unique_id: mathquest_number_progress
+        unit_of_measurement: "%"
+        value_template: "{{ value_json.categories.number.progress }}"
+      - name: MathQuest Number Accuracy
+        unique_id: mathquest_number_accuracy
+        unit_of_measurement: "%"
+        value_template: "{{ value_json.categories.number.accuracy }}"
+```
+
+Repeat that pair for `algebra`, `measurement`, `space`, `statistics` and `probability` if separate dashboard entities are desired. If the add-on port is not exposed, use a suitable internal/reverse-proxy route instead. Do not copy an ingress token URL into configuration because Home Assistant ingress URLs are session-specific.
+
+### Example dashboard card
+
+```yaml
+type: entities
+title: MathQuest
+entities:
+  - entity: sensor.mathquest_questions_today
+    name: Questions Today
+  - entity: sensor.mathquest_accuracy_today
+    name: Accuracy
+  - entity: sensor.mathquest_hints_today
+    name: Hints Used
+  - entity: sensor.mathquest_activities_completed_today
+    name: Activities Completed
+  - entity: sensor.mathquest_streak
+    name: Current Streak
+  - entity: sensor.mathquest_xp_total
+    name: XP
+  - entity: sensor.mathquest_recommended_topic
+    name: Recommended Topic
+```
+
+If MathQuest cannot be reached, Home Assistant's REST integration marks the REST-backed sensors unavailable. A missing optional statistic inside a valid response is returned as `null` and does not fail the other statistics.
+
+## Repository layout
+
+```text
+.
+├── repository.yaml
+├── README.md
+├── LICENSE
+├── .gitignore
+├── .github/workflows/validate.yml
+└── questmath/
+    ├── config.yaml
+    ├── build.yaml
+    ├── Dockerfile
+    ├── CHANGELOG.md
+    ├── README.md
+    ├── app/
+    └── rootfs/
+```
+
+## Install in Home Assistant
+
+1. Open **Settings → Apps → App store**.
+2. Open the three-dot menu and select **Repositories**.
+3. Add the repository URL shown on this GitHub project.
+4. Refresh the app store.
+5. Install MathQuest.
+
+## Development workflow
+
+Changes are developed on branches and proposed to `main` using pull requests. Version changes must update every location checked by `python scripts/validate_versions.py` and add matching notes to `questmath/CHANGELOG.md`.
