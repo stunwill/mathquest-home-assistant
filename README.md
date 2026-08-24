@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.30.0`
+Version `0.30.1`
 
 ## Features
 
@@ -43,6 +43,7 @@ Version `0.30.0`
 - Math Mentor panels on every worksheet question with ask-before-tell tutoring, progressive hints, Why?, Teach me, worked examples, Start over and browser read aloud
 - Optional retry-first tutoring, operation-aligned worked examples, prerequisite skill links, misconception evidence and parent-only learning recommendations
 - v0.29.1 corrective safeguards for grid visuals, keyboard autofocus, semantic duplicate prevention and explicit grouped-unit wording
+- v0.30.1 corrective safeguards for learner-history completion recommendations, question-family diversity, denominator-accurate fraction number lines and relevant Probability visual guidance
 
 ## Security and upgrades
 

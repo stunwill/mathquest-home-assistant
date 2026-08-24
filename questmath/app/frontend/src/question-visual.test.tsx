@@ -33,4 +33,17 @@ describe('React-owned question visuals', () => {
     expect(screen.queryByRole('img', {name: /analogue clock/i})).not.toBeInTheDocument();
     expect(screen.getByRole('img', {name: /angle diagram/i})).toBeInTheDocument();
   });
+
+  it('renders 8/10 as ten equal number-line intervals with endpoint labels only', () => {
+    const {container} = render(<QuestionVisual question={{id: 5, payload: {visual_key: '5:fraction-number-line:10', visual: {
+      type: 'number_line', min: 0, max: 1, marker: 0.8, steps: 10,
+      fraction: {numerator: 8, denominator: 10}, tick_labels: 'endpoints_only',
+    }}}}/>);
+    expect(screen.getByRole('img', {name: /divided into 10 equal parts/i})).toBeInTheDocument();
+    expect(container.querySelectorAll('.line-track > span')).toHaveLength(11);
+    expect(container.querySelectorAll('.line-track > span b')[0]?.textContent).toBe('0');
+    expect(container.querySelectorAll('.line-track > span b')[10]?.textContent).toBe('1');
+    expect(container.querySelectorAll('.selected-point')).toHaveLength(1);
+    expect(container.querySelectorAll('.line-track > span b')[8]?.textContent).toBe('');
+  });
 });
