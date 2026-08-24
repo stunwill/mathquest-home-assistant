@@ -28,7 +28,7 @@ def _payload(question: legacy.Question) -> dict[str, Any]:
 
 
 def _numbers(prompt: str) -> list[int]:
-    return [int(value) for value in re.findall(r'(?<![\d.])\d+(?![\d.])', prompt or '')]
+    return [int(value) for value in re.findall(r'\d+', prompt or '')]
 
 
 def _skill_name(question: legacy.Question) -> str:
