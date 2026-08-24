@@ -1,3 +1,26 @@
+# MathQuest 0.30.0
+
+- Added reusable Visual Mathematics components for equal-whole fraction comparison, number lines, arrays, place value and measurement.
+- Expanded the Interactive Maths Lab with synchronised interactive fraction bars, shared fraction number lines and equivalent-fraction representations.
+- Kept fraction comparison bars vertically aligned to equal-sized wholes with explicit denominator partitions and numerator shading.
+- Added multiple valid solution strategies for suitable arithmetic, fraction, multiplication and division questions, presented one at a time through **Show another way**.
+- Added question-specific visual recommendations that explain how each model connects to the calculation without automatically opening a teaching tool.
+- Added learning-evidence-driven visual recommendations for repeated misconception patterns while keeping learner control.
+- Suppressed new teaching strategies and visual recommendations in parent tests to preserve assessment integrity.
+- Kept teaching examples on different values from assessed questions and prevented manipulatives from filling the assessed answer field.
+- Added accessible mathematical descriptions, keyboard-operable visual controls, responsive layouts and reduced-motion-safe styling.
+- Added v0.30 endpoints through explicit FastAPI `APIRouter` composition instead of another route-list mutation workaround.
+- Preserved v0.29.1 grid visual, keyboard autofocus, semantic duplicate and grouped-unit corrective safeguards.
+- Updated the canonical roadmap, release notes, Home Assistant metadata, backend entrypoint, frontend version and documentation to v0.30.0.
+
+# MathQuest 0.29.1
+
+- Restored grid-reference diagrams after final question-generation transformations so grid questions always retain their labelled visual.
+- Preserved keyboard-first typed-answer autofocus when a new question becomes active.
+- Added a final semantic duplicate-question guard across generated worksheets.
+- Clarified grouped word-problem units, including specifying that hikers use meal portions rather than packs.
+- Updated v0.29.1 release and version-validation metadata without changing the v0.29.0 learning-intelligence model.
+
 # MathQuest 0.29.0
 
 - Made Math Mentor support optional after an incorrect answer. Sienna can immediately edit and resubmit an answer without opening a hint or completing a tutoring step.

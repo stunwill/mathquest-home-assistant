@@ -21,16 +21,16 @@ def test_release_notes_extract_current_version_section_only():
     versions = load_script('validate_versions').version_locations()
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
-    assert 'grid visual' in notes.lower()
-    assert 'keyboard' in notes.lower()
-    assert 'duplicate' in notes.lower()
-    assert '# MathQuest 0.29.1' not in notes
+    assert 'equal-whole fraction' in notes.lower()
+    assert 'show another way' in notes.lower()
+    assert 'parent tests' in notes.lower()
+    assert '# MathQuest 0.30.0' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.29.1'}
+    assert set(versions.values()) == {'0.30.0'}
 
 
 def test_release_workflow_validates_versions_before_publishing():
