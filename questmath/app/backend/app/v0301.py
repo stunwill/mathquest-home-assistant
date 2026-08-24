@@ -69,7 +69,7 @@ def repair_fraction_number_lines(worksheet: legacy.Worksheet) -> None:
             continue
         payload = _payload(question)
         payload['visual'] = visual
-        payload['visual_key'] = f'{question.id}:fraction-number-line:{visual["steps"]}'
+        payload['visual_key'] = f'{worksheet.id}:{question.id}'
         question.payload = json.dumps(payload)
 
 
