@@ -1,4 +1,4 @@
-# MathQuest 0.30.0
+# MathQuest 0.30.1
 
 **Sienna’s daily adventure in maths.**
 
@@ -46,10 +46,14 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Accessible review dialogs and keyboard-first answer and continuation flow
 - Collapsible Math Mentor panels with question-specific guided recovery, worked examples and browser text-to-speech support
 - v0.29.1 corrective guards for grid visuals, keyboard autofocus, semantic duplicate prevention and explicit grouped-unit wording
+- v0.30.1 completion recommendations based on broader persisted learner evidence rather than only the just-finished worksheet
+- v0.30.1 question-family diversity guard that treats parameter-only variants as the same family and avoids consecutive repeats when alternatives exist
+- v0.30.1 denominator-accurate fraction number lines with equal subdivisions and endpoint-safe labels
+- v0.30.1 Probability visual relevance guard that prevents unrelated number-line teaching prompts
 
 ## Upgrade compatibility
 
-The app slug and database path remain `questmath`, preserving the existing Home Assistant app identity and `/data/questmath.db`. Visual Mathematics adds no destructive database migration and does not replace existing worksheets, answers, attempts, learning evidence, progress or user IDs.
+The app slug and database path remain `questmath`, preserving the existing Home Assistant app identity and `/data/questmath.db`. This corrective release adds no destructive database migration and does not replace existing worksheets, answers, attempts, learning evidence, progress or user IDs.
 
 MathQuest persists its JWT signing secret separately at `/data/jwt-signing-secret` and its Home Assistant service token at `/data/ha-service-token`. Existing secrets and service tokens remain valid across this upgrade.
 
