@@ -29,9 +29,15 @@ function BarChart({visual}: {visual: any}) {
 }
 
 function StaticNumberLine({visual}: {visual:any}) {
+  const steps = Math.max(1, Number(visual?.steps) || 0);
+  if (visual?.fraction || steps > 1) {
+    const numerator = Number(visual?.fraction?.numerator ?? 0);
+    const denominator = Math.max(1, Number(visual?.fraction?.denominator ?? steps));
+    const markerIndex = Math.max(0, Math.min(denominator, numerator));
+    return <div className="mq-visual number-line" role="img" aria-label={`Number line from zero to one divided into ${denominator} equal parts`}><div className="line-track">{Array.from({length: denominator + 1}, (_, index) => <span key={index} className={index===markerIndex?'selected-point':''}><i/><b>{index===0?'0':index===denominator?'1':''}</b></span>)}</div></div>;
+  }
   if(Number.isFinite(Number(visual?.min)) || Number.isFinite(Number(visual?.max))) return <div className="mq-visual"><NumberLineModel min={Number(visual?.min)||0} max={Number(visual?.max)||100} value={Number(visual?.marker)||Number(visual?.min)||0}/></div>;
-  const steps = Math.max(1, Number(visual.steps) || 1);
-  return <div className="mq-visual number-line" role="img" aria-label="Number line for this question"><div className="line-track">{Array.from({length: steps + 1}, (_, index) => <span key={index}><i/><b>{index === 0 ? '0' : index === steps ? '1' : ''}</b></span>)}</div></div>;
+  return null;
 }
 
 function polygonPoints(sides: number) {
