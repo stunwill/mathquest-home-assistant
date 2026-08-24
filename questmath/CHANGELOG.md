@@ -46,7 +46,7 @@
 
 # MathQuest 0.28.0
 
-- Added the Math Mentor, a lightweight collapsible tutoring panel on every worksheet question.
+- Added the Math Mentor, a lightweight, collapsible tutoring panel on every learner worksheet question.
 - Added ask-before-tell guided recovery after an incorrect learner answer, keeping the question retryable before an answer is revealed.
 - Added progressive, question-family-specific support for arithmetic, equations, fractions, measurement, grids, time and data.
 - Added Math Mentor **Hint**, **Why?**, **Teach me**, **Worked example**, **Start over** and **Read aloud** actions.
@@ -152,4 +152,112 @@
 - Prevented worked examples from reusing the assessed inputs or exposing a colliding final answer.
 - Prevented tutor **Start over** from clearing a final question result and blocking normal worksheet navigation.
 - Added backend and frontend regression coverage for the Maths Lab, model interactions and guided-tutor follow-up defects.
-- Existing users, worksheets, answers, diagnostic results, progress and user IDs remain unchanged.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant data remain unchanged.
+
+# MathQuest 0.20.0
+
+- Added an ask-before-tell guided tutor with three progressively stronger hint stages: conceptual cue, strategy prompt and worked next step.
+- Added question-specific guidance for arithmetic, fractions, measurement, grids, time, data and unknown-value equations.
+- Added **Why?**, **Teach me this**, **Show another way** and **Start over** actions within the worksheet.
+- Added different-number worked examples that demonstrate a method without revealing the assessed question's final answer.
+- Routed detected misconceptions into the tutor panel after an incorrect attempt.
+- Added read-aloud support for guided hints and explanations while retaining existing prompt narration.
+- Added regression coverage for all representative question families, three-stage progression, tutor actions, answer protection and route ordering.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant data remain unchanged.
+
+# MathQuest 0.19.1
+
+- Fixed grid-reference questions so row letters and column numbers appear outside the grid instead of printing complete references inside every cell.
+- Removed the highlighted square's visible and interactive answer value so the visual no longer gives away the correct response.
+- Changed fraction comparisons to vertically stacked, left-aligned rows whose bars use the same whole width for direct visual comparison.
+- Preserved each fraction's denominator partitions, shaded numerator, learner label and written value across desktop, mobile and Home Assistant layouts.
+- Added frontend and source-level regression coverage for grid answer leakage, external axis labels, fraction partitions and equal-whole stacked layout.
+- Corrected the roadmap patch version after v0.19.0 diagnostic and timed tutoring had already been released.
+- Existing users, worksheets, answers, diagnostic results, progress and Home Assistant data remain unchanged.
+
+# MathQuest 0.19.0
+
+- Added a short Number and Algebra diagnostic with three questions at each Victorian Curriculum level from 2–6 and an explicit Level 5 learning target.
+- Added selectable 5, 10 and 15-minute targeted practice sessions with question counts sized to the chosen duration.
+- Added persisted session type and target duration metadata using additive database migration columns that preserve existing worksheets and answers.
+- Added a latest-diagnostic summary API reporting evidence and accuracy at each assessed level.
+- Added learner session planning controls and backend regression coverage for timed sessions, diagnostic coverage and database upgrades.
+
+# MathQuest 0.18.0
+
+- Consolidated all new worksheet requests onto the authoritative duplicate-safe backend creation service, removing the later route-replacement layer.
+- Rebuilt student worksheet history, weekly completion calendar and Story Adventures as React-owned components rather than DOM-rewriting enhancement scripts.
+- Replaced global active-worksheet `fetch` interception with explicit worksheet-ID loading and resume state.
+- Added reusable in-page connection and action errors with retry and dismissal controls for authentication, dashboard, worksheet, history, calendar and adventure flows.
+- Added frontend component and interaction tests covering the creation service, Story Adventure start flow, history controls, calendar recovery and accessible error feedback.
+- Removed the legacy v0.16 calendar and worksheet-picker scripts from the production page while retaining existing worksheet data and API compatibility.
+- Updated all authoritative release locations and startup messaging to `0.18.0`.
+- Existing users, worksheets, answers, progress, XP, database data and persisted secrets remain unchanged.
+
+# MathQuest 0.17.2
+
+- Fixed completion-calendar navigation and expanded the calendar to the full dashboard width, with the duplicate Badges panel removed.
+- Allowed worksheets to be finished once every unanswered question has been explicitly skipped.
+- Added **Restart skipped questions**, which creates a focused follow-up worksheet without changing the completed worksheet's score, XP or history.
+- Fixed Story Adventure cards so they create and immediately open a dedicated worksheet for the selected story.
+- Regenerated Story Adventure questions from theme-appropriate learning areas and added chapter-based contextual prompts throughout each adventure.
+- Fixed a visual-loading race so rapid question changes retry against the newly mounted question card instead of attaching to a detached card.
+- Added a product roadmap combining the supplied learning-system recordings with previously identified MathQuest priorities.
+- Updated all authoritative release locations and startup messaging to `0.17.2`.
+- Existing users, worksheets, answers, progress and persisted secrets remain unchanged.
+
+# MathQuest 0.17.1
+
+- Added a **Previous question** control that returns to the nearest earlier unfinished, skipped or retryable question while keeping completed results read-only.
+- Fixed grid-reference and other visual questions retaining the image from the previous question by keying question cards to their question ID and rejecting mismatched injected visuals.
+- Ensured weak, hinted and due Number and Algebra focus skills influence the generated practice questions, not only the strand-level topic weights.
+- Fixed make-ten addition questions so the second addend always contains enough to complete ten.
+- Fixed direct-subtraction generation so equal ones digits use the dedicated equal-digits strategy instead of contradictory guidance.
+- Added navigation, visual identity, grid payload and strategy edge-case regression coverage.
+- Updated all authoritative release locations and startup messaging to `0.17.1`.
+- Existing users, worksheets, answers, progress and persisted secrets remain unchanged.
+
+# MathQuest 0.17.0
+
+- Added a recommended **Number & Algebra Focus** quest containing only those two Victorian Curriculum strands.
+- Added deliberate fact-recall practice for addition, subtraction, multiplication facts to `10 × 10`, and related division facts.
+- Added efficient mental strategies including make-ten, doubles, near-doubles, inverse facts, multiplication patterns and fact families to reduce reliance on finger counting.
+- Added written addition and subtraction practice with question-specific strategy cards.
+- Added subtraction guidance for the three column cases: subtract directly when the top digit is larger, regroup from the next place when it is smaller, and write zero when the digits match.
+- Added a worked place-value lesson for `81 − 8` that explains regrouping 8 tens and 1 one into 7 tens and 11 ones before subtracting.
+- Expanded unknown-value Algebra questions across addition and subtraction equation forms, with inverse-operation hints and substitution checks.
+- Added Number and Algebra focus reporting for independent accuracy, hint use, average response time, last practice and retention review status.
+- Connected the new skills to MathQuest's existing hint-aware mastery and spaced-review weighting so weak, hinted and due outcomes receive further practice.
+- Added HTTP, generation, hint, strategy, capability and teaching-lesson regression coverage.
+- Updated all authoritative release locations and the production entrypoint to `0.17.0`.
+- Existing users, worksheets, progress, `/data/questmath.db` and `/data/jwt-signing-secret` remain unchanged.
+
+# MathQuest 0.16.3
+
+- Added version-consistency validation directly to the release workflow before any existing-tag check or GitHub Release publication.
+- Added an explicit Python 3.12 setup and pinned YAML parser dependency so release validation is reproducible on GitHub Actions.
+- Changed pull-request release-note validation to extract notes for the version configured in `questmath/config.yaml` instead of the hard-coded `0.16.2` section.
+- Added validation that every changed Home Assistant add-on version has a matching `questmath/CHANGELOG.md` heading and release-note file.
+- Added regression tests for version mismatch and release-note validation failures.
+
+# MathQuest 0.16.2
+
+- Added Argon2-ready password hashing while retaining bcrypt verification for existing accounts.
+- Added rate limiting for failed login attempts with client-safe audit logging that does not expose credentials or secrets.
+- Moved JWT signing secrets to persistent `/data` storage with automatic legacy-secret rotation.
+- Added validation and redaction for parent-visible import errors, backup errors and service failures.
+- Added stricter worksheet ownership checks for student and parent access.
+- Added database backup/restore path validation and pre-restore snapshots.
+- Added explicit service-token scope separation for Home Assistant endpoints.
+- Added security regression coverage for authentication, authorization, secrets and upgrade compatibility.
+
+# MathQuest 0.16.1
+
+- Corrected release metadata and Home Assistant add-on startup version reporting.
+- Preserved all v0.16.0 data migration and UI changes.
+
+# MathQuest 0.16.0
+
+- Introduced the React/Vite learner and parent applications.
+- Preserved the FastAPI backend and SQLite learner database.
+- Added the first consolidated adaptive learning dashboard, worksheet lifecycle and parent settings workflow.
