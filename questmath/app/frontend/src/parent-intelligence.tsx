@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react';
-import {AlertTriangle, Brain, ChevronDown, CircleHelp, Gauge, RefreshCw, Route, ShieldCheck, Sparkles, Target, TrendingUp} from 'lucide-react';
+import {AlertTriangle, Brain, CircleHelp, Gauge, RefreshCw, Route, ShieldCheck, Sparkles, Target, TrendingUp} from 'lucide-react';
+import './parent-intelligence.css';
 
 const pct = (value:number|null|undefined) => value == null ? 'Not enough evidence' : `${value}%`;
 const pretty = (value:string) => value.replaceAll('_',' ').replace(/\b\w/g, c => c.toUpperCase());
