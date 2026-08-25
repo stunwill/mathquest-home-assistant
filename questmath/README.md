@@ -1,8 +1,8 @@
-# MathQuest 0.31.0
+# MathQuest 0.32.0
 
 **Sienna’s daily adventure in maths.**
 
-MathQuest is a local Home Assistant app providing daily adaptive mathematics practice, worksheet navigation, progress tracking and a parent dashboard aligned to Victorian Curriculum F–10 Version 2.0 Level 4, with learning progression targeted toward upper Grade 5 mathematics.
+MathQuest is a local Home Assistant app providing daily adaptive mathematics practice, worksheet navigation, progress tracking and a parent dashboard aligned to a Victorian Curriculum Level 5 pathway while adapting across Levels 2–6 from diagnostic evidence.
 
 ## Included
 
@@ -15,9 +15,16 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Question overview and navigation status panel
 - Immediate retry-first feedback with optional Math Mentor support
 - Tablet-optimised worksheet and tutoring layouts for portrait and landscape use
-- Six Level 4 strands and VCAA content-description codes
 - Adaptive strand weighting and progressive difficulty
 - More instructional-level Number practice with hundreds, regrouping and decomposition when learner evidence supports it
+- Parent Learning Intelligence with plain-language learning summaries
+- Independent versus supported success and evidence confidence at skill level
+- Secure, Developing, Needs Support, Review Due and Not Enough Evidence mastery states
+- Prioritised practice recommendations with evidence-based reasons
+- Repeated misconception grouping and prerequisite-aware explanations
+- Retention and spaced-review visibility
+- Difficulty calibration that considers support dependency as well as accuracy
+- 7, 30 and 90-day progress comparisons
 - Parent curriculum tracker, support flags and incorrect-answer review
 - CSV and PDF reports
 - SQLite backup and restore API
@@ -39,26 +46,12 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Assessment-integrity safeguards that suppress new teaching strategies and recommendations in parent tests
 - Coherent Story Adventures with adaptive learning goals, shared mission data, chapter progress and final outcomes
 - Outcome mastery, deterministic spaced reviews, prerequisite routing and personalised next-session recommendations
-- Parent reporting for diagnostic and outcome growth, independent and supported accuracy, weekly progress, retention and review-due learning
 - Persistent Home Assistant service authentication and dashboard-ready category, outcome and recommendation metrics
 - Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
 - Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
-- React-owned question visuals and support tools with per-question visual identity and saved answer drafts
-- Reconciled worksheet, calendar, parent and Home Assistant evidence counts
-- Configuration-managed parent and student credentials that safely update existing accounts on restart
-- Visual rotational-symmetry hints, recent-question duplicate protection and faithful worksheet-review visuals
-- Accessible review dialogs and keyboard-first answer and continuation flow
-- Collapsible Math Mentor panels with question-specific guided recovery, worked examples and browser text-to-speech support
-- v0.29.1 corrective guards for grid visuals, keyboard autofocus, semantic duplicate prevention and explicit grouped-unit wording
-- v0.30.1 completion recommendations based on broader persisted learner evidence rather than only the just-finished worksheet
-- v0.30.1 question-family diversity guard that treats parameter-only variants as the same family and avoids consecutive repeats when alternatives exist
-- v0.30.1 denominator-accurate fraction number lines with equal subdivisions and endpoint-safe labels
-- v0.30.1 Probability visual relevance guard that prevents unrelated number-line teaching prompts
 
-## Upgrade compatibility
+## Parent Learning Intelligence
 
-The app slug and database path remain `questmath`, preserving the existing Home Assistant app identity and `/data/questmath.db`. v0.31.0 adds no destructive database migration and does not replace existing worksheets, answers, attempts, learning evidence, progress or user IDs.
+The v0.32.0 parent dashboard is designed to answer quickly what is improving, what needs support, whether success is independent, what to practise next, why MathQuest recommends it, whether previously learned skills are being retained, and whether current difficulty is appropriate.
 
-MathQuest persists its JWT signing secret separately at `/data/jwt-signing-secret` and its Home Assistant service token at `/data/ha-service-token`. Existing secrets and service tokens remain valid across this upgrade.
-
-Change parent and student usernames or passwords in the Home Assistant add-on Configuration page, save, then restart MathQuest. Startup reconciles those values with the existing managed accounts without replacing their IDs or learning data.
+MathQuest avoids strong conclusions when there is insufficient evidence. Parent tests remain excluded from learner mastery, misconceptions, adaptive difficulty, spaced retrieval and recommendations.
