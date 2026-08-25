@@ -21,17 +21,17 @@ def test_release_notes_extract_current_version_section_only():
     versions = load_script('validate_versions').version_locations()
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
-    assert 'tablet' in notes.lower()
-    assert 'teach me' in notes.lower()
-    assert 'worked next step' in notes.lower()
-    assert 'hundreds' in notes.lower()
-    assert '# MathQuest 0.30.1' not in notes
+    assert 'parent learning intelligence' in notes.lower()
+    assert 'independent' in notes.lower()
+    assert 'supported' in notes.lower()
+    assert 'misconception' in notes.lower()
+    assert '# MathQuest 0.31.0' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.31.0'}
+    assert set(versions.values()) == {'0.32.0'}
 
 
 def test_release_workflow_validates_versions_before_publishing():

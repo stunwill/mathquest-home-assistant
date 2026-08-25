@@ -53,7 +53,7 @@ describe('MathQuest 0.27 learner and parent-test interactions', () => {
       return response({detail: 'missing'}, false, 404);
     });
     render(<Worksheet ws={worksheet() as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
-    const input = screen.getByPlaceholderText('Type your answer');
+    const input = screen.getByRole('textbox', {name: 'Your answer'});
     fireEvent.change(input, {target: {value: '8'}});
     fireEvent.keyDown(input, {key: 'Enter'});
     expect(await screen.findByText(/Great job/i)).toBeInTheDocument();

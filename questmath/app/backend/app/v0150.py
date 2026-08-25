@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import random
 import re
 
@@ -12,6 +13,7 @@ app = v0140.app
 app.version = '0.15.0'
 
 _prior_make_question = legacy.make_question
+_prior_question_identity = legacy.question_identity
 
 
 def _dedupe_choices(payload: dict, correct_answer: str) -> dict:
@@ -33,6 +35,16 @@ def _dedupe_choices(payload: dict, correct_answer: str) -> dict:
     payload = dict(payload)
     payload['choices'] = cleaned
     return payload
+
+
+def _visual_question_identity(prompt: str, payload: dict):
+    """Include the rendered visual in duplicate detection when the wording is intentionally shared."""
+    prompt_key, choice_key = _prior_question_identity(prompt, payload)
+    visual = payload.get('visual') if isinstance(payload, dict) else None
+    if isinstance(visual, dict) and visual:
+        visual_key = json.dumps(visual, sort_keys=True, separators=(',', ':')).casefold()
+        choice_key = (*choice_key, f'__visual__:{visual_key}')
+    return prompt_key, choice_key
 
 
 def _simple_clock(rng: random.Random):
@@ -102,6 +114,7 @@ def make_question_v0150(topic: str, level: int, rng: random.Random):
     return skill, prompt, answer_type, payload, str(answer), working
 
 
+legacy.question_identity = _visual_question_identity
 legacy.make_question = make_question_v0150
 
 

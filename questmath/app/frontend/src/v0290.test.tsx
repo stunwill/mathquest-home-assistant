@@ -22,7 +22,7 @@ describe('v0.29 optional tutoring', () => {
       return Promise.resolve(new Response(JSON.stringify({detail: 'unexpected'}), {status: 404}));
     });
     render(<Worksheet ws={worksheet} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
-    const input = screen.getByPlaceholderText('Type your answer');
+    const input = screen.getByRole('textbox', {name: 'Your answer'});
     fireEvent.change(input, {target: {value: '216'}});
     fireEvent.click(screen.getByRole('button', {name: 'Check answer'}));
     await waitFor(() => expect(screen.getByText(/You can try another answer now/)).toBeInTheDocument());

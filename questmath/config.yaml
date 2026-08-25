@@ -1,7 +1,7 @@
 name: MathQuest
-version: "0.31.0"
+version: "0.32.0"
 slug: questmath
-description: Sienna’s Level 4 adaptive mathematics learning adventure.
+description: Sienna’s Grade 5 adaptive mathematics learning adventure.
 url: https://github.com/stunwill/mathquest-home-assistant
 arch:
   - aarch64

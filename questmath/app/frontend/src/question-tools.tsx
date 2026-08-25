@@ -2,7 +2,15 @@ import React, {useEffect, useState} from 'react';
 import {apiRequest} from './api';
 import {speakText} from './speech';
 
-export function QuestionTools({question, onOpenLab}: {question: any; onOpenLab: () => void}) {
+type QuestionToolsProps = {
+  question: any;
+  onOpenLab: () => void;
+  worksheetId?: number;
+  answer?: string;
+  onSupport?: (support: any) => void;
+};
+
+export function QuestionTools({question, onOpenLab}: QuestionToolsProps) {
   const [scratchOpen, setScratchOpen] = useState(false);
   const [scratch, setScratch] = useState('');
   const [scratchLoaded, setScratchLoaded] = useState(false);
