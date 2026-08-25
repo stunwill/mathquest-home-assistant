@@ -19,7 +19,7 @@ describe('Math Mentor', () => {
   it('is available as a collapsible, keyboard-accessible panel on every worksheet question', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
       const url = String(input);
-      if (url.includes('/math-mentor-v0300?action=why')) return response(mentor);
+      if (url.includes('/math-mentor-v0310?action=why')) return response(mentor);
       return response({detail: 'unexpected'}, false, 404);
     });
     render(<Worksheet ws={worksheet} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
@@ -30,7 +30,7 @@ describe('Math Mentor', () => {
     fireEvent.click(screen.getByRole('button', {name: 'Why?'}));
     expect(await screen.findByText('Why this works')).toBeInTheDocument();
     expect(screen.getByText(/same changes as the calculation/i)).toBeInTheDocument();
-    expect(fetchMock.mock.calls.some(call => String(call[0]).includes('/math-mentor-v0300?action=why'))).toBe(true);
+    expect(fetchMock.mock.calls.some(call => String(call[0]).includes('/math-mentor-v0310?action=why'))).toBe(true);
   });
 
   it('uses a non-blocking fallback when browser read aloud is unavailable', () => {

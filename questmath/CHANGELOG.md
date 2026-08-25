@@ -1,3 +1,15 @@
+# MathQuest 0.31.0
+
+- Optimised the live worksheet layout for tablet portrait and landscape use, including more compact tutoring content, improved touch targets and better visibility of primary worksheet actions.
+- Increased instructional-level Number practice for learners with sufficient evidence, favouring purposeful hundreds-based addition and subtraction with regrouping, decomposition and place-value reasoning while retaining occasional easier retrieval items.
+- Added structured question context for Math Mentor, including operation, operands, skill, question family and expected strategy metadata.
+- Redesigned **Teach me** as a question-specific mini-lesson that uses the actual problem structure and operands without revealing the final assessed answer.
+- Split tutoring support into clearer roles: Hint provides the smallest useful nudge, Why explains the concept, Teach me provides a mini-lesson, Worked example uses different values, and Show worked next step exposes one additional current-question step.
+- Made three-stage hints materially progressive: conceptual nudge, problem-specific strategy and worked next step.
+- Improved mathematical formatting for tutoring steps so partitioned values and place-value working are visually distinct from prose.
+- Preserved retry-first answer entry, keyboard autofocus, Math Mentor optionality, v0.30 Visual Mathematics and all v0.30.1 worksheet-quality safeguards.
+- Added regression coverage for hundreds-based arithmetic, question-specific tutoring, distinct hint levels, answer protection, worked-example alignment and tablet-oriented presentation behaviour.
+
 # MathQuest 0.30.1
 
 - Changed worksheet completion **Strongest** and **Practise next** recommendations to use persisted learner-wide mastery evidence instead of only the category in the just-completed worksheet.

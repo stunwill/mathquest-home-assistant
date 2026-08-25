@@ -6,12 +6,13 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.30.1`
+Version `0.31.0`
 
 ## Features
 
 - Student and parent logins
 - Responsive student dashboard
+- Tablet-optimised worksheet and tutoring flow for portrait and landscape use
 - Multiple daily worksheets with save, exact resume, review and skip support
 - Duplicate-safe adaptive question generation and visual learning guardrails
 - Victorian Curriculum F–10 Version 2.0 Level 4 alignment
@@ -24,8 +25,10 @@ Version `0.30.1`
 - Dashboard-friendly Home Assistant statistics API
 - Installation-specific JWT signing and failed-login throttling
 - Recommended Number & Algebra Focus quests with fact-recall, efficient-strategy and retention support
+- Adaptive arithmetic that favours purposeful hundreds, regrouping and decomposition when learner evidence supports it
 - Question-specific strategy cards for addition, subtraction, multiplication, division and unknown equations
-- Three-stage guided hints with Why?, Teach me this, Show another way and Start over support
+- Three-stage guided hints with distinct nudge, strategy and worked-next-step roles
+- Question-specific Teach me mini-lessons that use the current problem structure without revealing the assessed answer
 - Interactive Maths Lab with linked fractions, percentages, number lines, place value, arrays, clocks, grids and measurement models
 - Shared Visual Mathematics components for equal-whole fraction comparison, number lines, arrays, place value and measurement
 - Interactive fraction bars with number-line and equivalent-fraction representations that remain mathematically synchronised

@@ -1,4 +1,4 @@
-# MathQuest 0.30.1
+# MathQuest 0.31.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -14,8 +14,10 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Duplicate-safe question generation with visual question guardrails
 - Question overview and navigation status panel
 - Immediate retry-first feedback with optional Math Mentor support
+- Tablet-optimised worksheet and tutoring layouts for portrait and landscape use
 - Six Level 4 strands and VCAA content-description codes
 - Adaptive strand weighting and progressive difficulty
+- More instructional-level Number practice with hundreds, regrouping and decomposition when learner evidence supports it
 - Parent curriculum tracker, support flags and incorrect-answer review
 - CSV and PDF reports
 - SQLite backup and restore API
@@ -24,6 +26,8 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Number & Algebra Focus quests for targeted fact recall and equation practice
 - Contextual strategy cards, written subtraction regrouping and retention review indicators
 - Three-stage guided tutoring across arithmetic, fractions, measurement, grids, time, data and equations
+- Distinct nudge, strategy and worked-next-step hint stages
+- Question-specific Teach me mini-lessons using the current problem structure without revealing the final answer
 - A responsive Interactive Maths Lab available from learner questions
 - Shared Visual Mathematics components used by worksheet visuals and Maths Lab manipulatives
 - Equal-sized whole fraction comparisons with clear denominator partitions and numerator shading
@@ -53,7 +57,7 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 
 ## Upgrade compatibility
 
-The app slug and database path remain `questmath`, preserving the existing Home Assistant app identity and `/data/questmath.db`. This corrective release adds no destructive database migration and does not replace existing worksheets, answers, attempts, learning evidence, progress or user IDs.
+The app slug and database path remain `questmath`, preserving the existing Home Assistant app identity and `/data/questmath.db`. v0.31.0 adds no destructive database migration and does not replace existing worksheets, answers, attempts, learning evidence, progress or user IDs.
 
 MathQuest persists its JWT signing secret separately at `/data/jwt-signing-secret` and its Home Assistant service token at `/data/ha-service-token`. Existing secrets and service tokens remain valid across this upgrade.
 
