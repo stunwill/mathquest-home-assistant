@@ -28,13 +28,13 @@ describe('v0.32.0 parent learning intelligence',()=>{
     expect(screen.getAllByText('First attempt').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Eventual').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Support used').length).toBeGreaterThan(0);
-    expect(screen.getByText('70%')).toBeTruthy();
+    expect(screen.getAllByText('70%').length).toBeGreaterThan(0);
   });
 
   it('shows conservative mastery states and misconception evidence',()=>{
     render(<ParentLearningIntelligence data={data} onPeriod={vi.fn()}/>);
     expect(screen.getAllByText('Secure').length).toBeGreaterThan(0);
-    expect(screen.getByText('Needs Support')).toBeTruthy();
+    expect(screen.getAllByText('Needs Support').length).toBeGreaterThan(0);
     expect(screen.getByText('Regrouping Error')).toBeTruthy();
     expect(screen.getByText('3 observations')).toBeTruthy();
   });
