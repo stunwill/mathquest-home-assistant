@@ -1,8 +1,9 @@
-/// <reference types="vite/client" />
-
 import {describe, expect, it} from 'vitest';
-import mainSource from './main.tsx?raw';
-import stylesSource from './styles.css?raw';
+import {readFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+
+const mainSource=readFileSync(fileURLToPath(new URL('./main.tsx',import.meta.url)),'utf8');
+const stylesSource=readFileSync(fileURLToPath(new URL('./styles.css',import.meta.url)),'utf8');
 
 describe('v0.31.0 tablet and Math Mentor presentation',()=>{
   it('uses the v0.31.0 question-specific mentor endpoint',()=>{
