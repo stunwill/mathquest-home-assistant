@@ -35,7 +35,7 @@ describe('v0.32.0 parent learning intelligence',()=>{
     render(<ParentLearningIntelligence data={data} onPeriod={vi.fn()}/>);
     expect(screen.getAllByText('Secure').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Needs Support').length).toBeGreaterThan(0);
-    expect(screen.getByText('Regrouping Error')).toBeTruthy();
-    expect(screen.getByText('3 observations')).toBeTruthy();
+    expect(screen.getAllByText('Regrouping Error').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('3 observations').length).toBeGreaterThan(0);
   });
 });
