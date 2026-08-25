@@ -1,9 +1,10 @@
 import {describe, expect, it} from 'vitest';
 import {readFileSync} from 'node:fs';
-import {fileURLToPath} from 'node:url';
+import {resolve} from 'node:path';
 
-const mainSource=readFileSync(fileURLToPath(new URL('./main.tsx',import.meta.url)),'utf8');
-const stylesSource=readFileSync(fileURLToPath(new URL('./styles.css',import.meta.url)),'utf8');
+const sourceDir=resolve(process.cwd(),'src');
+const mainSource=readFileSync(resolve(sourceDir,'main.tsx'),'utf8');
+const stylesSource=readFileSync(resolve(sourceDir,'styles.css'),'utf8');
 
 describe('v0.31.0 tablet and Math Mentor presentation',()=>{
   it('uses the v0.31.0 question-specific mentor endpoint',()=>{
