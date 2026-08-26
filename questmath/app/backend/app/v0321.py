@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0120, v0200, v0290, v0301, v0310, v0320
+from . import v0120, v0200, v0260, v0290, v0291, v0300, v0301, v0310, v0320
 
 app = v0320.app
 app.version = '0.32.1'
@@ -71,6 +71,16 @@ def _difficulty_band(question: legacy.Question) -> str:
     return 'instructional'
 
 
+def _restore_runtime_annotations(question: legacy.Question, worksheet: legacy.Worksheet) -> None:
+    v0260._annotate_question(question, worksheet)
+    v0291.ensure_grid_visual(question)
+    v0291.clarify_grouped_units(question)
+    payload = _payload(question)
+    payload['visual_mathematics'] = v0300._safe_visual_payload(question, worksheet)
+    payload['solution_strategies'] = [] if worksheet.session_kind == 'parent_test' else v0300._strategy_set(question)
+    question.payload = json.dumps(payload)
+
+
 def _replace_question(question: legacy.Question, worksheet: legacy.Worksheet, rng: random.Random, blocked_families: set[str]) -> bool:
     original_payload = _payload(question)
     preserved = {key: original_payload[key] for key in ('adventure', 'story', 'mission') if key in original_payload}
@@ -100,6 +110,7 @@ def _replace_question(question: legacy.Question, worksheet: legacy.Worksheet, rn
         question.payload = json.dumps(next_payload)
         question.correct_answer = str(answer)
         question.working = working
+        _restore_runtime_annotations(question, worksheet)
         return True
     return False
 
@@ -119,15 +130,16 @@ def enforce_learning_quality(session: Session, worksheet: legacy.Worksheet, stud
         if _is_trivial_arithmetic(question):
             retrieval_seen += 1
             needs_replacement = needs_replacement or retrieval_seen > retrieval_budget
-        if needs_replacement:
-            if _replace_question(question, worksheet, rng, seen_families):
-                family = v0301.question_family(question)
+        if needs_replacement and _replace_question(question, worksheet, rng, seen_families):
+            family = v0301.question_family(question)
         seen_families.add(family)
 
         payload = _payload(question)
         payload['difficulty_band'] = _difficulty_band(question)
         payload['retrieval_item'] = payload['difficulty_band'] == 'retrieval'
         payload['mentor_context'] = v0310._question_context(question)
+        payload['visual_mathematics'] = v0300._safe_visual_payload(question, worksheet)
+        payload['solution_strategies'] = [] if worksheet.session_kind == 'parent_test' else v0300._strategy_set(question)
         question.payload = json.dumps(payload)
 
     v0301.repair_fraction_number_lines(worksheet)
@@ -139,8 +151,6 @@ def enforce_learning_quality(session: Session, worksheet: legacy.Worksheet, stud
 def aligned_worked_example(question: legacy.Question) -> str:
     prompt = question.prompt or ''
     skill = (question.skill or '').split(':', 1)[-1].lower()
-    family = v0200.question_family(question)
-    nums = _numbers(prompt)
 
     if question.topic == 'probability':
         if 'coin' in prompt.lower() or 'toss' in prompt.lower():
