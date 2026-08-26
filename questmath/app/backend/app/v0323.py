@@ -8,7 +8,7 @@ from typing import Any
 from fastapi import Depends
 
 from . import main as legacy
-from . import v0120, v0290, v0300, v0301, v0310, v0321, v0322
+from . import v0120, v0310, v0321, v0322
 
 app = v0322.app
 app.version = '0.32.3'
@@ -17,6 +17,7 @@ legacy.APP_VERSION = '0.32.3'
 _prior_make_question = legacy.make_question
 _prior_tutoring_content = v0310.tutoring_content
 _prior_worked_example = v0321.aligned_worked_example
+_prior_operation = v0310._operation
 
 
 def _payload(question: legacy.Question) -> dict[str, Any]:
@@ -35,13 +36,22 @@ def _numbers(prompt: str) -> list[str]:
     return re.findall(r'\d+(?:\.\d+)?', prompt or '')
 
 
+def _operation_v0323(question: legacy.Question) -> str | None:
+    prompt = question.prompt or ''
+    if '÷' in prompt or ' / ' in prompt:
+        return 'division'
+    if '×' in prompt:
+        return 'multiplication'
+    return _prior_operation(question)
+
+
 def _safe_example_number(value: int, delta: int, minimum: int = 2, maximum: int = 999) -> int:
     candidate = max(minimum, min(maximum, value + delta))
     return candidate if candidate != value else max(minimum, min(maximum, value + delta + 1))
 
 
 def _written_multiplication_content(question: legacy.Question) -> dict[str, Any] | None:
-    if v0310._operation(question) != 'multiplication':
+    if _operation_v0323(question) != 'multiplication':
         return None
     nums = _numbers(question.prompt)
     if len(nums) < 2:
@@ -53,8 +63,6 @@ def _written_multiplication_content(question: legacy.Question) -> dict[str, Any]
     ones = larger % 10
     tens = (larger // 10) % 10
     hundreds = (larger // 100) % 10
-    ones_product = ones * single
-    carry_tens = ones_product // 10
     hint1 = 'This is multiplication. Start with the ones column so each place value is dealt with in order.'
     hint2 = f'Start with the ones: {single} × {ones}. Write the ones digit of that product in the ones column and carry any extra ten to the tens column.'
     if larger >= 100:
@@ -74,7 +82,7 @@ def _written_multiplication_content(question: legacy.Question) -> dict[str, Any]
 
 
 def _partition_division_content(question: legacy.Question) -> dict[str, Any] | None:
-    if v0310._operation(question) != 'division':
+    if _operation_v0323(question) != 'division':
         return None
     nums = _numbers(question.prompt)
     if len(nums) < 2:
@@ -146,7 +154,7 @@ def _perimeter_area_content(question: legacy.Question) -> dict[str, Any] | None:
         return {
             'strategy': 'understand perimeter as the distance around the outside',
             'hints': [
-                'Perimeter means the total distance all the way around the outside edge of the rectangle.',
+                'Perimeter means the total distance around the outside edge of the rectangle.',
                 f'A rectangle has two sides of {length} cm and two sides of {width} cm. Think about adding all four side lengths.',
                 'You can add the two equal lengths and the two equal widths first. That is why 2 × (length + width) works for rectangles.',
             ],
@@ -199,7 +207,7 @@ def _written_multiplication_example(question: legacy.Question) -> str:
     c2, write2 = divmod(p2, 10)
     p3 = hundreds * ex_single + c2
     answer = ex_larger * ex_single
-    partition = f'{(ex_larger//100)*100} × {ex_single} + {((ex_larger%100)//10)*10} × {ex_single} + {ex_larger%10} × {ex_single} = {answer}'
+    partition = f'{(ex_larger // 100) * 100} × {ex_single} + {((ex_larger % 100) // 10) * 10} × {ex_single} + {ex_larger % 10} × {ex_single} = {answer}'
     return (
         f'Worked example: {ex_larger} × {ex_single}\n'
         f'1. Ones: {ex_single} × {ones} = {p1}. Write {write1} in the ones column' + (f' and carry {c1} ten.' if c1 else '.') + '\n'
@@ -239,7 +247,7 @@ def _decimal_fraction_example(question: legacy.Question) -> str:
     hundredths = int(round(float(candidate) * 100))
     return (
         f'Worked example: write {candidate} as a fraction out of 100.\n'
-        f'The first digit after the decimal point is tenths and the second is hundredths.\n'
+        'The first digit after the decimal point is tenths and the second is hundredths.\n'
         f'{candidate} means {hundredths} hundredths, so {candidate} = {hundredths}/100.\n'
         'Because the question asks for a fraction out of 100, leave the denominator as 100.'
     )
@@ -255,10 +263,10 @@ def _measurement_example(question: legacy.Question) -> str:
         total = 2 * (length + width)
         return (
             f'Worked example: a rectangle is {length} cm long and {width} cm wide.\n'
-            'Perimeter is the distance all the way around the outside.\n'
+            'Perimeter is the distance around the outside of the shape.\n'
             f'Add the four sides: {length} + {width} + {length} + {width}.\n'
-            f'Or group the equal sides: {length} + {length} = {2*length}, and {width} + {width} = {2*width}.\n'
-            f'Then {2*length} + {2*width} = {total} cm.\n'
+            f'Or group the equal sides: {length} + {length} = {2 * length}, and {width} + {width} = {2 * width}.\n'
+            f'Then {2 * length} + {2 * width} = {total} cm.\n'
             f'The shortcut 2 × ({length} + {width}) works because a rectangle has two equal lengths and two equal widths.'
         )
     area = length * width
@@ -290,7 +298,15 @@ def _decimal_fraction_question(rng: random.Random):
     value = hundredths / 100
     prompt = f'Write {value:.2f} as a fraction out of 100.'
     payload = {'denominator_required': 100, 'decimal_value': f'{value:.2f}', 'grade_band': 5}
-    return legacy.q('VC2M4N01', 'decimal_fraction_hundredths', prompt, 'text', payload, f'{hundredths}/100', f'{value:.2f} means {hundredths} hundredths, so write {hundredths}/100. Keep the denominator as 100 because the question asks for a fraction out of 100.')
+    return legacy.q(
+        'VC2M4N01',
+        'decimal_fraction_hundredths',
+        prompt,
+        'text',
+        payload,
+        f'{hundredths}/100',
+        f'{value:.2f} means {hundredths} hundredths, so write {hundredths}/100. Keep the denominator as 100 because the question asks for a fraction out of 100.',
+    )
 
 
 def make_question_v0323(topic: str, level: int, rng: random.Random):
@@ -309,6 +325,7 @@ def mentor_payload_v0323(question: legacy.Question, action: str) -> dict[str, An
 
 
 legacy.make_question = make_question_v0323
+v0310._operation = _operation_v0323
 v0310.tutoring_content = tutoring_content_v0323
 v0321.aligned_worked_example = aligned_worked_example_v0323
 v0310.mentor_payload_v0310 = mentor_payload_v0323
