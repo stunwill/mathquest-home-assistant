@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.32.0`
+Version `0.32.1`
 
 ## Features
 
@@ -27,9 +27,11 @@ Version `0.32.0`
 - Installation-specific JWT signing and failed-login throttling
 - Recommended Number & Algebra Focus quests with fact-recall, efficient-strategy and retention support
 - Adaptive arithmetic that favours purposeful hundreds, regrouping and decomposition when learner evidence supports it
+- Evidence-driven retrieval limits so very simple arithmetic remains purposeful without dominating normal worksheets
 - Question-specific strategy cards for addition, subtraction, multiplication, division and unknown equations
 - Three-stage guided hints with distinct nudge, strategy and worked-next-step roles
 - Question-specific Teach me mini-lessons that use the current problem structure without revealing the assessed answer
+- Worked examples aligned to the current question family, operation or representation while using different values
 - Interactive Maths Lab with linked fractions, percentages, number lines, place value, arrays, clocks, grids and measurement models
 - Shared Visual Mathematics components for equal-whole fraction comparison, number lines, arrays, place value and measurement
 - Interactive fraction bars with number-line and equivalent-fraction representations that remain mathematically synchronised
@@ -48,6 +50,7 @@ Version `0.32.0`
 - Optional retry-first tutoring, operation-aligned worked examples, prerequisite skill links, misconception evidence and parent-only learning recommendations
 - v0.29.1 corrective safeguards for grid visuals, keyboard autofocus, semantic duplicate prevention and explicit grouped-unit wording
 - v0.30.1 corrective safeguards for learner-history completion recommendations, question-family diversity, denominator-accurate fraction number lines and relevant Probability visual guidance
+- v0.32.1 corrective safeguards for post-transformation family diversity, purposeful retrieval-question budgets and broader worked-example alignment
 
 ## Security and upgrades
 

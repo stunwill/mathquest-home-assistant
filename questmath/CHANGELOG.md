@@ -1,3 +1,15 @@
+# MathQuest 0.32.1
+
+- Preserved immediate wrong-answer retry so Math Mentor, hints and worked examples remain optional support rather than required actions.
+- Tightened worked-example alignment for Probability, fraction number lines, Measurement, Space and Statistics while retaining existing operation-specific arithmetic examples.
+- Added explicit worked-example alignment metadata so regression tests can verify the topic, skill and question family used for tutoring.
+- Added evidence-driven retrieval budgeting so very simple arithmetic remains available for confidence, prerequisite checks and spaced retrieval without dominating a normal worksheet once recent learner evidence supports progression.
+- Added retrieval, instructional and challenge difficulty-band metadata to generated questions.
+- Re-applied structural question-family diversity after the v0.31 adaptive difficulty transformations so later rewrites cannot reintroduce repetitive question families.
+- Preserved denominator-accurate fraction number-line repair and existing visual mathematics annotations after quality transformations.
+- Added backend regression coverage for trivial-question classification, hundreds-level progression and question-family-specific worked examples.
+- Updated release metadata, runtime entrypoint, version validation and documentation for v0.32.1.
+
 # MathQuest 0.32.0
 
 - Redesigned the Parent Dashboard around learning decisions instead of raw administrative metrics.
