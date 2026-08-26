@@ -1,4 +1,4 @@
-# MathQuest 0.32.1
+# MathQuest 0.32.2
 
 **Sienna’s daily adventure in maths.**
 
@@ -16,6 +16,9 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Immediate retry-first feedback with optional Math Mentor support
 - Tablet-optimised worksheet and tutoring layouts for portrait and landscape use
 - Adaptive strand weighting and progressive difficulty
+- Expanded Grade 5 Algebra variety with numerical patterns, symbolic unknowns, substitution, mystery-number reasoning, contextual unknown starts and reverse multiplication
+- New Algebra structures supplement the existing equation, multiplication and division fact-family generators
+- Structural-family diversity prevents a run of effectively identical Algebra equations with only different values
 - More instructional-level Number practice with hundreds, regrouping and decomposition when learner evidence supports it
 - Purposeful retrieval limits so very simple arithmetic remains available without dominating normal sessions
 - Worked examples aligned to the current operation, question family or mathematical representation using different values
@@ -51,6 +54,10 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Persistent Home Assistant service authentication and dashboard-ready category, outcome and recommendation metrics
 - Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
 - Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
+
+## Grade 5 Algebra variety
+
+v0.32.2 expands the Algebra question bank with numerical pattern continuation, symbolic addition and subtraction unknowns, basic substitution, mystery-number reasoning, contextual unknown-start problems and reverse multiplication/doubling. These structures are deliberately mixed into the existing Algebra pool rather than replacing existing equations and multiplication/division fact-family practice. Each new structure has its own semantic family so worksheet diversity checks can reject repetitive templates even when the generated values or variable letters differ.
 
 ## Worksheet learning-quality corrective release
 

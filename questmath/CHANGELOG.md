@@ -1,3 +1,13 @@
+# MathQuest 0.32.2
+
+- Expanded Grade 5 Algebra question variety with increasing/decreasing patterns, symbolic addition and subtraction unknowns, addition and multiplication substitution, mystery-number problems, contextual unknown-start problems and reverse multiplication/doubling.
+- Mixed the new structures into the existing Algebra generator rather than replacing established equation, multiplication and division fact-family questions.
+- Added structural diversity identifiers for each new Algebra question type so different generated values do not disguise repetitive question structures within the same worksheet.
+- Added question-specific hints, strategy cards and worked examples that explain inverse operations, substitution and reverse reasoning without revealing the assessed answer.
+- Kept Grade 5 bridging addition/subtraction unknown and substitution practice on the existing scaffold mapping, while mapping Level 5 multiplication/division reasoning to verified Victorian Curriculum Version 2.0 outcomes and avoiding invented curriculum codes.
+- Added large-sample generation tests for answer correctness, whole-number constraints, difficulty boundaries, variation, structural diversity and Math Mentor compatibility.
+- Preserved v0.32.1 worksheet quality, adaptive difficulty, scoring, visual mathematics, Story Adventures, parent reporting and retry-first tutoring behaviour.
+
 # MathQuest 0.32.1
 
 - Preserved immediate wrong-answer retry so Math Mentor, hints and worked examples remain optional support rather than required actions.
