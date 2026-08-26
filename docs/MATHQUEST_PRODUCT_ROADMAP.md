@@ -6,74 +6,60 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.32.0, Parent Learning Intelligence
+## Current release scope, 0.32.1, Worksheet Learning Quality Corrective Release
 
-This release turns MathQuest's accumulated learner evidence into a parent-facing learning intelligence system that explains progress, support dependence, retention, misconceptions and next learning priorities without overstating certainty.
+This corrective release preserves v0.32.0 Parent Learning Intelligence while tightening real-session worksheet quality before moving to the next feature release.
 
-### Parent learning summary
+### Optional wrong-answer support
 
-- Surface a concise plain-language summary near the top of the Parent Dashboard.
-- Explain current strengths, developing skills, areas needing support and the most valuable next practice.
-- Avoid generic positive language when evidence is weak.
-- Use Not Enough Evidence when a reliable judgement cannot yet be made.
+- Preserve immediate retry after an incorrect answer.
+- Keep Math Mentor, hints and worked examples optional at every retry point.
+- Preserve misconception and adaptive-learning evidence from incorrect attempts.
+- Keep keyboard-first answer entry and autofocus behaviour.
 
-### Independent versus supported success
+### Worked-example alignment
 
-- Distinguish first-attempt success, eventual success and tutoring-supported success.
-- Treat hint, Math Mentor and worked-example use as support evidence without discouraging help-seeking.
-- Prevent high eventual accuracy with heavy support from being reported as equivalent to independent mastery.
+- Match worked examples to the current operation, skill, question family or mathematical representation.
+- Use different values from the assessed question and avoid revealing its answer.
+- Cover Probability, fraction number lines, Measurement, Space and Statistics in addition to the existing operation-specific arithmetic examples.
+- Expose alignment metadata so automated tests can verify the relationship between the assessed question and its teaching example.
 
-### Skill-level mastery and evidence confidence
+### Purposeful easy-question retrieval
 
-- Report skill-level states where the underlying curriculum and question metadata permit it.
-- Use Secure, Developing, Needs Support, Review Due and Not Enough Evidence states.
-- Use evidence volume to qualify conclusions as limited, moderate or strong.
-- Centralise mastery thresholds in backend learning-intelligence logic.
+- Retain simple arithmetic for warm-up, confidence, prerequisite checks, recovery and spaced retrieval.
+- Once recent learner evidence supports progression, limit trivial arithmetic to a small retrieval allowance rather than allowing it to dominate the worksheet.
+- Tag questions as retrieval, instructional or challenge work so future adaptive logic can reason about worksheet composition explicitly.
 
-### Prioritised practice plan
+### Question-family diversity after adaptive transforms
 
-- Combine mastery, misconceptions, prerequisite relationships and spaced-retrieval needs into a short ordered recommendation list.
-- Use High Priority, Practise, Review and Keep Going labels.
-- Explain why each recommendation is being made from real learner evidence.
+- Re-check structural family diversity after later difficulty and worksheet transformations.
+- Avoid parameter-only or effectively identical repeated question families when a suitable alternative exists.
+- Preserve intentional repeated practice when the available pool is constrained or learning evidence justifies retrieval.
 
-### Misconceptions, prerequisites and retention
+### Visual and Probability safeguards
 
-- Group recurring misconception patterns only after repeated evidence.
-- Explain relevant prerequisite relationships without exposing the full internal graph by default.
-- Surface retained skills, Review Due skills and skills needing another check.
-
-### Difficulty and progress reporting
-
-- Use first-attempt accuracy, eventual accuracy and support dependency together to describe whether work is at an appropriate instructional level.
-- Provide 7, 30 and 90-day comparisons while avoiding conclusions from tiny samples.
-- Keep the focus on learning value rather than maximising screen time.
-
-### Responsive parent experience
-
-- Keep Learning summary, Needs attention, Practise next, Strengths and Progress near the top on tablet and mobile.
-- Support 1920 × 1080 desktop, 1180 × 820 tablet landscape, 820 × 1180 tablet portrait, mobile and Home Assistant ingress.
-- Preserve touch-friendly controls and avoid horizontal overflow.
-
-### Data integrity and architecture
-
-- Build reporting from existing authoritative learner evidence rather than duplicating mastery calculations in React.
-- Keep Parent Test evidence completely isolated from XP, streak, mastery, misconceptions, prerequisites, recommendations, spaced retrieval and learning intelligence.
-- Preserve existing learner history and upgrade compatibility.
-
-### CI and release hardening
-
-- Keep frontend Node/Vite typings explicit and retain `moduleResolution: Bundler`.
-- Require frontend tests and the production TypeScript/Vite build as separate release gates.
-- Keep package metadata and lockfiles synchronised before release.
+- Preserve denominator-accurate fraction number lines.
+- Preserve Probability visual relevance safeguards.
+- Preserve existing visual question state isolation and visual-key behaviour.
 
 ### Release acceptance criteria
 
-- A parent can identify current strengths, areas needing support, independence, next practice, reasons for recommendations, retention and difficulty appropriateness within roughly 30 seconds.
-- Strong mastery conclusions require sufficient independent evidence.
-- Repeated misconception reporting requires more than one isolated error.
-- Parent Test evidence remains excluded from all learner intelligence.
-- Responsive parent layouts remain usable on desktop, tablet, mobile and Home Assistant ingress.
+- A wrong answer can be retried immediately without opening Math Mentor.
+- Worked examples use the same solving structure or representation but different values.
+- Very easy questions remain possible but do not dominate a normal evidence-supported worksheet.
+- Question-family diversity remains intact after final worksheet transformations.
+- Existing scoring, completion, visuals, Story Adventures, Parent Learning Intelligence and Parent Test isolation remain unchanged.
 - Complete backend, frontend, TypeScript/Vite build, version and release-validation suites pass before merge.
+
+## Recently completed release, 0.32.0, Parent Learning Intelligence
+
+- Added plain-language parent learning summaries generated from learner evidence.
+- Distinguished first-attempt, eventual, independent and supported success.
+- Added Secure, Developing, Needs Support, Review Due and Not Enough Evidence skill states.
+- Added evidence confidence, prioritised practice recommendations, misconception grouping, prerequisite visibility, retention and spaced-review status.
+- Added difficulty calibration using independent accuracy, eventual accuracy and support dependency together.
+- Added 7, 30 and 90-day learning comparisons.
+- Preserved Parent Test isolation and existing learner-facing adaptive behaviour.
 
 ## Recently completed release, 0.31.0, Tablet Learning and Math Mentor Refinement
 
@@ -133,7 +119,7 @@ This release turns MathQuest's accumulated learner evidence into a parent-facing
 
 ## Later opportunities
 
-- Deeper adaptive curriculum sequencing.
+- Deeper adaptive curriculum sequencing using explicit worksheet difficulty-band composition.
 - Richer visual mathematics models and manipulatives.
 - Longer-term learning trend reporting.
 - Teacher/tutor reporting views.
