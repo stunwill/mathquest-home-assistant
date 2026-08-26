@@ -21,17 +21,17 @@ def test_release_notes_extract_current_version_section_only():
     versions = load_script('validate_versions').version_locations()
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
-    assert 'immediate wrong-answer retry' in notes.lower()
-    assert 'worked-example alignment' in notes.lower()
-    assert 'retrieval' in notes.lower()
-    assert 'question-family diversity' in notes.lower()
-    assert '# MathQuest 0.32.0' not in notes
+    assert 'algebra question variety' in notes.lower()
+    assert 'structural diversity' in notes.lower()
+    assert 'substitution' in notes.lower()
+    assert 'victorian curriculum' in notes.lower()
+    assert '# MathQuest 0.32.1' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.32.1'}
+    assert set(versions.values()) == {'0.32.2'}
 
 
 def test_release_workflow_validates_versions_before_publishing():
