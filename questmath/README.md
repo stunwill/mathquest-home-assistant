@@ -1,4 +1,4 @@
-# MathQuest 0.32.2
+# MathQuest 0.32.3
 
 **Sienna’s daily adventure in maths.**
 
@@ -19,6 +19,8 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Expanded Grade 5 Algebra variety with numerical patterns, symbolic unknowns, substitution, mystery-number reasoning, contextual unknown starts and reverse multiplication
 - New Algebra structures supplement the existing equation, multiplication and division fact-family generators
 - Structural-family diversity prevents a run of effectively identical Algebra equations with only different values
+- Method-first Grade 5 Math Mentor guidance for written multiplication, partition division, decimal fractions out of 100, perimeter and area
+- Different-number worked examples that show the complete method and reasoning without solving the active question
 - More instructional-level Number practice with hundreds, regrouping and decomposition when learner evidence supports it
 - Purposeful retrieval limits so very simple arithmetic remains available without dominating normal sessions
 - Worked examples aligned to the current operation, question family or mathematical representation using different values
@@ -54,6 +56,10 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Persistent Home Assistant service authentication and dashboard-ready category, outcome and recommendation metrics
 - Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
 - Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
+
+## Grade 5 method-first Math Mentor
+
+v0.32.3 improves Hints and Worked Examples so they teach a Grade 5 method rather than merely naming an operation or formula. Written multiplication works from the ones column through tens and hundreds and connects carrying to place-value partitioning. Division uses convenient partitions and an inverse multiplication check. Decimal-to-fraction questions explain tenths and hundredths and retain denominator 100 when the question asks for “out of 100”. Perimeter is introduced as distance around the outside before the rectangle shortcut, while area is explained as counting rows and columns of square units and explicitly uses cm² rather than cm.
 
 ## Grade 5 Algebra variety
 
