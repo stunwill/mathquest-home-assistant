@@ -41,4 +41,30 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Distinct nudge, strategy and worked-next-step hint stages
 - Question-specific Teach me mini-lessons using the current problem structure without revealing the final answer
 - A responsive Interactive Maths Lab available from learner questions
-- Shared Visual Mathematics components and parent reporting from prior releases remain preserved
+- Shared Visual Mathematics components used by worksheet visuals and Maths Lab manipulatives
+- Equal-sized whole fraction comparisons with clear denominator partitions and numerator shading
+- Interactive fraction bars, equivalent-fraction models and fraction number-line representations
+- Reusable number-line, array, place-value and measurement models
+- Question-specific visual recommendations that connect the diagram to the calculation
+- Multiple solution strategies presented one at a time through Show another way
+- Learning-evidence-driven visual suggestions that remain optional and never auto-open the Maths Lab
+- Assessment-integrity safeguards that suppress new teaching strategies and recommendations in parent tests
+- Coherent Story Adventures with adaptive learning goals, shared mission data, chapter progress and final outcomes
+- Outcome mastery, deterministic spaced reviews, prerequisite routing and personalised next-session recommendations
+- Persistent Home Assistant service authentication and dashboard-ready category, outcome and recommendation metrics
+- Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
+- Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
+
+## Grade 5 Algebra variety
+
+v0.32.2 expands the Algebra question bank with numerical pattern continuation, symbolic addition and subtraction unknowns, basic substitution, mystery-number reasoning, contextual unknown-start problems and reverse multiplication/doubling. These structures are deliberately mixed into the existing Algebra pool rather than replacing existing equations and multiplication/division fact-family practice. Each new structure has its own semantic family so worksheet diversity checks can reject repetitive templates even when the generated values or variable letters differ.
+
+## Worksheet learning-quality corrective release
+
+v0.32.1 preserves the v0.32.0 Parent Learning Intelligence release while tightening the learner worksheet experience. Immediate retry after a wrong answer remains the default and Math Mentor stays optional. The generator now re-checks question-family diversity after later adaptive transformations, limits very simple arithmetic to purposeful retrieval positions when recent learner evidence supports progression, and records whether a question is retrieval, instructional or challenge work. Worked examples are more tightly aligned to the current question family or representation for Probability, fraction number lines, Measurement, Space and Statistics, while existing operation-specific arithmetic examples remain in place.
+
+## Parent Learning Intelligence
+
+The parent dashboard is designed to answer quickly what is improving, what needs support, whether success is independent, what to practise next, why MathQuest recommends it, whether previously learned skills are being retained, and whether current difficulty is appropriate.
+
+MathQuest avoids strong conclusions when there is insufficient evidence. Parent tests remain excluded from learner mastery, misconceptions, adaptive difficulty, spaced retrieval and recommendations.
