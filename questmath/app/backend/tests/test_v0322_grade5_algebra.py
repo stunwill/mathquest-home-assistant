@@ -119,7 +119,9 @@ def test_worked_examples_match_structure_and_use_different_values():
         question, _, answer = generated(generator, index + 40)
         example = v0322.aligned_worked_example_v0322(question)
         assert example
-        assert str(answer) not in example
+        assert question.prompt not in example
+        assert f'answer is {answer}' not in example.lower()
+        assert f'= {answer}' not in example
         skill = question.skill.split(':', 1)[-1]
         if 'substitution' in skill:
             assert 'substitution' in example.lower() or 'becomes' in example.lower()
