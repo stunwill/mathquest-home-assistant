@@ -24,7 +24,7 @@ def version_locations() -> dict[str, str]:
         'questmath/config.yaml': str(config['version']),
         'frontend/package.json': str(package['version']),
         'frontend/src/version.ts': _match(ROOT / 'questmath/app/frontend/src/version.ts', r"APP_VERSION\s*=\s*['\"]([^'\"]+)"),
-        'backend/app/v0322.py': _match(ROOT / 'questmath/app/backend/app/v0322.py', r"app\.version\s*=\s*['\"]([^'\"]+)"),
+        'backend/app/v0323.py': _match(ROOT / 'questmath/app/backend/app/v0323.py', r"app\.version\s*=\s*['\"]([^'\"]+)"),
         'rootfs startup message': _match(ROOT / 'questmath/rootfs/etc/services.d/questmath/run', r'Starting MathQuest v([^ ]+)'),
         'README.md': _match(ROOT / 'README.md', r'Current release\s+\n\s*Version `([^`]+)`'),
         'questmath/README.md': _match(ROOT / 'questmath/README.md', r'^# MathQuest ([^\s]+)'),
