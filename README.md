@@ -65,4 +65,4 @@ Upgrading to `0.16.2` rotates installations that previously used the legacy secr
 
 ## Home Assistant Dashboard Integration
 
-Use the dedicated service-token endpoints from the parent dashboard for long-lived read-only dashboard statistics API.
+Use the dedicated service-token endpoints from the parent dashboard for long-lived read-only dashboard statistics.
