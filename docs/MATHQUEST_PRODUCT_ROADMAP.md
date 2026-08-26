@@ -73,6 +73,38 @@ This focused update extends the Algebra question bank without replacing existing
 - Removed duplicated tutoring presentation and improved mathematical formatting.
 - Preserved retry-first behaviour, keyboard autofocus, Visual Mathematics and v0.30.1 corrective safeguards.
 
+## Recently completed release, 0.30.1, Worksheet Quality corrective release
+
+- Changed completion **Strongest** and **Practise next** recommendations to use broader persisted learner evidence.
+- Added neutral completion wording when cross-category evidence is insufficient.
+- Added question-family diversity so parameter-only variants are treated as repeats within short worksheets.
+- Corrected denominator-based fraction number-line subdivisions and misleading rounded tick labels.
+- Prevented unrelated number-line teaching recommendations on Probability questions.
+
+## Recently completed release, 0.30.0, Visual Mathematics
+
+- Added reusable Visual Mathematics components for equal-whole fraction comparison, number lines, arrays, place value and measurement.
+- Added Interactive Maths Lab fraction manipulatives, equivalent-fraction and shared number-line representations.
+- Added optional alternate solution strategies without changing learner answer state.
+- Connected Math Mentor and misconception evidence to relevant optional visual support.
+- Preserved parent-test assessment integrity and v0.29.1 corrective safeguards.
+
+## Recently completed release, 0.29.1, Learning Intelligence corrective release
+
+- Restored labelled grid-reference visuals after final question transformations.
+- Preserved typed-answer autofocus for each new question.
+- Added final semantic duplicate prevention after worksheet transformations.
+- Clarified grouped-unit wording, including meal portions versus packs.
+- Preserved the v0.29.0 learning-intelligence model and retry-first behaviour.
+
+## Recently completed release, 0.29.0, Learning Intelligence
+
+- Made Math Mentor optional after an incorrect answer.
+- Added aligned worked examples with different values.
+- Reduced very-easy arithmetic and increased moderate/challenging practice.
+- Added persisted attempt, support and misconception evidence.
+- Added prerequisite skill links and early parent recommendations.
+
 ## Upcoming release sequence
 
 ### 0.33.0, Home Assistant Parent Integration
