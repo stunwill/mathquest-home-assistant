@@ -1,4 +1,4 @@
-# MathQuest 0.32.1
+# MathQuest 0.32.2
 
 **Sienna’s daily adventure in maths.**
 
@@ -16,6 +16,9 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Immediate retry-first feedback with optional Math Mentor support
 - Tablet-optimised worksheet and tutoring layouts for portrait and landscape use
 - Adaptive strand weighting and progressive difficulty
+- Expanded Grade 5 Algebra variety with numerical patterns, symbolic unknowns, substitution, mystery-number reasoning, contextual unknown starts and reverse multiplication
+- New Algebra structures supplement the existing equation, multiplication and division fact-family generators
+- Structural-family diversity prevents a run of effectively identical Algebra equations with only different values
 - More instructional-level Number practice with hundreds, regrouping and decomposition when learner evidence supports it
 - Purposeful retrieval limits so very simple arithmetic remains available without dominating normal sessions
 - Worked examples aligned to the current operation, question family or mathematical representation using different values
@@ -38,26 +41,4 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Distinct nudge, strategy and worked-next-step hint stages
 - Question-specific Teach me mini-lessons using the current problem structure without revealing the final answer
 - A responsive Interactive Maths Lab available from learner questions
-- Shared Visual Mathematics components used by worksheet visuals and Maths Lab manipulatives
-- Equal-sized whole fraction comparisons with clear denominator partitions and numerator shading
-- Interactive fraction bars, equivalent-fraction models and fraction number-line representations
-- Reusable number-line, array, place-value and measurement models
-- Question-specific visual recommendations that connect the diagram to the calculation
-- Multiple solution strategies presented one at a time through Show another way
-- Learning-evidence-driven visual suggestions that remain optional and never auto-open the Maths Lab
-- Assessment-integrity safeguards that suppress new teaching strategies and recommendations in parent tests
-- Coherent Story Adventures with adaptive learning goals, shared mission data, chapter progress and final outcomes
-- Outcome mastery, deterministic spaced reviews, prerequisite routing and personalised next-session recommendations
-- Persistent Home Assistant service authentication and dashboard-ready category, outcome and recommendation metrics
-- Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
-- Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
-
-## Worksheet learning-quality corrective release
-
-v0.32.1 preserves the v0.32.0 Parent Learning Intelligence release while tightening the learner worksheet experience. Immediate retry after a wrong answer remains the default and Math Mentor stays optional. The generator now re-checks question-family diversity after later adaptive transformations, limits very simple arithmetic to purposeful retrieval positions when recent learner evidence supports progression, and records whether a question is retrieval, instructional or challenge work. Worked examples are more tightly aligned to the current question family or representation for Probability, fraction number lines, Measurement, Space and Statistics, while existing operation-specific arithmetic examples remain in place.
-
-## Parent Learning Intelligence
-
-The parent dashboard is designed to answer quickly what is improving, what needs support, whether success is independent, what to practise next, why MathQuest recommends it, whether previously learned skills are being retained, and whether current difficulty is appropriate.
-
-MathQuest avoids strong conclusions when there is insufficient evidence. Parent tests remain excluded from learner mastery, misconceptions, adaptive difficulty, spaced retrieval and recommendations.
+- Shared Visual Mathematics components and parent reporting from prior releases remain preserved
