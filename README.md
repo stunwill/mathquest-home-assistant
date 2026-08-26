@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.32.1`
+Version `0.32.2`
 
 ## Features
 
@@ -26,6 +26,9 @@ Version `0.32.1`
 - Dashboard-friendly Home Assistant statistics API
 - Installation-specific JWT signing and failed-login throttling
 - Recommended Number & Algebra Focus quests with fact-recall, efficient-strategy and retention support
+- Expanded Grade 5 Algebra variety including number patterns, unknowns, substitution, mystery numbers, contextual unknown starts and reverse multiplication
+- New Algebra structures mixed into the existing question pool rather than replacing established equations and fact-family practice
+- Structural Algebra-family diversity so different numbers alone do not make repetitive questions count as varied
 - Adaptive arithmetic that favours purposeful hundreds, regrouping and decomposition when learner evidence supports it
 - Evidence-driven retrieval limits so very simple arithmetic remains purposeful without dominating normal worksheets
 - Question-specific strategy cards for addition, subtraction, multiplication, division and unknown equations
@@ -62,4 +65,4 @@ Upgrading to `0.16.2` rotates installations that previously used the legacy secr
 
 ## Home Assistant Dashboard Integration
 
-Use the dedicated service-token endpoints from the parent dashboard for long-lived read-only dashboard statistics.
+Use the dedicated service-token endpoints from the parent dashboard for long-lived read-only dashboard statistics API.
