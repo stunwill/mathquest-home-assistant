@@ -1,4 +1,4 @@
-# MathQuest 0.32.0
+# MathQuest 0.32.1
 
 **Sienna’s daily adventure in maths.**
 
@@ -17,6 +17,8 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Tablet-optimised worksheet and tutoring layouts for portrait and landscape use
 - Adaptive strand weighting and progressive difficulty
 - More instructional-level Number practice with hundreds, regrouping and decomposition when learner evidence supports it
+- Purposeful retrieval limits so very simple arithmetic remains available without dominating normal sessions
+- Worked examples aligned to the current operation, question family or mathematical representation using different values
 - Parent Learning Intelligence with plain-language learning summaries
 - Independent versus supported success and evidence confidence at skill level
 - Secure, Developing, Needs Support, Review Due and Not Enough Evidence mastery states
@@ -50,8 +52,12 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
 - Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
 
+## Worksheet learning-quality corrective release
+
+v0.32.1 preserves the v0.32.0 Parent Learning Intelligence release while tightening the learner worksheet experience. Immediate retry after a wrong answer remains the default and Math Mentor stays optional. The generator now re-checks question-family diversity after later adaptive transformations, limits very simple arithmetic to purposeful retrieval positions when recent learner evidence supports progression, and records whether a question is retrieval, instructional or challenge work. Worked examples are more tightly aligned to the current question family or representation for Probability, fraction number lines, Measurement, Space and Statistics, while existing operation-specific arithmetic examples remain in place.
+
 ## Parent Learning Intelligence
 
-The v0.32.0 parent dashboard is designed to answer quickly what is improving, what needs support, whether success is independent, what to practise next, why MathQuest recommends it, whether previously learned skills are being retained, and whether current difficulty is appropriate.
+The parent dashboard is designed to answer quickly what is improving, what needs support, whether success is independent, what to practise next, why MathQuest recommends it, whether previously learned skills are being retained, and whether current difficulty is appropriate.
 
 MathQuest avoids strong conclusions when there is insufficient evidence. Parent tests remain excluded from learner mastery, misconceptions, adaptive difficulty, spaced retrieval and recommendations.
