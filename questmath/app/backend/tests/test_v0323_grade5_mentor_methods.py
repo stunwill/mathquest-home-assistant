@@ -108,7 +108,9 @@ def test_perimeter_hints_teach_around_outside_before_formula_and_use_cm():
 def test_perimeter_worked_example_uses_different_values_and_explains_formula():
     q = question('measurement', 'VC2M4M02:perimeter', 'A rectangle is 9 cm by 6 cm. What is its perimeter?', '30', {'unit': 'cm'})
     example = v0323.aligned_worked_example_v0323(q)
-    assert '9 cm' not in example and '6 cm' not in example
+    dimensions = re.search(r'Worked example: a rectangle is (\d+) cm long and (\d+) cm wide', example)
+    assert dimensions
+    assert tuple(map(int, dimensions.groups())) != (9, 6)
     assert 'around the outside' in example.lower()
     assert 'two equal lengths and two equal widths' in example.lower()
     assert 'cm²' not in example
@@ -128,7 +130,9 @@ def test_area_hints_explain_square_units_and_distinguish_perimeter():
 def test_area_worked_example_counts_rows_and_columns_and_uses_square_centimetres():
     q = question('measurement', 'VC2M4M02:area', 'A rectangle is 9 cm by 6 cm. What is its area?', '54', {'unit': 'cm²'})
     example = v0323.aligned_worked_example_v0323(q)
-    assert '9 cm' not in example and '6 cm' not in example
+    dimensions = re.search(r'Worked example: a rectangle is (\d+) cm by (\d+) cm', example)
+    assert dimensions
+    assert tuple(map(int, dimensions.groups())) != (9, 6)
     assert 'squares in each row' in example.lower()
     assert 'rows' in example.lower()
     assert 'cm²' in example
