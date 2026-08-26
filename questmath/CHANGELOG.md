@@ -1,3 +1,16 @@
+# MathQuest 0.32.3
+
+- Expanded Grade 5 Math Mentor hints and worked examples so they teach the method, not just the operation or formula.
+- Added written multiplication guidance that works from ones to tens and hundreds, explains carrying, and connects the written algorithm back to place-value partitioning.
+- Added division guidance that partitions the dividend into convenient multiples, combines partial quotients and checks the result with multiplication as the inverse operation.
+- Added Grade 5 decimal-to-fraction-out-of-100 questions and tutoring that explains tenths and hundredths and preserves denominator 100 when the wording requires it.
+- Improved perimeter tutoring to establish perimeter as distance around the outside before introducing the rectangle shortcut formula and to retain linear units such as cm.
+- Improved area tutoring to explain rows and columns of square units, distinguish area from perimeter and reinforce square units such as cm².
+- Added dynamically generated worked examples that use different values from the active question while demonstrating the same method and complete example answer.
+- Preserved progressive Hint 1 concept, Hint 2 first-step and Hint 3 method behaviour without revealing the active answer where practical.
+- Added regression tests covering method-first multiplication, partition division, inverse checks, hundredths fractions, perimeter/area concepts, units, different-number examples and Grade 5 difficulty boundaries.
+- Preserved v0.32.2 Algebra variety, adaptive difficulty, retry-first Math Mentor behaviour, worksheet quality, visual mathematics, Story Adventures and parent reporting.
+
 # MathQuest 0.32.2
 
 - Expanded Grade 5 Algebra question variety with increasing/decreasing patterns, symbolic addition and subtraction unknowns, addition and multiplication substitution, mystery-number problems, contextual unknown-start problems and reverse multiplication/doubling.

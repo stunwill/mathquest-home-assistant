@@ -6,45 +6,60 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.32.2, Grade 5 Algebra Variety
+## Current release scope, 0.32.3, Grade 5 Method-First Math Mentor
 
-This focused update extends the Algebra question bank without replacing existing Algebra practice or changing the planned v0.33.0 feature release.
+This focused learning-quality update improves Grade 5 Hints and Worked Examples without changing the planned v0.33.0 feature release.
 
-### Grade 5 Algebra variety
+### Method-first tutoring
 
-- Add numerical pattern continuation, including increasing, decreasing and simple multiplicative patterns.
-- Add symbolic addition and subtraction unknowns with varied letters.
-- Add basic substitution into addition and multiplication expressions.
-- Add mystery-number and contextual unknown-start problems that bridge arithmetic and symbolic reasoning.
-- Add reverse multiplication and doubling questions using division as the inverse operation.
-- Keep generated values within age-appropriate whole-number ranges.
+- Teach the mathematical idea before relying on a shortcut, formula or operation label.
+- Preserve progressive Hint 1 concept, Hint 2 first-step and Hint 3 method support.
+- Avoid revealing the active answer where practical.
+- Use a complete worked example with different values so the learner must still apply the method independently.
 
-### Healthy question mixture
+### Written multiplication
 
-- Keep the existing Algebra generators active and authoritative.
-- Introduce the new structures as a minority share of eligible Algebra generation rather than the entire question pool.
-- Give each structure a semantic family so worksheet-level diversity can prevent runs of effectively identical equations with different values.
-- Preserve intentional retrieval and prerequisite practice where adaptive evidence calls for it.
+- Work from the ones column through tens and hundreds.
+- Explain carrying in place-value language.
+- Connect the compact written algorithm to partial products and partitioning so the learner can see why it works.
 
-### Tutoring and evidence
+### Division by partitioning
 
-- Give every new structure question-specific strategy guidance, progressive hints and a different-number worked example.
-- Reinforce inverse-operation reasoning and the meaning of a supplied variable value rather than revealing answers.
-- Preserve scoring, retry-first behaviour, misconception evidence, adaptive evidence and worksheet completion behaviour.
+- Break dividends into convenient multiples of the divisor when appropriate.
+- Divide each part and combine the partial quotients.
+- Check the result using multiplication as the inverse operation.
 
-### Victorian Curriculum handling
+### Decimal fractions
 
-- Use verified Victorian Curriculum Version 2.0 Level 5 Algebra outcomes for multiplication/division inverse reasoning and unknown multiplication/division equations.
-- Treat addition/subtraction unknowns and simple substitution as scaffold/retrieval practice where they do not exactly match the Level 5 Algebra descriptors, rather than inventing or mislabelling curriculum codes.
-- Preserve the existing broader Level 5 pathway and diagnostic adaptation architecture.
+- Teach tenths and hundredths through decimal place value.
+- Add age-appropriate questions asking for a decimal to be written as a fraction out of 100.
+- Preserve denominator 100 when the question specifically requires “out of 100” rather than automatically simplifying.
+
+### Perimeter and area
+
+- Establish perimeter as the distance around the outside before introducing 2 × (length + width).
+- Explain why the rectangle perimeter shortcut works from two equal lengths and two equal widths.
+- Establish area as counting square units inside the rectangle.
+- Connect length × width to rows and columns of square units rather than teaching it only as a formula.
+- Reinforce cm for perimeter and cm² for area.
 
 ### Release acceptance criteria
 
-- New Algebra structures appear naturally alongside existing Algebra questions.
-- A normal Algebra worksheet avoids repeated structural forms where alternatives exist.
-- Generated answers remain mathematically correct and whole-number appropriate.
-- Hints and worked examples use the same structure with different values and do not reveal the assessed answer.
+- Multiplication hints teach written place-value calculation without revealing the current product.
+- Division hints support useful partitioning and an inverse multiplication check.
+- Decimal-fraction tutoring explains hundredths and preserves denominator 100 when requested.
+- Perimeter tutoring explains around-the-outside meaning before the shortcut formula.
+- Area tutoring explains square units and distinguishes area from perimeter.
+- Worked examples use different values from the active question wherever possible and remain mathematically valid.
+- Existing adaptive difficulty, Algebra variety, retry-first Math Mentor, Visual Mathematics, worksheet scoring, Story Adventures and parent reporting remain unchanged.
 - Complete backend, frontend, TypeScript/Vite build, version and release-validation suites pass before merge.
+
+## Recently completed release, 0.32.2, Grade 5 Algebra Variety
+
+- Added numerical pattern continuation, symbolic unknowns, substitution, mystery-number reasoning, contextual unknown-start problems and reverse multiplication/doubling.
+- Mixed new structures into the existing Algebra pool instead of replacing established practice.
+- Added semantic structural-family diversity so numeric variants do not disguise repetitive templates.
+- Preserved adaptive difficulty, learning evidence, Math Mentor and worksheet-quality safeguards.
 
 ## Recently completed release, 0.32.1, Worksheet Learning Quality Corrective Release
 

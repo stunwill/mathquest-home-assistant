@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.32.2`
+Version `0.32.3`
 
 ## Features
 
@@ -29,6 +29,8 @@ Version `0.32.2`
 - Expanded Grade 5 Algebra variety including number patterns, unknowns, substitution, mystery numbers, contextual unknown starts and reverse multiplication
 - New Algebra structures mixed into the existing question pool rather than replacing established equations and fact-family practice
 - Structural Algebra-family diversity so different numbers alone do not make repetitive questions count as varied
+- Method-first Grade 5 Math Mentor guidance for written multiplication, partition division, decimal hundredths, perimeter and area
+- Dynamic worked examples that demonstrate the full method with different values from the active question
 - Adaptive arithmetic that favours purposeful hundreds, regrouping and decomposition when learner evidence supports it
 - Evidence-driven retrieval limits so very simple arithmetic remains purposeful without dominating normal worksheets
 - Question-specific strategy cards for addition, subtraction, multiplication, division and unknown equations
