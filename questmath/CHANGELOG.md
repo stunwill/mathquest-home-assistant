@@ -1,3 +1,16 @@
+# MathQuest 0.33.0
+
+- Added Adaptive Daily Learning so practice worksheets use accumulated learner evidence to label and balance current learning, consolidation, spaced review and limited challenge work.
+- Added controlled progression states so difficulty does not increase from one or two correct answers and does not collapse after a single mistake.
+- Made progression support-aware: high hint or Math Mentor usage keeps a skill in consolidation even when eventual accuracy is high.
+- Integrated existing spaced-retrieval evidence so previously strong outcomes can return as Quick review questions.
+- Used repeated misconception evidence to favour consolidation before harder progression.
+- Added learner-facing learning-purpose metadata and parent-facing adaptive reasons without exposing internal mastery scores.
+- Preserved post-transform question-family diversity and existing fraction-number-line visual repairs.
+- Kept Parent Tests isolated from adaptive session recomposition.
+- Centralised progression thresholds in the v0.33.0 adaptive engine and added regression tests for insufficient evidence, strong independent progression, support-heavy success, isolated mistakes, misconception-triggered consolidation and Parent Test isolation.
+- Preserved v0.32.3 method-first Math Mentor, Grade 5 Algebra variety, Visual Mathematics, retry-first tutoring and Parent Learning Intelligence.
+
 # MathQuest 0.32.3
 
 - Expanded Grade 5 Math Mentor hints and worked examples so they teach the method, not just the operation or formula.
