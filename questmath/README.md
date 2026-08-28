@@ -1,4 +1,4 @@
-# MathQuest 0.32.3
+# MathQuest 0.33.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -16,6 +16,9 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Immediate retry-first feedback with optional Math Mentor support
 - Tablet-optimised worksheet and tutoring layouts for portrait and landscape use
 - Adaptive strand weighting and progressive difficulty
+- Adaptive daily session composition using current learning, consolidation, spaced review and limited challenge purposes
+- Controlled skill progression that requires enough independent evidence before challenge increases
+- Support-aware consolidation so eventual success after substantial tutoring does not trigger premature progression
 - Expanded Grade 5 Algebra variety with numerical patterns, symbolic unknowns, substitution, mystery-number reasoning, contextual unknown starts and reverse multiplication
 - New Algebra structures supplement the existing equation, multiplication and division fact-family generators
 - Structural-family diversity prevents a run of effectively identical Algebra equations with only different values
@@ -57,17 +60,13 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
 - Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
 
+## Adaptive daily learning
+
+v0.33.0 uses the learning evidence already collected by MathQuest to explain and shape the purpose of daily worksheet questions. Questions can be marked as current learning, consolidation, quick review or a limited challenge. Progression is conservative: a learner needs enough repeated independent success before MathQuest increases challenge, while high support dependency or repeated misconception evidence keeps a skill in consolidation. Parent Tests remain excluded from this adaptive composition layer.
+
 ## Grade 5 method-first Math Mentor
 
 v0.32.3 improves Hints and Worked Examples so they teach a Grade 5 method rather than merely naming an operation or formula. Written multiplication works from the ones column through tens and hundreds and connects carrying to place-value partitioning. Division uses convenient partitions and an inverse multiplication check. Decimal-to-fraction questions explain tenths and hundredths and retain denominator 100 when the question asks for “out of 100”. Perimeter is introduced as distance around the outside before the rectangle shortcut, while area is explained as counting rows and columns of square units and explicitly uses cm² rather than cm.
-
-## Grade 5 Algebra variety
-
-v0.32.2 expands the Algebra question bank with numerical pattern continuation, symbolic addition and subtraction unknowns, basic substitution, mystery-number reasoning, contextual unknown-start problems and reverse multiplication/doubling. These structures are deliberately mixed into the existing Algebra pool rather than replacing existing equations and multiplication/division fact-family practice. Each new structure has its own semantic family so worksheet diversity checks can reject repetitive templates even when the generated values or variable letters differ.
-
-## Worksheet learning-quality corrective release
-
-v0.32.1 preserves the v0.32.0 Parent Learning Intelligence release while tightening the learner worksheet experience. Immediate retry after a wrong answer remains the default and Math Mentor stays optional. The generator now re-checks question-family diversity after later adaptive transformations, limits very simple arithmetic to purposeful retrieval positions when recent learner evidence supports progression, and records whether a question is retrieval, instructional or challenge work. Worked examples are more tightly aligned to the current question family or representation for Probability, fraction number lines, Measurement, Space and Statistics, while existing operation-specific arithmetic examples remain in place.
 
 ## Parent Learning Intelligence
 
