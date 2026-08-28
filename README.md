@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.32.3`
+Version `0.33.0`
 
 ## Features
 
@@ -18,6 +18,8 @@ Version `0.32.3`
 - Victorian Curriculum F–10 Version 2.0 Level 5 pathway, adapting across Levels 2–6 from diagnostic evidence
 - Curriculum outcome tracking and parent review tools
 - Parent Learning Intelligence with plain-language summaries, independent versus supported mastery, evidence confidence, prioritised practice recommendations, misconception grouping, retention status and difficulty calibration
+- Adaptive daily session composition that labels questions as current learning, consolidation, review or challenge from accumulated learner evidence
+- Controlled progression that requires repeated independent success before increasing challenge and slows progression when tutoring support remains high
 - Visual questions, visual hints, story adventures and teaching tools
 - Weekly learning activity and complete worksheet history
 - XP, levels, streaks and badges
