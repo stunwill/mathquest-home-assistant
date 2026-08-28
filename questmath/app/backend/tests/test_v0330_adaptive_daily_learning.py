@@ -24,9 +24,17 @@ def make_session():
 
 
 def add_question(session: Session, student: legacy.User, *, skill='VC2M4N06:written_addition', correct=True, supported=False, days_ago=0):
-    ws = legacy.Worksheet(student_id=student.id, date=datetime.utcnow().date(), selected_topic='number', status='completed', completed_at=datetime.utcnow() - timedelta(days=days_ago), session_kind='practice')
+    when = datetime.utcnow() - timedelta(days=days_ago)
+    ws = legacy.Worksheet(
+        student_id=student.id,
+        worksheet_date=when.date(),
+        selected_topic='number',
+        status='completed',
+        completed_at=when,
+        session_kind='practice',
+    )
     session.add(ws); session.flush()
-    q = legacy.Question(worksheet_id=ws.id, topic='number', skill=skill, level=4, prompt='Calculate 247 + 68.', answer_type='number', payload='{}', correct_answer='315', working='work', position=0, answered_at=datetime.utcnow() - timedelta(days=days_ago), hint_count=1 if supported else 0, mentor_started=supported)
+    q = legacy.Question(worksheet_id=ws.id, topic='number', skill=skill, level=4, prompt='Calculate 247 + 68.', answer_type='number', payload='{}', correct_answer='315', working='work', position=0, answered_at=when, hint_count=1 if supported else 0, mentor_started=supported)
     session.add(q); session.flush()
     session.add(legacy.Attempt(question_id=q.id, student_id=student.id, answer='315' if correct else '300', correct=correct, attempt_number=1, seconds=15))
     session.commit()
@@ -69,7 +77,6 @@ def test_repeated_misconception_forces_consolidation():
     for _ in range(2):
         session.add(v0290.MisconceptionEvidence(student_id=student.id, question_id=q.id, skill=q.skill, misconception_type='regrouping_error', message='Regrouping issue', resolved=False))
     session.commit()
-    worksheet = session.get(legacy.Worksheet, q.worksheet_id)
     purpose, reason = v0330._purpose_for_question(session, student.id, q, {})
     assert purpose == 'consolidation'
     assert 'misconception' in reason.lower()
@@ -77,7 +84,7 @@ def test_repeated_misconception_forces_consolidation():
 
 def test_parent_test_is_not_recomposed():
     session, student = make_session()
-    ws = legacy.Worksheet(student_id=student.id, date=datetime.utcnow().date(), selected_topic='number', status='in_progress', session_kind='parent_test')
+    ws = legacy.Worksheet(student_id=student.id, worksheet_date=datetime.utcnow().date(), selected_topic='number', status='in_progress', session_kind='parent_test')
     session.add(ws); session.flush()
     q = legacy.Question(worksheet_id=ws.id, topic='number', skill='VC2M4N06:written_addition', level=4, prompt='Calculate 247 + 68.', answer_type='number', payload=json.dumps({'difficulty_band':'challenge'}), correct_answer='315', working='work', position=0)
     session.add(q); session.commit(); session.refresh(ws)
