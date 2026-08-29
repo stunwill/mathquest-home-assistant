@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0110, v0120, v0290, v0320, v0330, v0340
+from . import v0110, v0120, v0240, v0290, v0320, v0330, v0340
 
 app = v0340.app
 app.version = '0.35.0'
@@ -133,6 +133,7 @@ def _focus_summary(session: Session, sid: int, intelligence: dict[str, Any]) -> 
     metadata = _recent_learning_metadata(session, sid, str(skill['skill']))
     outcome = str(skill['skill']).split(':', 1)[0] if ':' in str(skill['skill']) else None
     topic = legacy.LEVEL4_OUTCOMES.get(outcome, (None, None))[0] if outcome else None
+    reason = rec.get('reason') if rec else None
     return {
         'state': skill.get('status', 'developing').replace('_', ' ').title(),
         'skill': skill.get('skill'),
@@ -144,7 +145,7 @@ def _focus_summary(session: Session, sid: int, intelligence: dict[str, Any]) -> 
         'prerequisites': skill.get('prerequisites') or [],
         'prerequisite_for': metadata.get('prerequisite_for'),
         'recommendation': rec.get('title') if rec else f"Keep going with {skill.get('label', 'current learning')}",
-        'reason': rec.get('reason') or metadata.get('adaptive_reason') if rec else metadata.get('adaptive_reason') or 'MathQuest is using accumulated learner evidence to choose the next useful focus.',
+        'reason': reason or metadata.get('adaptive_reason') or 'MathQuest is using accumulated learner evidence to choose the next useful focus.',
         'evidence_confidence': skill.get('confidence', 'limited'),
     }
 
@@ -298,7 +299,11 @@ def _parent_intelligence(session: Session, sid: int) -> dict[str, Any]:
 
 def _ha_provider(session: Session, sid: int) -> dict[str, Any]:
     state = parent_ha_learning_state(session, sid)
-    return {'parent_learning': state, 'learning': {'recommendation': state['current_focus'], 'weekly': state['weekly']}}
+    legacy_insight = v0240._ha_learning_insight(session, sid)
+    return {
+        **legacy_insight,
+        'parent_learning': state,
+    }
 
 
 v0110._dashboard_insight_provider = _ha_provider
