@@ -1,0 +1,38 @@
+name: Sync v0.34.0 frontend lockfile
+
+on:
+  push:
+    branches:
+      - release/v0.34.0-story-adventure-expansion
+    paths:
+      - questmath/app/frontend/package.json
+      - .github/workflows/sync-v0340-lockfile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  sync-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v0.34.0-story-adventure-expansion
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Regenerate package-lock.json
+        working-directory: questmath/app/frontend
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Commit synchronized lockfile
+        shell: bash
+        run: |
+          if git diff --quiet -- questmath/app/frontend/package-lock.json; then
+            echo "package-lock.json is already synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add questmath/app/frontend/package-lock.json
+          git commit -m "Synchronize frontend lockfile for v0.34.0"
+          git push origin HEAD:release/v0.34.0-story-adventure-expansion
