@@ -2,6 +2,20 @@
 
 This is the authoritative project and GitHub changelog consumed by repository tooling and DevHub. Home Assistant user-facing release notes are maintained separately in `questmath/CHANGELOG.md`.
 
+## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
+
+- Added a compact backend-authoritative Home Assistant parent-learning summary using existing Parent Learning Intelligence, adaptive-learning purposes, retention, support dependency and misconception evidence.
+- Added `/api/ha/learning` and `/api/ha/weekly-summary` while retaining existing `/api/ha/stats` and `/api/ha/summary` compatibility endpoints.
+- Added stable Home Assistant concept identifiers for daily learning, current focus, review status, support status and weekly summary without worksheet/question/date-specific IDs.
+- Daily Practice and Story Adventure can satisfy daily learning only when a learner worksheet is completed with answered-question evidence.
+- Parent Tests, opening MathQuest, starting a worksheet and abandoned no-evidence sessions do not satisfy daily learning completion.
+- Separated actual active minutes from configured timed-session target minutes to avoid false precision.
+- Added current-focus details including skill, curriculum area, outcome, learning purpose, recommendation reason and evidence confidence.
+- Added conservative review-due, persistent-support, repeated-misconception and meaningful-progress signals driven by accumulated learning evidence.
+- Added notification-ready alert payloads without introducing hard-coded reminder schedules or noisy per-question notifications.
+- Added a seven-day parent summary prioritising learning days, learning time, secure/support-needed skills, review state, misconceptions, support dependency and recommended focus.
+- Preserved local-first privacy, Parent Dashboard alignment, Story Adventure evidence integrity and Parent Test isolation.
+
 ## v0.34.0 - Story Adventure Expansion and Purposeful Daily Learning
 
 - Rebuilt Story Adventure as a presentation layer over MathQuest's backend-authoritative adaptive learning engine instead of replacing selected questions with a separate story generator.
