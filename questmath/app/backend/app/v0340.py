@@ -4,7 +4,6 @@ import json
 from typing import Any
 
 from fastapi import Depends, HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import main as legacy
@@ -73,6 +72,27 @@ def _adventure_learning_goals(worksheet: legacy.Worksheet) -> list[str]:
     return goals
 
 
+def _ensure_adaptive_annotation(session: Session, student_id: int, question: legacy.Question) -> dict[str, Any]:
+    payload = _payload(question)
+    if payload.get('learning_purpose'):
+        return payload
+    outcomes = v0230.outcome_mastery(session, student_id)
+    purpose, reason = v0330._purpose_for_question(session, student_id, question, {item['code']: item for item in outcomes})
+    evidence = v0330._question_evidence(session, student_id, question.skill)
+    state = v0330._progression_state(evidence)
+    payload['learning_purpose'] = purpose
+    payload['learning_purpose_label'] = v0330.PURPOSE_LABELS[purpose]
+    payload['adaptive_reason'] = reason
+    payload['progression_state'] = state
+    payload['adaptive_evidence'] = {
+        'questions': evidence['questions'],
+        'independent_accuracy': round(evidence['independent'] * 100),
+        'eventual_accuracy': round(evidence['eventual'] * 100),
+        'support_dependency': round(evidence['support'] * 100),
+    }
+    return payload
+
+
 def apply_adventure_presentation(session: Session, worksheet: legacy.Worksheet, student_id: int, theme: str) -> dict[str, Any]:
     if worksheet.session_kind == 'parent_test':
         raise HTTPException(400, 'Parent Tests cannot become Story Adventures')
@@ -84,15 +104,14 @@ def apply_adventure_presentation(session: Session, worksheet: legacy.Worksheet, 
     if not questions:
         raise HTTPException(400, 'Adventure requires learning questions')
 
-    # Re-run the authoritative adaptive annotation before adding presentation metadata.
-    v0330.apply_adaptive_daily_learning(session, worksheet, student_id)
     mission_id = f'{theme}-{worksheet.id}'
     learning_goals = _adventure_learning_goals(worksheet)
 
     for index, question in enumerate(questions):
-        payload = _payload(question)
+        payload = _ensure_adaptive_annotation(session, student_id, question)
         stage_number, stage_name = _story_stage(index, len(questions))
         purpose = payload.get('learning_purpose', 'current')
+        adaptive = payload.get('adaptive') if isinstance(payload.get('adaptive'), dict) else {}
         context = _context_for(theme, question, stage_name)
         payload['adventure'] = {
             'version': 3,
@@ -113,6 +132,8 @@ def apply_adventure_presentation(session: Session, worksheet: legacy.Worksheet, 
             'learning_purpose_label': payload.get('learning_purpose_label', v0330.PURPOSE_LABELS.get(purpose, 'Practising this skill')),
             'adaptive_reason': payload.get('adaptive_reason'),
             'difficulty_band': payload.get('difficulty_band'),
+            'prerequisite_for': adaptive.get('prerequisite_for'),
+            'adaptive_mode': adaptive.get('mode'),
             'context': context,
         }
         question.payload = json.dumps(payload)
@@ -132,6 +153,20 @@ def apply_adventure_presentation(session: Session, worksheet: legacy.Worksheet, 
     }
 
 
+def _remove_legacy_adventure_route() -> None:
+    app.router.routes[:] = [
+        route for route in app.router.routes
+        if not (
+            getattr(route, 'path', None) == '/api/worksheets/{wid}/adventure'
+            and 'POST' in getattr(route, 'methods', set())
+        )
+    ]
+
+
+_remove_legacy_adventure_route()
+
+
+@app.post('/api/worksheets/{wid}/adventure')
 @app.post('/api/worksheets/{wid}/adventure-v0340')
 def apply_adventure_v0340(
     wid: int,
