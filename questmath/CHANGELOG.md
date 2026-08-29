@@ -1,3 +1,18 @@
+# MathQuest 0.34.0
+
+- Rebuilt Story Adventure as a presentation layer over MathQuest's backend-authoritative adaptive learning engine instead of replacing selected questions with a separate story generator.
+- Preserved each selected question's skill, prompt, answer, difficulty band, learning purpose and Visual Mathematics payload while adding adventure mission, stage, context and progress metadata.
+- Added reusable mission stages covering Start, Challenge, Discovery, Harder Challenge, Final Challenge and Completion.
+- Added 5, 10 and 15-minute Story Adventure entry points using the same timed adaptive session service as normal learner practice.
+- Preserved prerequisite routing, consolidation, misconception repair, spaced retrieval, current practice and controlled challenge decisions inside Story Adventure.
+- Kept incorrect answers retry-first, with Hint, Teach me, Worked example and Math Mentor remaining optional support rather than required gates.
+- Kept Story Adventure answers in the existing learning-evidence and mastery architecture while ensuring adventure completion itself is not mastery evidence.
+- Explicitly prevented Parent Tests from receiving Story Adventure framing or rewards and retained Parent Test isolation from learner evidence.
+- Added lightweight responsive mission progress that remains suitable for tablet, mobile and Home Assistant ingress without new game or animation dependencies.
+- Updated legacy Story Adventure compatibility behaviour so the old endpoint now uses the same v0.34 presentation-only architecture instead of exposing a second question-selection system.
+- Added backend and frontend regression coverage for adaptive Story Adventure selection, evidence integrity, Parent Test isolation, session sizing, resume behaviour and mission progress.
+- Preserved v0.33.0 Adaptive Daily Learning, v0.32.3 method-first Math Mentor, Visual Mathematics, worksheet history, Parent Learning Intelligence and all existing retry-first tutoring safeguards.
+
 # MathQuest 0.33.0
 
 - Added Adaptive Daily Learning so practice worksheets use accumulated learner evidence to label and balance current learning, consolidation, spaced review and limited challenge work.
@@ -42,7 +57,7 @@
 - Added evidence-driven retrieval budgeting so very simple arithmetic remains available for confidence, prerequisite checks and spaced retrieval without dominating a normal worksheet once recent learner evidence supports progression.
 - Added retrieval, instructional and challenge difficulty-band metadata to generated questions.
 - Re-applied structural question-family diversity after the v0.31 adaptive difficulty transformations so later rewrites cannot reintroduce repetitive question families.
-- Preserved denominator-accurate fraction number-line repair and existing visual mathematics annotations after quality transformations.
+- Preserved denominator-accurate fraction-number-line repair and existing visual mathematics annotations after quality transformations.
 - Added backend regression coverage for trivial-question classification, hundreds-level progression and question-family-specific worked examples.
 - Updated release metadata, runtime entrypoint, version validation and documentation for v0.32.1.
 
