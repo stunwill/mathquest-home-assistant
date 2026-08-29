@@ -1,4 +1,4 @@
-# MathQuest 0.33.0
+# MathQuest 0.34.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -19,6 +19,11 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Adaptive daily session composition using current learning, consolidation, spaced review and limited challenge purposes
 - Controlled skill progression that requires enough independent evidence before challenge increases
 - Support-aware consolidation so eventual success after substantial tutoring does not trigger premature progression
+- Story Adventure as a presentation layer over the same backend-authoritative adaptive learning plan as Daily Practice
+- Story Adventure stages, mission progress and theme context without replacing the selected skill, question, answer or difficulty
+- Story Adventures sized to the existing 5, 10 and 15-minute learning options
+- Story Adventure evidence recorded through the same worksheet, attempt, misconception and mastery architecture as standard practice
+- Parent Tests explicitly isolated from Story Adventure framing and rewards
 - Expanded Grade 5 Algebra variety with numerical patterns, symbolic unknowns, substitution, mystery-number reasoning, contextual unknown starts and reverse multiplication
 - New Algebra structures supplement the existing equation, multiplication and division fact-family generators
 - Structural-family diversity prevents a run of effectively identical Algebra equations with only different values
@@ -54,15 +59,20 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Multiple solution strategies presented one at a time through Show another way
 - Learning-evidence-driven visual suggestions that remain optional and never auto-open the Maths Lab
 - Assessment-integrity safeguards that suppress new teaching strategies and recommendations in parent tests
-- Coherent Story Adventures with adaptive learning goals, shared mission data, chapter progress and final outcomes
 - Outcome mastery, deterministic spaced reviews, prerequisite routing and personalised next-session recommendations
 - Persistent Home Assistant service authentication and dashboard-ready category, outcome and recommendation metrics
 - Parent-only test worksheets with isolated test evidence, question and overall notes, feedback status and addressed-release traceability
 - Number and Algebra interventions that select the weakest prerequisite, teach with linked models and report independent understanding separately
 
+## Adaptive Story Adventures
+
+v0.34.0 removes the old parallel Story Adventure question-selection path. MathQuest now creates the learner’s normal adaptive session first, preserving prerequisite routing, consolidation, misconception repair, spaced retrieval, current practice and evidence-based challenge decisions. Story Adventure then adds a setting, objective, stage, mission progress and lightweight reinforcement around those questions.
+
+Story progression never counts as mastery. Correctness, attempts, support use, misconception evidence and retention continue to determine learning progress through the same evidence model used by Daily Practice. A wrong answer remains retry-first and Hint, Teach me, Worked example and Math Mentor remain optional rather than required gates.
+
 ## Adaptive daily learning
 
-v0.33.0 uses the learning evidence already collected by MathQuest to explain and shape the purpose of daily worksheet questions. Questions can be marked as current learning, consolidation, quick review or a limited challenge. Progression is conservative: a learner needs enough repeated independent success before MathQuest increases challenge, while high support dependency or repeated misconception evidence keeps a skill in consolidation. Parent Tests remain excluded from this adaptive composition layer.
+v0.33.0 introduced the learning-evidence layer now reused by Story Adventure. Questions can be marked as current learning, consolidation, quick review or a limited challenge. Progression is conservative: a learner needs enough repeated independent success before MathQuest increases challenge, while high support dependency or repeated misconception evidence keeps a skill in consolidation. Parent Tests remain excluded from this adaptive composition layer.
 
 ## Grade 5 method-first Math Mentor
 
