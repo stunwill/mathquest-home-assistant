@@ -6,59 +6,67 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.34.0, Story Adventure Expansion and Purposeful Daily Learning
+## Current release scope, 0.35.0, Home Assistant Parent Integration and Actionable Learning Insights
 
-This release makes Story Adventure a meaningful presentation layer over the same adaptive learning decisions used by Daily Practice. MathQuest decides what Sienna should practise, consolidate, review or progress to before Story Adventure adds mission context and lightweight progression.
+This release makes MathQuest's existing learning intelligence genuinely useful to a parent through Home Assistant without creating a second mastery system.
 
-### One learning engine
+### One learning-intelligence source
 
-- Create the adaptive learning plan and selected maths questions before Story Adventure presentation is applied.
-- Preserve skill, difficulty, learning purpose, prerequisite routing, spaced retrieval, misconception repair and challenge decisions.
-- Remove the runtime path that could independently replace adaptive worksheet questions with a separate Story Adventure generator.
-- Keep learning decisions backend-authoritative.
+- Keep MathQuest backend-authoritative for mastery, progression, prerequisites, retention, review, misconceptions and recommendations.
+- Reuse Parent Learning Intelligence, Adaptive Daily Learning and Story Adventure evidence rather than reimplementing those algorithms for Home Assistant.
+- Keep Parent Dashboard and Home Assistant learning state aligned through shared backend helpers.
 
-### Short coherent adventures
+### Actionable parent learning state
 
-- Use reusable adventure themes with a setting, objective, stages and clear ending.
-- Support the existing 5, 10 and 15-minute session choices without requiring a long mission to be finished in a short session.
-- Provide lightweight stage and mission progress without introducing a game engine or heavy animation dependency.
-- Keep the maths clear when a selected skill is better presented directly rather than forced into an awkward story problem.
+- Expose a compact Home Assistant learning summary covering daily completion, current focus, review due, persistent support needs, repeated misconceptions, meaningful progress and a weekly summary.
+- Use stable conceptual identifiers suitable for dashboards and automations.
+- Avoid exposing every internal statistic as a separate entity.
+- Preserve evidence confidence and use parent-readable learning-purpose labels.
 
-### Evidence integrity
+### Daily learning and timing
 
-- Record Story Adventure answers through the same worksheet, attempt, support, misconception and mastery evidence used by equivalent Daily Practice.
-- Preserve first-attempt independence, eventual success, supported success, repeated errors and retention evidence.
-- Do not treat Story Adventure completion, stage progress or rewards as mastery evidence.
-- Keep Parent Tests isolated from Story Adventure framing, rewards and adaptive recomposition.
+- Count completed Daily Practice and Story Adventure sessions with answered-question evidence as legitimate daily learning.
+- Do not count opening the app, starting a worksheet, abandoned no-evidence work or Parent Tests as completed daily learning.
+- Distinguish actual elapsed learning time from configured 5, 10 or 15-minute session targets to avoid false precision.
 
-### Tutoring and learner experience
+### Conservative alerts
 
-- Preserve immediate retry after an incorrect answer.
-- Keep Hint, Teach me, Worked example and Math Mentor optional.
-- Preserve question-specific teaching and operation-aligned worked examples.
-- Reuse Visual Mathematics only where it supports understanding.
-- Keep responsive controls usable on desktop, tablet, mobile and Home Assistant ingress.
+- Surface review-due state from existing spaced-retrieval and retention evidence.
+- Surface persistent support dependence only after accumulated evidence, not a single difficult question.
+- Surface repeated misconception evidence only after existing misconception thresholds are met.
+- Surface meaningful progress from secure learning evidence or strong trend changes, not XP or Story Adventure completion.
+- Provide notification-ready state without hard-coding reminder schedules or creating notification spam.
+
+### Privacy and performance
+
+- Keep learning data local and use the existing persistent Home Assistant service token.
+- Add no cloud telemetry, analytics or third-party learner tracking.
+- Use compact summary queries and reuse existing learning-intelligence calculations rather than continuous full-history recomputation.
 
 ### Release acceptance criteria
 
-- Story Adventure preserves the adaptive questions selected for the session.
-- Learning purpose and difficulty metadata survive Story Adventure presentation.
-- Prerequisite, consolidation, misconception repair, spaced review and challenge decisions can be represented without a second selection engine.
-- Insufficient or highly supported evidence cannot be promoted merely because the learner is in an adventure.
-- Story Adventure evidence feeds the existing learning model and story completion alone does not increase mastery.
+- `/api/ha/learning` returns stable parent-readable learning state.
+- `/api/ha/weekly-summary` returns a concise educationally useful seven-day summary.
+- Daily Practice and Story Adventure contribute legitimate activity.
 - Parent Tests remain isolated.
-- Unfinished Story Adventures resume using the existing worksheet state instead of creating duplicates.
-- 5, 10 and 15-minute Story Adventures use appropriately sized timed sessions.
-- Frontend validation uses the committed dependency lockfile and `npm ci` before tests and production build.
+- No-data and insufficient-evidence states are meaningful rather than misleadingly unavailable.
+- Stable Home Assistant identifiers do not include worksheet, question, date, adventure or skill IDs.
+- Frontend validation continues to use the committed dependency lockfile with `npm ci`, tests and production build.
 - Full backend, frontend, production build, version and release-validation checks pass before merge.
+
+## Recently completed release, 0.34.0, Story Adventure Expansion and Purposeful Daily Learning
+
+- Made Story Adventure a presentation layer over the same adaptive learning plan as Daily Practice.
+- Preserved skill, difficulty, learning purpose, prerequisite routing, spaced retrieval, misconception repair and challenge decisions.
+- Preserved retry-first answers and optional tutoring.
+- Kept Story Adventure evidence inside the existing learning model while ensuring story completion itself is not mastery evidence.
 
 ## Recently completed release, 0.33.0, Adaptive Daily Learning
 
 - Classified practice questions as current learning, consolidation, spaced review or limited challenge from learner evidence.
 - Added controlled progression requiring repeated independent success before challenge increases.
 - Made progression support-aware and misconception-aware.
-- Reused spaced-review evidence and preserved deliberate easy retrieval when it has a learning purpose.
-- Kept Parent Tests isolated from adaptive session composition.
+- Reused spaced-review evidence and preserved Parent Test isolation.
 
 ## Recently completed release, 0.32.3, Grade 5 Method-First Math Mentor
 
@@ -70,47 +78,24 @@ This release makes Story Adventure a meaningful presentation layer over the same
 
 - Added numerical pattern continuation, symbolic unknowns, substitution, mystery-number reasoning, contextual unknown-start problems and reverse multiplication/doubling.
 - Mixed new structures into the existing Algebra pool instead of replacing established practice.
-- Added semantic structural-family diversity so numeric variants do not disguise repetitive templates.
 - Preserved adaptive difficulty, learning evidence, Math Mentor and worksheet-quality safeguards.
 
 ## Recently completed release, 0.32.1, Worksheet Learning Quality Corrective Release
 
 - Preserved immediate retry after an incorrect answer with Math Mentor remaining optional.
-- Tightened worked-example alignment across Probability, fractions, Measurement, Space and Statistics.
+- Tightened worked-example alignment.
 - Limited very simple arithmetic to purposeful retrieval once learner evidence supports progression.
-- Re-checked question-family diversity after final adaptive transforms.
-- Preserved denominator-accurate fraction number lines and visual state isolation.
+- Preserved fraction number-line and visual safeguards.
 
 ## Recently completed release, 0.32.0, Parent Learning Intelligence
 
 - Added plain-language parent learning summaries generated from learner evidence.
 - Distinguished first-attempt, eventual, independent and supported success.
 - Added Secure, Developing, Needs Support, Review Due and Not Enough Evidence skill states.
-- Added evidence confidence, prioritised practice recommendations, misconception grouping, prerequisite visibility, retention and spaced-review status.
-- Added difficulty calibration using independent accuracy, eventual accuracy and support dependency together.
+- Added evidence confidence, recommendations, misconception grouping, prerequisite visibility, retention and spaced-review status.
 - Added 7, 30 and 90-day learning comparisons.
-- Preserved Parent Test isolation and existing learner-facing adaptive behaviour.
 
-## Recently completed release, 0.31.0, Tablet Learning and Math Mentor Refinement
-
-- Optimised the live worksheet for tablet portrait and landscape use.
-- Raised appropriate Number practice toward hundreds-based addition and subtraction when learner evidence supports progression.
-- Made Teach me question-specific and based on the actual operands and mathematical structure.
-- Split hints into distinct nudge, strategy and worked-next-step stages.
-- Removed duplicated tutoring presentation and improved mathematical formatting.
-- Preserved retry-first behaviour, keyboard autofocus, Visual Mathematics and v0.30.1 corrective safeguards.
-
-## Upcoming release sequence
-
-### Likely next focus, Home Assistant Parent Integration
-
-- Parent notifications and weekly learning summaries.
-- Home Assistant entities/sensors for key learning states and recommendations.
-- Useful parent alerts for review due, persistent support needs and notable progress.
-- Preserve local-first privacy and avoid notification overload.
-- Reconfirm the semantic version against the repository state when implementation begins rather than pre-allocating it here.
-
-### Further learner experience improvements
+## Further learner experience improvements
 
 - Expand adventure themes and context where real usage shows it improves engagement without weakening mathematical clarity.
 - Improve continuity between learner recommendations, Daily Practice and Story Adventure.
@@ -119,8 +104,9 @@ This release makes Story Adventure a meaningful presentation layer over the same
 
 ## Later opportunities
 
-- Richer visual mathematics models and manipulatives.
-- Longer-term learning trend reporting.
-- Teacher/tutor reporting views.
-- Additional curriculum coverage.
+- Deeper Parent Learning Intelligence and learning-goal planning.
+- Additional verified Victorian Curriculum coverage.
+- Richer Visual Mathematics models and manipulatives.
+- Dependency/security maintenance without unsafe forced upgrades.
+- Performance and Home Assistant operational improvements where real usage demonstrates a need.
 - Consolidation of historical backend version-wrapper architecture as a focused platform release.
