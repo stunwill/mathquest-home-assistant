@@ -16,8 +16,8 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-describe('v0.18 worksheet foundation', () => {
-  it('creates every worksheet through the single new-worksheet endpoint and remembers it', async () => {
+describe('student learning foundation', () => {
+  it('creates every standard worksheet through the single new-worksheet endpoint and remembers it', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(() => response({id: 42, selected_topic: 'number'}));
     await createWorksheet('number');
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -26,22 +26,36 @@ describe('v0.18 worksheet foundation', () => {
     expect(localStorage.getItem('mq_active_worksheet_id')).toBe('42');
   });
 
-  it('starts a story through React without reloading the page', async () => {
+  it('starts Story Adventure from the same timed adaptive session service', async () => {
     const onOpen = vi.fn();
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       const url = String(input);
-      if (url === 'api/adventures') return response([{id: 'space', icon: '🚀', title: 'Space Mission', intro: 'Launch'}]);
-      if (url === 'api/worksheets/new') return response({id: 9});
-      if (url === 'api/worksheets/9/adventure') return response({theme: 'space'});
-      if (url === 'api/worksheets/9/view') return response({id: 9, selected_topic: 'Space Mission'});
+      if (url === 'api/adventures-v0340') return response([{id: 'space', icon: '🚀', title: 'Space Mission', intro: 'Launch', objective: 'Bring the crew home', recommended_goals: ['number', 'measurement']}]);
+      if (url === 'api/sessions/new') {
+        expect(init).toMatchObject({method: 'POST', body: JSON.stringify({kind: 'practice', minutes: 5, topic: 'mixed'})});
+        return response({id: 9});
+      }
+      if (url === 'api/worksheets/9/adventure-v0340') return response({theme: 'space'});
+      if (url === 'api/worksheets/9/view') return response({id: 9, selected_topic: 'Space Mission', session_kind: 'adventure'});
       return response({detail: 'missing'}, false, 404);
     });
     render(<StoryAdventures onOpen={onOpen}/>);
-    fireEvent.click(await screen.findByRole('button', {name: /Space Mission/i}));
-    await waitFor(() => expect(onOpen).toHaveBeenCalledWith({id: 9, selected_topic: 'Space Mission'}));
+    fireEvent.click(await screen.findByRole('button', {name: '5 min'}));
+    fireEvent.click(screen.getByRole('button', {name: /Space Mission/i}));
+    await waitFor(() => expect(onOpen).toHaveBeenCalledWith({id: 9, selected_topic: 'Space Mission', session_kind: 'adventure'}));
+    expect(localStorage.getItem('mq_active_worksheet_id')).toBe('9');
     expect(fetchMock.mock.calls.map(call => String(call[0]))).toEqual([
-      'api/adventures', 'api/worksheets/new', 'api/worksheets/9/adventure', 'api/worksheets/9/view',
+      'api/adventures-v0340', 'api/sessions/new', 'api/worksheets/9/adventure-v0340', 'api/worksheets/9/view',
     ]);
+  });
+
+  it('offers only the existing 5, 10 and 15 minute Story Adventure choices', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => response([{id: 'space', icon: '🚀', title: 'Space Mission', intro: 'Launch', objective: 'Bring the crew home'}]));
+    render(<StoryAdventures onOpen={vi.fn()}/>);
+    expect(await screen.findByRole('group', {name: 'Story Adventure session length'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: '5 min'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: '10 min'})).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', {name: '15 min'})).toBeInTheDocument();
   });
 
   it('renders worksheet history in React and opens the shared new-worksheet picker', async () => {

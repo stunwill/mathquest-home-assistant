@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {AlertCircle, BookOpen, Play, RefreshCw, X} from 'lucide-react';
-import {apiRequest, createWorksheet, rememberActiveWorksheet} from './api';
+import {apiRequest, createSession, rememberActiveWorksheet} from './api';
 import {QuestionVisual} from './question-visual';
 import './v0160.css';
 import './v090.css';
@@ -51,7 +51,7 @@ export function WorksheetHistory({onCreate, onOpen}:{onCreate: () => void; onOpe
   async function restart(id: number) {
     setError('');
     try {
-      const worksheet = await apiRequest(`/worksheets/${id}/restart-skipped`, {method: 'POST'});
+      const worksheet: any = await apiRequest(`/worksheets/${id}/restart-skipped`, {method: 'POST'});
       rememberActiveWorksheet(worksheet.id);
       onOpen(worksheet);
     } catch (e: any) { setError(e.message); }
@@ -107,18 +107,25 @@ export function LearningCalendar({onOpen}:{onOpen: (worksheet: any) => void}) {
 export function StoryAdventures({onOpen}:{onOpen: (worksheet: any) => void}) {
   const [items, setItems] = useState<any[] | null>(null);
   const [busy, setBusy] = useState('');
+  const [minutes, setMinutes] = useState<5|10|15>(10);
   const [error, setError] = useState('');
-  const load = () => { setError(''); apiRequest<any[]>('/adventures').then(setItems).catch((e: Error) => setError(e.message)); };
+  const load = () => { setError(''); apiRequest<any[]>('/adventures-v0340').then(setItems).catch((e: Error) => setError(e.message)); };
   useEffect(load, []);
+
   async function start(theme: string) {
     setBusy(theme); setError('');
     try {
-      const worksheet: any = await createWorksheet('mixed');
-      await apiRequest(`/worksheets/${worksheet.id}/adventure`, {method: 'POST', body: JSON.stringify({theme})});
+      const worksheet: any = await createSession('practice', minutes, 'mixed');
+      await apiRequest(`/worksheets/${worksheet.id}/adventure-v0340`, {method: 'POST', body: JSON.stringify({theme})});
+      rememberActiveWorksheet(worksheet.id);
       onOpen(await apiRequest(`/worksheets/${worksheet.id}/view`));
     } catch (e: any) { setError(e.message); }
     finally { setBusy(''); }
   }
+
   if (items?.length === 0) return null;
-  return <section className="panel mq-v090-adventures"><p className="eyebrow">STORY ADVENTURES</p><h2><BookOpen size={22}/> Practise maths inside a story</h2><p>Choose a complete mission. MathQuest uses its story, data and challenges to practise the learning areas that need attention.</p>{error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>}<div className="mq-adventure-grid">{items === null && !error ? <p>Loading adventures…</p> : items?.map(item => <button type="button" data-theme={item.id} key={item.id} disabled={!!busy} onClick={() => start(item.id)}><span>{item.icon}</span><b>{item.title}</b><small>{busy === item.id ? 'Building your mission…' : item.intro}</small><em>{item.objective}</em><i>Recommended focus: {(item.recommended_goals || item.topics || []).slice(0, 2).join(' + ')}</i>{busy === item.id && <Play size={16}/>}</button>)}</div></section>;
+  return <section className="panel mq-v090-adventures mq-v0340-adventures">
+    <div className="mq-adventure-heading"><div><p className="eyebrow">STORY ADVENTURE</p><h2><BookOpen size={22}/> Learn through a mission</h2><p>The same adaptive learning engine chooses the maths. Story Adventure changes how the session feels, not what MathQuest decides you should learn.</p></div><div className="mq-adventure-duration" role="group" aria-label="Story Adventure session length">{([5,10,15] as const).map(value=><button type="button" key={value} aria-pressed={minutes===value} className={minutes===value?'selected':''} onClick={()=>setMinutes(value)}>{value} min</button>)}</div></div>
+    {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>}<div className="mq-adventure-grid">{items === null && !error ? <p>Loading adventures…</p> : items?.map(item => <button type="button" data-theme={item.id} key={item.id} disabled={!!busy} onClick={() => start(item.id)}><span>{item.icon}</span><b>{item.title}</b><small>{busy === item.id ? 'Building your adaptive mission…' : item.intro}</small><em>{item.objective}</em><i>Likely focus: {(item.recommended_goals || item.topics || []).slice(0, 2).join(' + ')}</i>{busy === item.id && <Play size={16}/>}</button>)}</div>
+  </section>;
 }

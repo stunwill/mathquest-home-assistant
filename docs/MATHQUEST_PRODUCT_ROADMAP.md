@@ -6,47 +6,59 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.33.0, Adaptive Daily Learning
+## Current release scope, 0.34.0, Story Adventure Expansion and Purposeful Daily Learning
 
-This release makes daily 5, 10 and 15-minute sessions use the learning evidence MathQuest already collects when deciding the purpose and progression of worksheet questions.
+This release makes Story Adventure a meaningful presentation layer over the same adaptive learning decisions used by Daily Practice. MathQuest decides what Sienna should practise, consolidate, review or progress to before Story Adventure adds mission context and lightweight progression.
 
-### Adaptive daily session composition
+### One learning engine
 
-- Classify practice questions as current learning, consolidation, review or challenge.
-- Use learner evidence rather than rigid fixed percentages.
-- Keep challenge deliberately limited so a short session remains balanced.
-- Preserve deliberate easy retrieval when it has a learning purpose.
+- Create the adaptive learning plan and selected maths questions before Story Adventure presentation is applied.
+- Preserve skill, difficulty, learning purpose, prerequisite routing, spaced retrieval, misconception repair and challenge decisions.
+- Remove the runtime path that could independently replace adaptive worksheet questions with a separate Story Adventure generator.
+- Keep learning decisions backend-authoritative.
 
-### Controlled progression
+### Short coherent adventures
 
-- Require enough repeated independent evidence before marking a skill ready to progress.
-- Treat high support dependency as evidence that more consolidation is appropriate even when eventual accuracy is high.
-- Avoid advancing from one or two successful questions.
-- Avoid dropping difficulty permanently after one isolated mistake.
-- Centralise progression thresholds so future adjustments are explainable and testable.
+- Use reusable adventure themes with a setting, objective, stages and clear ending.
+- Support the existing 5, 10 and 15-minute session choices without requiring a long mission to be finished in a short session.
+- Provide lightweight stage and mission progress without introducing a game engine or heavy animation dependency.
+- Keep the maths clear when a selected skill is better presented directly rather than forced into an awkward story problem.
 
-### Retention and misconception integration
+### Evidence integrity
 
-- Use existing spaced-review evidence to identify quick-review opportunities.
-- Use repeated misconception evidence to hold a skill in consolidation before increasing difficulty.
-- Keep prerequisite intervention targeted rather than turning the whole worksheet into low-level practice.
+- Record Story Adventure answers through the same worksheet, attempt, support, misconception and mastery evidence used by equivalent Daily Practice.
+- Preserve first-attempt independence, eventual success, supported success, repeated errors and retention evidence.
+- Do not treat Story Adventure completion, stage progress or rewards as mastery evidence.
+- Keep Parent Tests isolated from Story Adventure framing, rewards and adaptive recomposition.
 
-### Learner and parent explainability
+### Tutoring and learner experience
 
-- Attach a short learning-purpose label such as Quick review, Practising this skill or Today’s challenge.
-- Store a parent-readable reason explaining why the adaptive engine selected that purpose.
-- Do not expose raw mastery scores or algorithm internals to the learner.
+- Preserve immediate retry after an incorrect answer.
+- Keep Hint, Teach me, Worked example and Math Mentor optional.
+- Preserve question-specific teaching and operation-aligned worked examples.
+- Reuse Visual Mathematics only where it supports understanding.
+- Keep responsive controls usable on desktop, tablet, mobile and Home Assistant ingress.
 
 ### Release acceptance criteria
 
-- Insufficient evidence cannot trigger progression.
-- Strong repeated independent performance can trigger a limited challenge opportunity.
-- Heavy hint or Math Mentor use slows progression.
-- A single wrong answer does not destroy an otherwise secure trend.
-- Repeated misconception evidence triggers consolidation.
-- Parent Tests remain isolated from adaptive recomposition.
-- Existing post-transform family diversity, fraction visuals, method-first tutoring, Grade 5 Algebra variety and Parent Learning Intelligence remain intact.
+- Story Adventure preserves the adaptive questions selected for the session.
+- Learning purpose and difficulty metadata survive Story Adventure presentation.
+- Prerequisite, consolidation, misconception repair, spaced review and challenge decisions can be represented without a second selection engine.
+- Insufficient or highly supported evidence cannot be promoted merely because the learner is in an adventure.
+- Story Adventure evidence feeds the existing learning model and story completion alone does not increase mastery.
+- Parent Tests remain isolated.
+- Unfinished Story Adventures resume using the existing worksheet state instead of creating duplicates.
+- 5, 10 and 15-minute Story Adventures use appropriately sized timed sessions.
+- Frontend validation uses the committed dependency lockfile and `npm ci` before tests and production build.
 - Full backend, frontend, production build, version and release-validation checks pass before merge.
+
+## Recently completed release, 0.33.0, Adaptive Daily Learning
+
+- Classified practice questions as current learning, consolidation, spaced review or limited challenge from learner evidence.
+- Added controlled progression requiring repeated independent success before challenge increases.
+- Made progression support-aware and misconception-aware.
+- Reused spaced-review evidence and preserved deliberate easy retrieval when it has a learning purpose.
+- Kept Parent Tests isolated from adaptive session composition.
 
 ## Recently completed release, 0.32.3, Grade 5 Method-First Math Mentor
 
@@ -90,18 +102,20 @@ This release makes daily 5, 10 and 15-minute sessions use the learning evidence 
 
 ## Upcoming release sequence
 
-### 0.34.0, Home Assistant Parent Integration
+### Likely next focus, Home Assistant Parent Integration
 
 - Parent notifications and weekly learning summaries.
 - Home Assistant entities/sensors for key learning states and recommendations.
 - Useful parent alerts for review due, persistent support needs and notable progress.
 - Preserve local-first privacy and avoid notification overload.
+- Reconfirm the semantic version against the repository state when implementation begins rather than pre-allocating it here.
 
-### 0.35.0, Story Adventure Expansion
+### Further learner experience improvements
 
-- Use the stronger learner model to drive adaptive Story Adventure missions.
-- Make story challenges respond to mastery, prerequisites and retrieval needs rather than simply wrapping generic worksheets.
-- Expand continuity, progression and themed mathematical models.
+- Expand adventure themes and context where real usage shows it improves engagement without weakening mathematical clarity.
+- Improve continuity between learner recommendations, Daily Practice and Story Adventure.
+- Continue refining Grade 5 question variety and appropriate difficulty based on evidence from real sessions.
+- Add richer visual models where they improve understanding rather than decoration.
 
 ## Later opportunities
 

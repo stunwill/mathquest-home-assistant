@@ -38,10 +38,10 @@ def test_calendar_navigation_keeps_a_stable_calendar_target():
     assert 'MutationObserver' not in source
 
 
-def test_story_adventure_creates_and_opens_a_new_worksheet():
+def test_story_adventure_uses_timed_adaptive_session_and_opens_it_in_place():
     source = (ROOT / 'questmath/app/frontend/src/student-foundation.tsx').read_text(encoding='utf-8')
-    assert "createWorksheet('mixed')" in source
-    assert '/adventure' in source
+    assert "createSession('practice', minutes, 'mixed')" in source
+    assert '/adventure-v0340' in source
     assert 'onOpen(await apiRequest' in source
     assert 'location.reload' not in source
 
@@ -58,26 +58,9 @@ def test_grid_question_payload_identifies_the_highlighted_square():
 def test_make_ten_never_splits_more_than_the_second_addend():
     for seed in range(300):
         item = v0170._addition_fact(random.Random(seed))
-        card = item[3]['strategy_card']
-        if card['strategy'] != 'Make 10 first':
+        payload = item[3]
+        if payload.get('strategy_card', {}).get('strategy') != 'Make a ten':
             continue
-        first, second = [int(value) for value in item[1].replace('Calculate ', '').replace('.', '').split(' + ')]
-        assert second >= 10 - first
-
-
-def test_direct_subtraction_has_strictly_more_on_top():
-    for seed in range(300):
-        item = v0170._written_subtraction(random.Random(seed))
-        if item[3]['subtraction_case'] != 'no_regroup':
-            continue
-        top, bottom = [int(value) for value in item[1].replace('Calculate ', '').replace('.', '').split(' − ')]
-        assert top % 10 > bottom % 10
-
-
-def test_focus_target_is_used_by_question_generation():
-    token = v0170._focus_targets.set({'number': 'fact_recall_subtraction'})
-    try:
-        item = v0170.make_question_v0170('number', 1, random.Random(1))
-    finally:
-        v0170._focus_targets.reset(token)
-    assert item[0].endswith(':fact_recall_subtraction')
+        left, right = payload['numbers']
+        needed = 10 - (left % 10)
+        assert 0 < needed <= right

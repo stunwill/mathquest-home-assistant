@@ -22,17 +22,17 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     lowered = notes.lower()
-    assert 'adaptive daily learning' in lowered
-    assert 'consolidation' in lowered
-    assert 'challenge' in lowered
-    assert 'spaced' in lowered or 'review' in lowered
-    assert '# MathQuest 0.32.3' not in notes
+    assert 'story adventure' in lowered
+    assert 'adaptive learning engine' in lowered
+    assert 'parent tests' in lowered
+    assert '5, 10 and 15-minute' in notes
+    assert '# MathQuest 0.33.0' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.33.0'}
+    assert set(versions.values()) == {'0.34.0'}
 
 
 def test_release_workflow_validates_versions_before_publishing():
@@ -49,3 +49,10 @@ def test_validation_workflow_does_not_hard_code_release_version():
     assert "config['version']" in extraction_step
     assert 'extract_release_notes.py "$VERSION"' in extraction_step
     assert 'extract_release_notes.py 0.16.2' not in extraction_step
+
+
+def test_frontend_validation_uses_committed_lockfile():
+    workflow = (ROOT / '.github/workflows/validate.yml').read_text(encoding='utf-8')
+    assert 'run: npm ci' in workflow
+    assert 'run: npm test' in workflow
+    assert 'run: npm run build' in workflow

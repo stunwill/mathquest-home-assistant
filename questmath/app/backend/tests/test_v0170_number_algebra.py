@@ -78,15 +78,18 @@ def test_completed_worksheet_can_restart_only_its_skipped_questions():
     close(session)
 
 
-def test_story_adventure_builds_and_contextualises_a_dedicated_worksheet():
+def test_story_adventure_contextualises_without_replacing_selected_maths():
     client, session = make_client()
     worksheet = client.post('/api/worksheets/new', json={'topic': 'mixed'}).json()
+    raw = session.get(legacy.Worksheet, worksheet['id'])
+    before = [(question.topic, question.skill, question.prompt, question.correct_answer) for question in sorted(raw.questions, key=lambda item: item.position)]
     response = client.post(f"/api/worksheets/{worksheet['id']}/adventure", json={'theme': 'space'})
     assert response.status_code == 200
     assert response.json()['questions_linked'] == worksheet['total']
-    raw = session.get(legacy.Worksheet, worksheet['id'])
+    session.refresh(raw)
+    after = [(question.topic, question.skill, question.prompt, question.correct_answer) for question in sorted(raw.questions, key=lambda item: item.position)]
+    assert after == before
     assert raw.selected_topic == 'Space Mission'
-    assert {question.topic for question in raw.questions} <= {'space', 'number', 'measurement', 'statistics'}
     assert all(json.loads(question.payload)['adventure']['theme'] == 'space' for question in raw.questions)
     assert all('challenge' not in question.prompt.lower() for question in raw.questions)
     assert all(not question.prompt.startswith('🚀') for question in raw.questions)
