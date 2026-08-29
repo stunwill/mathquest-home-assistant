@@ -35,7 +35,7 @@ jobs:
           node-version: "22"
       - name: Install frontend dependencies
         working-directory: questmath/app/frontend
-        run: npm install
+        run: npm ci
       - name: Run frontend tests
         working-directory: questmath/app/frontend
         run: npm test
