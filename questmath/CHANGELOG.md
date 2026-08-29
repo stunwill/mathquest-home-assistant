@@ -4,7 +4,7 @@ Concise user-facing release notes for the Home Assistant add-on. The detailed pr
 
 ## v0.34.0 - Story Adventure Expansion and Purposeful Daily Learning
 
-- Story Adventure now uses the same adaptive learning plan as Daily Practice, so the maths remains purposeful and matched to current learning needs.
+- Story Adventure now uses the same adaptive learning engine as Daily Practice, so the maths remains purposeful and matched to current learning needs.
 - Added short staged adventures for 5, 10 and 15-minute sessions with lightweight mission progress.
 - Preserved retry-first answers, optional Hint, Teach me, Worked example and Math Mentor support.
 - Story Adventure answers contribute to the existing learning evidence, while adventure completion itself does not count as mastery.
