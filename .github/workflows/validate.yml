@@ -60,8 +60,8 @@ jobs:
           else
             git show --check --oneline HEAD
           fi
-      - name: Install YAML parser
-        run: pip install pyyaml
+      - name: Install metadata validation dependencies
+        run: pip install -r questmath/app/backend/requirements.txt pyyaml==6.0.3
       - name: Validate YAML
         run: |
           python - <<'PY'
