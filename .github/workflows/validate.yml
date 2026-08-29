@@ -60,8 +60,8 @@ jobs:
           else
             git show --check --oneline HEAD
           fi
-      - name: Install YAML parser
-        run: pip install pyyaml
+      - name: Install metadata validation dependencies
+        run: pip install -r questmath/app/backend/requirements.txt pyyaml==6.0.3
       - name: Validate YAML
         run: |
           python - <<'PY'
@@ -78,8 +78,25 @@ jobs:
                   yaml.safe_load(handle)
               print(f'validated {path}')
           PY
-      - name: Validate version consistency
+      - name: Validate version and DevHub metadata consistency
         run: python scripts/validate_versions.py
+      - name: Validate runtime health version source
+        run: |
+          PYTHONPATH=questmath/app/backend QUESTMATH_DATA_DIR=/tmp/mathquest-metadata-health python - <<'PY'
+          import yaml
+          from app import v0340
+
+          with open('questmath/config.yaml', encoding='utf-8') as handle:
+              expected = str(yaml.safe_load(handle)['version'])
+          health_route = next(
+              route for route in v0340.app.routes
+              if getattr(route, 'path', None) == '/api/health' and 'GET' in getattr(route, 'methods', set())
+          )
+          actual = str(health_route.endpoint()['version'])
+          if actual != expected:
+              raise SystemExit(f'/api/health version mismatch: expected {expected}, got {actual}')
+          print(f'/api/health reports expected version {actual}')
+          PY
       - name: Validate release-note extraction
         run: |
           VERSION="$(python - <<'PY'

@@ -8,6 +8,22 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 Version `0.34.0`
 
+## Development Metadata
+
+Repository and release tooling, including DevHub, should use these canonical sources:
+
+- **Authoritative roadmap:** `ROADMAP.md`
+- **Project/GitHub changelog:** `CHANGELOG.md`
+- **Home Assistant add-on changelog:** `questmath/CHANGELOG.md`
+- **Home Assistant manifest version:** `questmath/config.yaml`
+- **Frontend package version:** `questmath/app/frontend/package.json`
+- **Frontend display version:** `questmath/app/frontend/src/version.ts`
+- **Backend/runtime version:** the active backend version module used by `questmath/rootfs/etc/services.d/questmath/run`
+- **Runtime health version:** `/api/health`, sourced from the active backend application version
+- **GitHub release/tag format:** `vX.Y.Z`
+
+The release metadata validator derives the expected version from the repository version sources and checks that the root roadmap, project changelog and Home Assistant changelog contain matching release metadata. Historical product-roadmap detail remains preserved in Git history and prior release records, while `ROADMAP.md` is now the authoritative roadmap for future development.
+
 ## Features
 
 - Student and parent logins
