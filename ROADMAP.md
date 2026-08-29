@@ -2,6 +2,30 @@
 
 MathQuest is a Victorian Curriculum aligned, adaptive mathematics learning application for short, purposeful daily practice. This file is the authoritative development roadmap for repository tooling and DevHub.
 
+## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
+
+Status: Completed
+
+### Learning
+- [x] Expose parent-readable learning state derived from MathQuest's existing Learning Intelligence rather than duplicating mastery logic in Home Assistant.
+- [x] Surface meaningful daily-practice completion, current learning focus, review-due state, persistent support needs, repeated misconceptions and meaningful progress.
+- [x] Keep Story Adventure activity inside the same evidence model as Daily Practice.
+- [x] Preserve Parent Test isolation from ordinary daily learning and Home Assistant learner-state calculations.
+- [x] Keep Home Assistant educational decisions backend-authoritative inside MathQuest.
+
+### UX
+- [x] Provide a compact stable Home Assistant entity/API contract instead of an entity for every internal metric.
+- [x] Add concise parent-facing seven-day learning summaries and notification-ready learning signals without per-question notification noise.
+- [x] Distinguish actual elapsed learning time from configured timed-session targets.
+- [x] Document standard Home Assistant REST sensor and reminder automation examples without requiring HACS.
+- [x] Preserve local-first privacy, Home Assistant ingress compatibility and existing learner/parent experiences.
+
+### Testing
+- [x] Verify Home Assistant learning state consumes Parent Learning Intelligence and adaptive-purpose evidence.
+- [x] Verify Daily Practice and Story Adventure completion behaviour and Parent Test isolation.
+- [x] Verify stable identifiers, no-data behaviour, restart-safe state derivation, review due, support dependence, misconception and meaningful-progress signals.
+- [x] Preserve complete backend/frontend regression coverage, npm ci, frontend tests and production build validation.
+
 ## v0.34.0 - Story Adventure Expansion and Purposeful Daily Learning
 
 Status: Completed
@@ -104,26 +128,6 @@ Status: Completed
 - [x] Improve tablet portrait and landscape worksheet use.
 - [x] Preserve retry-first behaviour, keyboard autofocus and Visual Mathematics.
 
-## v0.35.0 - Home Assistant Parent Integration
-
-Status: Planned
-
-### Learning
-- [ ] Expose parent-readable learning state derived from MathQuest's existing Learning Intelligence rather than duplicating mastery logic in Home Assistant.
-- [ ] Surface purposeful daily-practice completion, current learning focus, review-due state, persistent support needs and meaningful progress.
-- [ ] Keep Story Adventure activity inside the same evidence model as Daily Practice.
-- [ ] Preserve Parent Test isolation.
-
-### UX
-- [ ] Provide a compact, stable Home Assistant entity/API model rather than an entity for every internal metric.
-- [ ] Add concise parent-facing weekly learning summaries and notification-ready learning signals without notification overload.
-- [ ] Preserve local-first privacy, Home Assistant ingress compatibility and responsive learner/parent experiences.
-
-### Testing
-- [ ] Verify Home Assistant learning state agrees with the Parent Dashboard and existing backend Learning Intelligence.
-- [ ] Verify stable identifiers, no-data behaviour, restart recovery and Parent Test isolation.
-- [ ] Preserve complete backend/frontend regression coverage, npm ci, frontend tests and production build validation.
-
 ## Future - Learner Experience and Curriculum Depth
 
 Status: Planned
@@ -140,5 +144,6 @@ Status: Planned
 - [ ] Continue improving parent progress visibility and learning-goal planning.
 
 ### Platform
+- [ ] Review dependency/security maintenance recorded during v0.34.0 and v0.35.0 without using unsafe forced upgrades.
+- [ ] Continue performance and Home Assistant operational improvements where real usage demonstrates a need.
 - [ ] Consider consolidation of historical backend version-wrapper architecture as a focused platform release.
-- [ ] Continue dependency, security, performance and Home Assistant operational maintenance.
