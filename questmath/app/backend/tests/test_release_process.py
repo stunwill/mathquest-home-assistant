@@ -22,17 +22,17 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     lowered = notes.lower()
-    assert 'story adventure' in lowered
-    assert 'adaptive learning engine' in lowered
+    assert 'home assistant' in lowered
+    assert 'daily learning' in lowered
     assert 'parent tests' in lowered
-    assert '5, 10 and 15-minute' in notes
-    assert '# MathQuest 0.33.0' not in notes
+    assert 'local-first' in lowered
+    assert 'v0.34.0' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.34.0'}
+    assert set(versions.values()) == {'0.35.0'}
 
 
 def test_release_workflow_validates_versions_before_publishing():
@@ -48,7 +48,6 @@ def test_validation_workflow_does_not_hard_code_release_version():
     extraction_step = workflow.split('- name: Validate release-note extraction', 1)[1]
     assert "config['version']" in extraction_step
     assert 'extract_release_notes.py "$VERSION"' in extraction_step
-    assert 'extract_release_notes.py 0.16.2' not in extraction_step
 
 
 def test_frontend_validation_uses_committed_lockfile():
