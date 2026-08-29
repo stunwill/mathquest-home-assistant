@@ -2,6 +2,16 @@
 
 Concise user-facing release notes for the Home Assistant add-on. The detailed project/GitHub changelog is maintained at the repository root in `CHANGELOG.md`.
 
+## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
+
+- Added a compact Home Assistant learning summary showing daily completion, current learning focus, review status, support needs and a weekly learning summary.
+- Daily Practice and Story Adventure count as daily learning only after meaningful completed learner work with answered questions.
+- Parent Tests and abandoned no-evidence sessions do not count as daily learning.
+- Added parent-friendly signals for review due, persistent support dependence, repeated misconceptions and meaningful progress using MathQuest's existing learning evidence.
+- Added stable read-only Home Assistant endpoints and identifiers designed for dashboards and automations.
+- Added standard Home Assistant REST sensor and reminder automation examples without requiring HACS.
+- Preserved local-first privacy and existing learner experiences.
+
 ## v0.34.0 - Story Adventure Expansion and Purposeful Daily Learning
 
 - Story Adventure now uses the same adaptive learning engine as Daily Practice, so the maths remains purposeful and matched to current learning needs.
