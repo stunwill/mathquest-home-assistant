@@ -77,17 +77,30 @@ def _daily_summary(session: Session, sid: int, today: date) -> dict[str, Any]:
     }
 
 
-def _purpose_for_skill(session: Session, sid: int, skill: str) -> tuple[str, str]:
+def _recent_learning_metadata(session: Session, sid: int, skill: str) -> dict[str, Any]:
     recent = session.scalar(select(legacy.Question).join(legacy.Worksheet).where(
         legacy.Worksheet.student_id == sid,
         legacy.Worksheet.session_kind != 'parent_test',
         legacy.Question.skill == skill,
     ).order_by(legacy.Question.id.desc()))
-    if recent:
-        payload = _payload(recent)
-        purpose = payload.get('learning_purpose')
-        if purpose in v0330.PURPOSE_LABELS:
-            return str(purpose), str(payload.get('learning_purpose_label') or v0330.PURPOSE_LABELS[purpose])
+    if not recent:
+        return {}
+    payload = _payload(recent)
+    adaptive = payload.get('adaptive') if isinstance(payload.get('adaptive'), dict) else {}
+    adventure = payload.get('adventure') if isinstance(payload.get('adventure'), dict) else {}
+    return {
+        'learning_purpose': payload.get('learning_purpose'),
+        'learning_purpose_label': payload.get('learning_purpose_label'),
+        'adaptive_reason': payload.get('adaptive_reason'),
+        'prerequisite_for': adaptive.get('prerequisite_for') or adventure.get('prerequisite_for'),
+    }
+
+
+def _purpose_for_skill(session: Session, sid: int, skill: str) -> tuple[str, str]:
+    metadata = _recent_learning_metadata(session, sid, skill)
+    purpose = metadata.get('learning_purpose')
+    if purpose in v0330.PURPOSE_LABELS:
+        return str(purpose), str(metadata.get('learning_purpose_label') or v0330.PURPOSE_LABELS[purpose])
     evidence = v0330._question_evidence(session, sid, skill)
     state = v0330._progression_state(evidence)
     if evidence['support'] >= v0330.THRESHOLDS.high_support or state in ('developing', 'consolidating'):
@@ -111,12 +124,13 @@ def _focus_summary(session: Session, sid: int, intelligence: dict[str, Any]) -> 
     if not skill:
         return {
             'state': 'Building evidence', 'skill': None, 'skill_label': None, 'curriculum_area': None,
-            'outcome': None, 'learning_purpose': None, 'learning_purpose_label': None,
-            'recommendation': rec.get('title') if rec else 'Complete learner practice to build a recommendation.',
+            'outcome': None, 'learning_purpose': None, 'learning_purpose_label': None, 'prerequisites': [],
+            'prerequisite_for': None, 'recommendation': rec.get('title') if rec else 'Complete learner practice to build a recommendation.',
             'reason': rec.get('reason') if rec else 'MathQuest needs more learner evidence before identifying a priority.',
             'evidence_confidence': 'limited',
         }
     purpose, purpose_label = _purpose_for_skill(session, sid, str(skill['skill']))
+    metadata = _recent_learning_metadata(session, sid, str(skill['skill']))
     outcome = str(skill['skill']).split(':', 1)[0] if ':' in str(skill['skill']) else None
     topic = legacy.LEVEL4_OUTCOMES.get(outcome, (None, None))[0] if outcome else None
     return {
@@ -127,8 +141,10 @@ def _focus_summary(session: Session, sid: int, intelligence: dict[str, Any]) -> 
         'outcome': outcome,
         'learning_purpose': purpose,
         'learning_purpose_label': purpose_label,
+        'prerequisites': skill.get('prerequisites') or [],
+        'prerequisite_for': metadata.get('prerequisite_for'),
         'recommendation': rec.get('title') if rec else f"Keep going with {skill.get('label', 'current learning')}",
-        'reason': rec.get('reason') if rec else 'MathQuest is using accumulated learner evidence to choose the next useful focus.',
+        'reason': rec.get('reason') or metadata.get('adaptive_reason') if rec else metadata.get('adaptive_reason') or 'MathQuest is using accumulated learner evidence to choose the next useful focus.',
         'evidence_confidence': skill.get('confidence', 'limited'),
     }
 
@@ -286,6 +302,30 @@ def _ha_provider(session: Session, sid: int) -> dict[str, Any]:
 
 
 v0110._dashboard_insight_provider = _ha_provider
+
+
+def _remove_route(path: str, method: str) -> None:
+    app.router.routes[:] = [
+        route for route in app.router.routes
+        if not (getattr(route, 'path', None) == path and method in getattr(route, 'methods', set()))
+    ]
+
+
+_remove_route('/api/ha/service-token', 'GET')
+
+
+@app.get('/api/ha/service-token')
+def ha_service_token_v0350(_: legacy.User = Depends(legacy.parent)):
+    return {
+        'token': legacy.HA_SERVICE_TOKEN,
+        'authorization_header': f'Bearer {legacy.HA_SERVICE_TOKEN}',
+        'stats_endpoint': '/api/ha/stats',
+        'summary_endpoint': '/api/ha/summary',
+        'learning_endpoint': '/api/ha/learning',
+        'weekly_summary_endpoint': '/api/ha/weekly-summary',
+        'entity_unique_ids': ENTITY_IDS,
+        'expires': None,
+    }
 
 
 @app.get('/api/ha/learning')
