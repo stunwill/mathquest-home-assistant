@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.33.0`
+Version `0.34.0`
 
 ## Features
 
@@ -20,6 +20,9 @@ Version `0.33.0`
 - Parent Learning Intelligence with plain-language summaries, independent versus supported mastery, evidence confidence, prioritised practice recommendations, misconception grouping, retention status and difficulty calibration
 - Adaptive daily session composition that labels questions as current learning, consolidation, review or challenge from accumulated learner evidence
 - Controlled progression that requires repeated independent success before increasing challenge and slows progression when tutoring support remains high
+- Story Adventure presentation over the same backend-authoritative adaptive learning plan used by Daily Practice
+- Short, staged Story Adventures that preserve the selected skill, difficulty, learning purpose, Visual Mathematics and evidence collection
+- Story Adventure sessions sized for the existing 5, 10 and 15-minute learning options, with lightweight stage and mission progress
 - Visual questions, visual hints, story adventures and teaching tools
 - Weekly learning activity and complete worksheet history
 - XP, levels, streaks and badges
@@ -44,7 +47,7 @@ Version `0.33.0`
 - Interactive fraction bars with number-line and equivalent-fraction representations that remain mathematically synchronised
 - Optional question-specific visual recommendations and multiple solution strategies without changing the learner's answer
 - Math Mentor visual-model recommendations connected to the calculation and informed by repeated learning-evidence signals
-- Story Adventures 2.0 with adaptive learning goals, connected mission chapters, shared themed data and final outcomes
+- Story Adventures with adaptive learning goals, connected mission stages, shared themed data and final outcomes
 - Outcome-level mastery, spaced-review scheduling, prerequisite routing and personalised 5, 10 or 15-minute next-session recommendations
 - Parent insight showing level and outcome growth, independent versus supported performance, retention, review dates and weekly recommendations
 - Long-lived Home Assistant service authentication plus complete category and outcome learning metrics
