@@ -84,12 +84,12 @@ jobs:
         run: |
           PYTHONPATH=questmath/app/backend QUESTMATH_DATA_DIR=/tmp/mathquest-metadata-health python - <<'PY'
           import yaml
-          from app import v0350
+          from app import v0351
 
           with open('questmath/config.yaml', encoding='utf-8') as handle:
               expected = str(yaml.safe_load(handle)['version'])
           health_route = next(
-              route for route in v0350.app.routes
+              route for route in v0351.app.routes
               if getattr(route, 'path', None) == '/api/health' and 'GET' in getattr(route, 'methods', set())
           )
           actual = str(health_route.endpoint()['version'])
