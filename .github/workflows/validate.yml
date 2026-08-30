@@ -129,23 +129,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/mathquest-smoke-data
-          cat > /tmp/mathquest-smoke-data/options.json <<'JSON'
-          {
-            "parent_username": "parent",
-            "parent_password": "SmokeParent123!",
-            "student_username": "student",
-            "student_password": "SmokeStudent123!",
-            "student_display_name": "Math Explorer",
-            "timezone": "Australia/Melbourne"
-          }
-          JSON
+          docker network create mathquest-smoke
+          docker run -d --name supervisor \
+            --network mathquest-smoke \
+            --network-alias supervisor \
+            python:3.12-alpine \
+            python -c 'from http.server import BaseHTTPRequestHandler,HTTPServer; import json; payload=json.dumps({"data":{"options":{"parent_username":"parent","parent_password":"SmokeParent123!","student_username":"student","student_password":"SmokeStudent123!","student_display_name":"Math Explorer","timezone":"Australia/Melbourne"}}}).encode(); Handler=type("Handler",(BaseHTTPRequestHandler,),{"do_GET":lambda self:(self.send_response(200),self.send_header("Content-Type","application/json"),self.end_headers(),self.wfile.write(payload)),"log_message":lambda *args:None}); HTTPServer(("0.0.0.0",80),Handler).serve_forever()'
           docker run -d --name mathquest-aarch64-smoke \
             --platform linux/arm64 \
+            --network mathquest-smoke \
             -p 18080:8080 \
-            -v /tmp/mathquest-smoke-data:/data \
             mathquest:aarch64-smoke
-          trap 'docker logs mathquest-aarch64-smoke || true; docker rm -f mathquest-aarch64-smoke || true' EXIT
+          trap 'docker logs mathquest-aarch64-smoke || true; docker rm -f mathquest-aarch64-smoke supervisor || true; docker network rm mathquest-smoke || true' EXIT
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:18080/api/health > /tmp/mathquest-health.json; then
               cat /tmp/mathquest-health.json
