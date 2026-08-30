@@ -32,7 +32,7 @@ def test_release_notes_extract_current_version_section_only():
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.35.0'}
+    assert set(versions.values()) == {'0.35.1'}
 
 
 def test_release_workflow_validates_versions_before_publishing():
