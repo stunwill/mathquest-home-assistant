@@ -2,6 +2,20 @@
 
 MathQuest is a Victorian Curriculum aligned, adaptive mathematics learning application for short, purposeful daily practice. This file is the authoritative development roadmap for repository tooling and DevHub.
 
+## v0.35.1 - Parent Dashboard Reliability Corrective Release
+
+Status: Completed
+
+### Reliability
+- [x] Fix Parent Learning Intelligence rendering when data transitions from initial loading to loaded state.
+- [x] Prevent required Parent Dashboard bootstrap failures from leaving an indefinite splash screen.
+- [x] Let backups and optional learning-intelligence sections degrade independently without blocking the core parent experience.
+- [x] Preserve Home Assistant ingress, authentication, Parent Tests and learner functionality.
+
+### Testing
+- [x] Add regression coverage for the Parent Learning Intelligence null-to-loaded render lifecycle.
+- [x] Keep release metadata and runtime-version validation aligned with the corrective release.
+
 ## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
 
 Status: Completed

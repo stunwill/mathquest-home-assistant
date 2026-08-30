@@ -1,6 +1,6 @@
 import React from 'react';
-import {render, screen} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
+import {cleanup, render, screen} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 import {ParentLearningIntelligence} from './parent-intelligence';
 
 const data={
@@ -16,7 +16,9 @@ const data={
   ],
 };
 
-describe('v0.32.0 parent learning intelligence',()=>{
+afterEach(()=>cleanup());
+
+describe('parent learning intelligence',()=>{
   it('shows the learning summary and practice priority',()=>{
     render(<ParentLearningIntelligence data={data} onPeriod={vi.fn()}/>);
     expect(screen.getByText('Addition with regrouping is becoming secure.')).toBeTruthy();
@@ -37,5 +39,12 @@ describe('v0.32.0 parent learning intelligence',()=>{
     expect(screen.getAllByText('Needs Support').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Regrouping Error').length).toBeGreaterThan(0);
     expect(screen.getAllByText('3 observations').length).toBeGreaterThan(0);
+  });
+
+  it('can transition from no intelligence data to loaded data without changing hook order',()=>{
+    const {container,rerender}=render(<ParentLearningIntelligence data={null} onPeriod={vi.fn()}/>);
+    expect(container.querySelector('[aria-label="Parent learning intelligence"]')).toBeNull();
+    rerender(<ParentLearningIntelligence data={data} onPeriod={vi.fn()}/>);
+    expect(container.querySelector('[aria-label="Parent learning intelligence"]')).toBeTruthy();
   });
 });

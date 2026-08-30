@@ -1,4 +1,4 @@
-# MathQuest 0.35.0
+# MathQuest 0.35.1
 
 **Sienna’s daily adventure in maths.**
 
@@ -24,11 +24,18 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Home Assistant parent-learning integration with daily completion, learning focus, review due, support dependence, misconceptions, meaningful progress and weekly summary
 - Persistent local Home Assistant service token and stable read-only learning endpoints
 - Method-first Math Mentor, aligned worked examples, Visual Mathematics and Interactive Maths Lab
+- Parent Dashboard reliability safeguards for loading, retry and optional-section failure
 - SQLite persistence and Home Assistant backup support
+
+## Parent Dashboard reliability
+
+v0.35.1 fixes a Parent Learning Intelligence render crash caused by inconsistent React hook ordering during the initial null-to-loaded data transition. Required Parent Dashboard bootstrap failures are now visible and retryable, while backups and optional learning-intelligence data no longer block the core dashboard.
+
+MathQuest continues to use standard Home Assistant add-on ingress. The application does not expose a `/ingress/validate_session` route, so Home Assistant's ingress session validation remains outside the MathQuest API surface.
 
 ## Home Assistant parent learning
 
-v0.35.0 makes the existing learning intelligence useful outside the MathQuest UI without creating a second mastery system. Home Assistant reads a compact backend-generated learning state from `/api/ha/learning` and `/api/ha/weekly-summary` using the existing local service token.
+v0.35.0 made the existing learning intelligence useful outside the MathQuest UI without creating a second mastery system. Home Assistant reads a compact backend-generated learning state from `/api/ha/learning` and `/api/ha/weekly-summary` using the existing local service token.
 
 Daily Practice and Story Adventure count as daily learning only when a learner session is completed with answered-question evidence. Parent Tests, opening the app, starting a worksheet and abandoned no-evidence sessions do not satisfy daily learning.
 

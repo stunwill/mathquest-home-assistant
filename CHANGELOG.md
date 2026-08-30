@@ -2,6 +2,14 @@
 
 This is the authoritative project and GitHub changelog consumed by repository tooling and DevHub. Home Assistant user-facing release notes are maintained separately in `questmath/CHANGELOG.md`.
 
+## v0.35.1 - Parent Dashboard Reliability Corrective Release
+
+- Fixed a React hook-order crash in Parent Learning Intelligence that could leave the parent experience blank or apparently stuck even while all parent API requests returned successfully.
+- Made Parent Dashboard bootstrap failures visible and retryable instead of allowing required request failures to leave an indefinite MathQuest splash screen.
+- Limited blocking Parent Dashboard startup data to the dashboard and worksheet settings, while backups and learning-intelligence enhancements now degrade independently.
+- Added a regression test covering the real loading transition from no Parent Learning Intelligence data to populated data.
+- Confirmed MathQuest Home Assistant ingress remains configured through the standard add-on ingress contract. The observed Home Assistant `/ingress/validate_session` 401 is not produced by a MathQuest route and is therefore not treated as the application root cause.
+
 ## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
 
 - Added a compact backend-authoritative Home Assistant parent-learning summary using existing Parent Learning Intelligence, adaptive-learning purposes, retention, support dependency and misconception evidence.

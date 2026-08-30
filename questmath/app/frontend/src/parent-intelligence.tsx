@@ -16,8 +16,11 @@ function Why({children}:{children:React.ReactNode}){
 
 export function ParentLearningIntelligence({data,onPeriod}:{data:any;onPeriod:(days:number)=>void}){
   const[area,setArea]=useState('all');
+  const skills=useMemo(()=>{
+    const items=data?.skills||[];
+    return area==='all'?items:items.filter((item:any)=>String(item.skill||'').toLowerCase().includes(area));
+  },[data?.skills,area]);
   if(!data)return null;
-  const skills=useMemo(()=>area==='all'?data.skills:(data.skills||[]).filter((item:any)=>String(item.skill||'').toLowerCase().includes(area)),[data.skills,area]);
   const needs=(data.skills||[]).filter((item:any)=>item.status==='needs_support');
   const secure=(data.skills||[]).filter((item:any)=>item.status==='secure');
   return <section className="parent-intelligence" aria-label="Parent learning intelligence">
