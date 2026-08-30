@@ -16,7 +16,7 @@ const data={
   ],
 };
 
-describe('v0.32.0 parent learning intelligence',()=>{
+describe('parent learning intelligence',()=>{
   it('shows the learning summary and practice priority',()=>{
     render(<ParentLearningIntelligence data={data} onPeriod={vi.fn()}/>);
     expect(screen.getByText('Addition with regrouping is becoming secure.')).toBeTruthy();
@@ -37,5 +37,12 @@ describe('v0.32.0 parent learning intelligence',()=>{
     expect(screen.getAllByText('Needs Support').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Regrouping Error').length).toBeGreaterThan(0);
     expect(screen.getAllByText('3 observations').length).toBeGreaterThan(0);
+  });
+
+  it('can transition from no intelligence data to loaded data without changing hook order',()=>{
+    const {rerender}=render(<ParentLearningIntelligence data={null} onPeriod={vi.fn()}/>);
+    expect(screen.queryByLabelText('Parent learning intelligence')).toBeNull();
+    rerender(<ParentLearningIntelligence data={data} onPeriod={vi.fn()}/>);
+    expect(screen.getByLabelText('Parent learning intelligence')).toBeTruthy();
   });
 });
