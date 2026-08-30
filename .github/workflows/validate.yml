@@ -108,3 +108,57 @@ jobs:
           PY
           )"
           python scripts/extract_release_notes.py "$VERSION" --output /tmp/release-notes.md
+
+  addon-aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable arm64 emulation
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+      - name: Build aarch64 add-on image
+        run: |
+          docker buildx build \
+            --platform linux/arm64 \
+            --load \
+            --build-arg BUILD_FROM=ghcr.io/home-assistant/aarch64-base:3.21 \
+            --tag mathquest:aarch64-smoke \
+            questmath
+      - name: Start aarch64 add-on and verify health
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mathquest-smoke-data
+          cat > /tmp/mathquest-smoke-data/options.json <<'JSON'
+          {
+            "parent_username": "parent",
+            "parent_password": "SmokeParent123!",
+            "student_username": "student",
+            "student_password": "SmokeStudent123!",
+            "student_display_name": "Math Explorer",
+            "timezone": "Australia/Melbourne"
+          }
+          JSON
+          docker run -d --name mathquest-aarch64-smoke \
+            --platform linux/arm64 \
+            -p 18080:8080 \
+            -v /tmp/mathquest-smoke-data:/data \
+            mathquest:aarch64-smoke
+          trap 'docker logs mathquest-aarch64-smoke || true; docker rm -f mathquest-aarch64-smoke || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:18080/api/health > /tmp/mathquest-health.json; then
+              cat /tmp/mathquest-health.json
+              python - <<'PY'
+          import json
+          from pathlib import Path
+          payload=json.loads(Path('/tmp/mathquest-health.json').read_text())
+          if payload.get('version') != '0.35.1':
+              raise SystemExit(f"unexpected health version: {payload}")
+          PY
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'MathQuest aarch64 startup health check failed'
+          exit 1
