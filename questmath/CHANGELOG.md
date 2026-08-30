@@ -7,7 +7,7 @@ Concise user-facing release notes for the Home Assistant add-on. The detailed pr
 - Fixed a Parent Learning Intelligence frontend crash that could stop the Parent Dashboard rendering even though its API calls succeeded.
 - Parent Dashboard startup failures now show a retryable error instead of remaining indefinitely on the MathQuest loading screen.
 - Backups and optional learning-intelligence sections no longer block the core Parent Dashboard from loading.
-- Preserved Home Assistant ingress, authentication and existing learner functionality.
+- Preserved Home Assistant ingress, Daily Learning, Parent Tests, local-first operation, authentication and existing learner functionality.
 
 ## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
 
