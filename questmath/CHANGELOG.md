@@ -2,6 +2,13 @@
 
 Concise user-facing release notes for the Home Assistant add-on. The detailed project/GitHub changelog is maintained at the repository root in `CHANGELOG.md`.
 
+## v0.35.1 - Parent Dashboard Reliability Corrective Release
+
+- Fixed a Parent Learning Intelligence frontend crash that could stop the Parent Dashboard rendering even though its API calls succeeded.
+- Parent Dashboard startup failures now show a retryable error instead of remaining indefinitely on the MathQuest loading screen.
+- Backups and optional learning-intelligence sections no longer block the core Parent Dashboard from loading.
+- Preserved Home Assistant ingress, authentication and existing learner functionality.
+
 ## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
 
 - Added a compact Home Assistant learning summary showing daily completion, current learning focus, review status, support needs and a weekly learning summary.
