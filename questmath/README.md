@@ -1,4 +1,4 @@
-# MathQuest 0.35.0
+# MathQuest 0.35.1
 
 **Sienna’s daily adventure in maths.**
 
@@ -24,26 +24,22 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Home Assistant parent-learning integration with daily completion, learning focus, review due, support dependence, misconceptions, meaningful progress and weekly summary
 - Persistent local Home Assistant service token and stable read-only learning endpoints
 - Method-first Math Mentor, aligned worked examples, Visual Mathematics and Interactive Maths Lab
+- Parent Dashboard reliability safeguards for loading, retry and optional-section failure
 - SQLite persistence and Home Assistant backup support
+
+## v0.35.1 corrective release
+
+This release fixes a Parent Learning Intelligence render crash caused by inconsistent React hook ordering during the initial null-to-loaded data transition. It also makes required Parent Dashboard startup failures visible and retryable, while backups and optional learning intelligence no longer block the core dashboard.
+
+The Home Assistant add-on continues to use the standard ingress declaration in `config.yaml`. MathQuest does not define a `/ingress/validate_session` application route, so Home Assistant ingress validation remains outside the MathQuest API surface.
 
 ## Home Assistant parent learning
 
-v0.35.0 makes the existing learning intelligence useful outside the MathQuest UI without creating a second mastery system. Home Assistant reads a compact backend-generated learning state from `/api/ha/learning` and `/api/ha/weekly-summary` using the existing local service token.
+Use the dedicated parent-facing Home Assistant endpoints with the service token shown in the Parent Dashboard:
 
-Daily Practice and Story Adventure count as daily learning only when a learner session is completed with answered-question evidence. Parent Tests, opening the app, starting a worksheet and abandoned no-evidence sessions do not satisfy daily learning.
+- `/api/ha/learning`
+- `/api/ha/weekly-summary`
+- `/api/ha/stats`
+- `/api/ha/summary`
 
-The Home Assistant contract exposes a small number of stable concepts rather than dozens of internal metrics. It includes current learning purpose, evidence confidence, review-due state, persistent support dependency, repeated misconception evidence, meaningful progress and a seven-day parent summary. Parent Dashboard and Home Assistant derive from the same Parent Learning Intelligence helpers.
-
-## Adaptive Story Adventures
-
-Story Adventure remains a presentation layer over MathQuest's adaptive learning engine. Story progression never counts as mastery. Correctness, attempts, support use, misconception evidence and retention continue to determine learning progress through the same evidence model used by Daily Practice.
-
-## Adaptive daily learning
-
-Questions can be marked as current learning, consolidation, quick review or a limited challenge. Progression is conservative: the learner needs repeated independent success before MathQuest increases challenge, while high support dependency or repeated misconception evidence keeps a skill in consolidation. Parent Tests remain excluded.
-
-## Parent Learning Intelligence
-
-The parent dashboard is designed to answer what is improving, what needs support, whether success is independent, what to practise next, why MathQuest recommends it, whether previously learned skills are being retained, and whether current difficulty is appropriate.
-
-MathQuest avoids strong conclusions when there is insufficient evidence. Home Assistant preserves that behaviour and exposes states such as Building evidence and No review due rather than fabricating conclusions.
+MathQuest remains the authoritative source for learning state and recommendations.
