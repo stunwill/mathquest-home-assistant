@@ -2,14 +2,30 @@ const API = 'api';
 const ACTIVE_WORKSHEET_KEY = 'mq_active_worksheet_id';
 const DRAFT_PREFIX = 'mq_answer_draft:';
 
+export type ApiFailureCategory = 'network'|'mathquest_auth'|'ingress_or_proxy_auth'|'server'|'client';
+
 export class ApiError extends Error {
   status: number;
+  path: string;
+  category: ApiFailureCategory;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, path = '', category: ApiFailureCategory = 'client') {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.path = path;
+    this.category = category;
   }
+}
+
+function failureCategory(status:number, contentType:string):ApiFailureCategory {
+  if(status===401) return contentType.includes('json') ? 'mathquest_auth' : 'ingress_or_proxy_auth';
+  if(status>=500) return 'server';
+  return 'client';
+}
+
+function logFailure(path:string,status:number,category:ApiFailureCategory){
+  console.error('[MathQuest] API request failed',{path,status,category});
 }
 
 export async function apiRequest<T = any>(path: string, options: RequestInit = {}): Promise<T> {
@@ -25,19 +41,24 @@ export async function apiRequest<T = any>(path: string, options: RequestInit = {
       },
     });
   } catch {
-    throw new ApiError('MathQuest could not connect. Check Home Assistant and try again.', 0);
+    logFailure(path,0,'network');
+    throw new ApiError('MathQuest could not connect. Check Home Assistant and try again.', 0, path, 'network');
   }
 
   const contentType = response.headers.get('content-type') || '';
   if (!response.ok) {
+    const category=failureCategory(response.status,contentType);
     let message = response.status === 401
-      ? 'Your MathQuest session has expired. Sign in again to continue.'
+      ? (category==='ingress_or_proxy_auth'
+        ? 'Home Assistant could not validate this MathQuest session. Reopen MathQuest from the Home Assistant sidebar and try again.'
+        : 'Your MathQuest session has expired. Sign in again to continue.')
       : 'MathQuest could not complete that action.';
     if (contentType.includes('json')) {
       const data = await response.json().catch(() => null);
       if (data?.detail) message = String(data.detail);
     }
-    throw new ApiError(message, response.status);
+    logFailure(path,response.status,category);
+    throw new ApiError(message, response.status, path, category);
   }
   return (contentType.includes('json') ? response.json() : response.blob()) as Promise<T>;
 }
