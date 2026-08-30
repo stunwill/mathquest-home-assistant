@@ -1,6 +1,6 @@
 import React from 'react';
-import {render, screen} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
+import {cleanup, render, screen} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 import {ParentLearningIntelligence} from './parent-intelligence';
 
 const data={
@@ -15,6 +15,8 @@ const data={
     {skill:'number:written_subtraction',label:'Subtraction with decomposition',attempts:8,confidence:'moderate',status:'needs_support',first_attempt_accuracy:45,eventual_accuracy:88,support_dependency:70},
   ],
 };
+
+afterEach(()=>cleanup());
 
 describe('parent learning intelligence',()=>{
   it('shows the learning summary and practice priority',()=>{
@@ -40,9 +42,9 @@ describe('parent learning intelligence',()=>{
   });
 
   it('can transition from no intelligence data to loaded data without changing hook order',()=>{
-    const {rerender}=render(<ParentLearningIntelligence data={null} onPeriod={vi.fn()}/>);
-    expect(screen.queryByLabelText('Parent learning intelligence')).toBeNull();
+    const {container,rerender}=render(<ParentLearningIntelligence data={null} onPeriod={vi.fn()}/>);
+    expect(container.querySelector('[aria-label="Parent learning intelligence"]')).toBeNull();
     rerender(<ParentLearningIntelligence data={data} onPeriod={vi.fn()}/>);
-    expect(screen.getByLabelText('Parent learning intelligence')).toBeTruthy();
+    expect(container.querySelector('[aria-label="Parent learning intelligence"]')).toBeTruthy();
   });
 });
