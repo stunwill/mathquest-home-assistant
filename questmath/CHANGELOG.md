@@ -2,6 +2,15 @@
 
 Concise user-facing release notes for the Home Assistant add-on. The detailed project/GitHub changelog is maintained at the repository root in `CHANGELOG.md`.
 
+## v0.36.0 - Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
+
+- Number-line location questions can now be answered by tapping or clicking the correct tick directly on the number line instead of selecting a separate number button.
+- Number & Algebra practice now recognises overly simple two-digit additions such as `20 + 28` and reduces them when learning evidence shows the student is ready for richer work, while still allowing purposeful review and consolidation.
+- New installs default the student username to `sienna`, and the login screen pre-fills `sienna` while leaving the password blank and editable parent login available.
+- Expired MathQuest sessions now return automatically to the normal login screen instead of leaving the learner on a `Something went wrong - Invalid session` screen.
+- Kept Home Assistant ingress failures separate from MathQuest token expiry so an ingress problem does not automatically remove otherwise valid MathQuest credentials.
+- Preserved Story Adventure, Math Mentor, Parent Learning Intelligence, Parent Tests, Home Assistant learning APIs and local-first operation.
+
 ## v0.35.1 - Parent Dashboard Reliability Corrective Release
 
 - Fixed a Parent Learning Intelligence frontend crash that could stop the Parent Dashboard rendering even though its API calls succeeded.
