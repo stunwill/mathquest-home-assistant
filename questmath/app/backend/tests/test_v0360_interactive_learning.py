@@ -23,7 +23,8 @@ def _question(prompt: str, *, skill: str = 'VC2M5N04:written_addition', payload:
 
 def test_interactive_number_line_is_a_first_class_answer_type():
     generated = v0360._number_line_question(random.Random(12))
-    code, skill, prompt, answer_type, payload, answer, working = generated
+    skill_key, prompt, answer_type, payload, answer, working = generated
+    code, skill = skill_key.split(':', 1)
     visual = payload['visual']
     target_index = (int(answer) - int(visual['min'])) // int(visual['interval'])
 
@@ -55,7 +56,7 @@ def test_purposeful_foundation_is_preserved_for_review_and_retrieval():
 
 def test_number_line_generator_never_labels_the_requested_internal_tick():
     for seed in range(100):
-        _, _, _, answer_type, payload, answer, _ = v0360._number_line_question(random.Random(seed))
+        _, _, answer_type, payload, answer, _ = v0360._number_line_question(random.Random(seed))
         visual = payload['visual']
         target_index = (int(answer) - int(visual['min'])) // int(visual['interval'])
         assert answer_type == 'number_line'
