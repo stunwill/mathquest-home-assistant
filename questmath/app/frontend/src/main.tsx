@@ -128,7 +128,7 @@ function Metric({icon,label,value}:any){return <div className="metric">{icon&&<i
 function StrategyCard({card}:{card:any}){if(!card)return null;return <div className="mq-strategy-card"><div><span>🧠</span><p><small>STRATEGY FOR THIS QUESTION</small><b>{card.title}</b></p></div><h3>{card.strategy}</h3><p className="mq-strategy-rule">{card.rule}</p><ol>{(card.steps||[]).map((step:string)=><li key={step}>{step}</li>)}</ol>{card.example&&<small className="mq-strategy-example">{card.example}</small>}</div>}
 
 function MathStep({step}:{step:any}){
-  return <div className="mentor-step"><small>{step.label}</small>{step.text&&<p>{step.text}</p>}{Array.isArray(step.math)&&<div className="mentor-math">{step.math.map((line:string)=><code key={line}>{line}</code>)}</div>};
+  return <div className="mentor-step"><small>{step.label}</small>{step.text&&<p>{step.text}</p>}{Array.isArray(step.math)&&<div className="mentor-math">{step.math.map((line:string)=><code key={line}>{line}</code>)}</div>}</div>;
 }
 
 function MathMentor({support,open,setOpen,onHint,onAction,onStartOver,busy,canStartOver,onOpenLab}:{support:any;open:boolean;setOpen:(open:boolean)=>void;onHint:()=>Promise<void>;onAction:(action:string)=>Promise<void>;onStartOver:()=>Promise<void>;busy:boolean;canStartOver:boolean;onOpenLab:()=>void}){
