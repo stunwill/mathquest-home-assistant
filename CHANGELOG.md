@@ -2,6 +2,18 @@
 
 This is the authoritative project and GitHub changelog consumed by repository tooling and DevHub. Home Assistant user-facing release notes are maintained separately in `questmath/CHANGELOG.md`.
 
+## v0.36.0 - Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
+
+- Added first-class interactive number-line location questions so learners answer by selecting a tick on the line instead of choosing a button that repeats the requested value.
+- Kept number-line correctness backend-authoritative by submitting the selected numeric position through the existing answer-validation and learning-evidence path.
+- Added child-friendly mouse, keyboard-focus and touch targets, responsive number-line rendering and non-revealing unlabelled target positions.
+- Extended worksheet-quality logic to recognise straightforward two-digit additions such as `20 + 28` that previously escaped the `≤12` trivial-arithmetic safeguard.
+- Made suppression evidence-aware: learners ready for progression receive richer replacement questions, while purposeful review, consolidation and retrieval remain available.
+- Changed new-install student username defaults and the login form convenience value to `sienna`; passwords remain blank and parent usernames remain editable.
+- Retained the existing 24-hour MathQuest token lifetime while treating expired/invalid MathQuest authentication as a normal transition back to login rather than a generic `Invalid session` failure screen.
+- Preserved the v0.35.1 distinction between MathQuest JSON authentication failures and Home Assistant ingress/proxy authentication failures so ingress problems do not automatically destroy valid MathQuest credentials.
+- Preserved Parent Dashboard reliability, Story Adventure's adaptive-learning integration, Math Mentor, Parent Test isolation, Home Assistant learning APIs and local-first operation.
+
 ## v0.35.1 - Parent Dashboard Reliability Corrective Release
 
 - Fixed a React hook-order crash in Parent Learning Intelligence that could leave the parent experience blank or apparently stuck even while all parent API requests returned successfully.
