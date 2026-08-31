@@ -84,12 +84,12 @@ jobs:
         run: |
           PYTHONPATH=questmath/app/backend QUESTMATH_DATA_DIR=/tmp/mathquest-metadata-health python - <<'PY'
           import yaml
-          from app import v0351
+          from app import v0360
 
           with open('questmath/config.yaml', encoding='utf-8') as handle:
               expected = str(yaml.safe_load(handle)['version'])
           health_route = next(
-              route for route in v0351.app.routes
+              route for route in v0360.app.routes
               if getattr(route, 'path', None) == '/api/health' and 'GET' in getattr(route, 'methods', set())
           )
           actual = str(health_route.endpoint()['version'])
@@ -134,7 +134,7 @@ jobs:
             --network mathquest-smoke \
             --network-alias supervisor \
             python:3.12-alpine \
-            python -c 'from http.server import BaseHTTPRequestHandler,HTTPServer; import json; options={"parent_username":"parent","parent_password":"SmokeParent123!","student_username":"student","student_password":"SmokeStudent123!","student_display_name":"Math Explorer","timezone":"Australia/Melbourne"}; payload=json.dumps({"result":"ok","data":{**options,"options":options}}).encode(); Handler=type("Handler",(BaseHTTPRequestHandler,),{"do_GET":lambda self:(self.send_response(200),self.send_header("Content-Type","application/json"),self.end_headers(),self.wfile.write(payload)),"log_message":lambda *args:None}); HTTPServer(("0.0.0.0",80),Handler).serve_forever()'
+            python -c 'from http.server import BaseHTTPRequestHandler,HTTPServer; import json; options={"parent_username":"parent","parent_password":"SmokeParent123!","student_username":"sienna","student_password":"SmokeStudent123!","student_display_name":"Math Explorer","timezone":"Australia/Melbourne"}; payload=json.dumps({"result":"ok","data":{**options,"options":options}}).encode(); Handler=type("Handler",(BaseHTTPRequestHandler,),{"do_GET":lambda self:(self.send_response(200),self.send_header("Content-Type","application/json"),self.end_headers(),self.wfile.write(payload)),"log_message":lambda *args:None}); HTTPServer(("0.0.0.0",80),Handler).serve_forever()'
           docker run -d --name mathquest-aarch64-smoke \
             --platform linux/arm64 \
             --network mathquest-smoke \
@@ -148,7 +148,7 @@ jobs:
           import json
           from pathlib import Path
           payload=json.loads(Path('/tmp/mathquest-health.json').read_text())
-          if payload.get('version') != '0.35.1':
+          if payload.get('version') != '0.36.0':
               raise SystemExit(f"unexpected health version: {payload}")
           PY
               exit 0

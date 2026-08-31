@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.35.1`
+Version `0.36.0`
 
 ## Development Metadata
 
@@ -26,11 +26,13 @@ The release metadata validator derives the expected version from the repository 
 
 ## Features
 
-- Student and parent logins
+- Student and parent logins, with `sienna` prefilled for the normal student login flow and automatic recovery from expired MathQuest sessions
 - Responsive student dashboard
 - Tablet-optimised worksheet and tutoring flow for portrait and landscape use
 - Multiple daily worksheets with save, exact resume, review and skip support
+- Interactive number-line location questions answered directly on the line rather than through answer-choice buttons
 - Duplicate-safe adaptive question generation and visual learning guardrails
+- Evidence-aware suppression of unnecessarily basic arithmetic while preserving purposeful review and consolidation
 - Victorian Curriculum F–10 Version 2.0 Level 5 pathway, adapting across Levels 2–6 from diagnostic evidence
 - Parent Learning Intelligence with independent versus supported success, evidence confidence, recommendations, misconception grouping, retention and difficulty calibration
 - Adaptive Daily Learning with current learning, consolidation, spaced review and limited challenge purposes
@@ -123,4 +125,6 @@ Review, support and misconception states are intentionally conservative. One dif
 
 MathQuest generates a secure JWT signing secret on first start and stores it at `/data/jwt-signing-secret`. It also generates a dedicated Home Assistant service token at `/data/ha-service-token`. Both values persist through restart and upgrade with restrictive permissions where supported.
 
-Parent and student usernames and passwords are managed from the Home Assistant add-on Configuration page. Save credential changes and restart the MathQuest add-on to apply them to the existing accounts. Learner evidence and worksheet history are preserved.
+MathQuest login tokens currently retain the existing 24-hour lifetime. When a MathQuest token expires, the learner is returned to the normal login form instead of being left on an `Invalid session` error. Home Assistant ingress authentication failures remain separate and do not automatically clear an otherwise valid MathQuest token.
+
+Parent and student usernames and passwords are managed from the Home Assistant add-on Configuration page. New installs default the student username to `sienna`. Save credential changes and restart the MathQuest add-on to apply them to the existing accounts. Learner evidence and worksheet history are preserved.

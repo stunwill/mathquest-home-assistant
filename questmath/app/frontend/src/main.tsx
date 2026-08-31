@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import './styles.css';
 import {APP_VERSION} from './version';
-import {apiRequest as req, createSession, loadActiveWorksheet, questionDraft, rememberActiveWorksheet, rememberQuestionDraft} from './api';
+import {ApiError, apiRequest as req, createSession, loadActiveWorksheet, questionDraft, rememberActiveWorksheet, rememberQuestionDraft} from './api';
 import {ErrorNotice, LearningCalendar, StoryAdventures, WorksheetHistory} from './student-foundation';
 import {MathsLab} from './maths-lab';
 import {MissionOutcome, StoryMissionProgress} from './story-adventure';
@@ -42,21 +42,26 @@ function Brand({compact=false}:{compact?:boolean}){
     <div className="mq-wordmark-wrap"><strong className="mq-wordmark">MathQuest</strong><span className="mq-by-stu">by Stu</span></div>
   </div>;
 }
-function App(){
+export function App(){
   const[user,setUser]=useState<User|null>(null);
   const[loading,setLoading]=useState(true);
   const[error,setError]=useState('');
-  const restore=()=>{setLoading(true);setError('');req<User>('/me').then(setUser).catch((e:Error)=>{if(localStorage.getItem('token'))setError(e.message)}).finally(()=>setLoading(false))};
+  const recoverExpiredAuth=()=>{localStorage.removeItem('token');setUser(null);setError('')};
+  const restore=()=>{setLoading(true);setError('');req<User>('/me').then(setUser).catch((e:Error)=>{
+    if(e instanceof ApiError&&e.category==='mathquest_auth'){recoverExpiredAuth();return}
+    if(localStorage.getItem('token'))setError(e.message)
+  }).finally(()=>setLoading(false))};
   useEffect(restore,[]);
+  useEffect(()=>{const handler=()=>recoverExpiredAuth();window.addEventListener('mathquest-auth-expired',handler);return()=>window.removeEventListener('mathquest-auth-expired',handler)},[]);
   if(loading)return <div className="splash"><Brand/></div>;
-  if(error)return <main className="login"><section className="login-card"><Brand/><ErrorNotice message={error} retry={restore}/><button type="button" onClick={()=>{localStorage.clear();setError('')}}>Sign in again</button></section></main>;
+  if(error)return <main className="login"><section className="login-card"><Brand/><ErrorNotice message={error} retry={restore}/><button type="button" onClick={recoverExpiredAuth}>Sign in again</button></section></main>;
   if(!user)return <Login onLogin={setUser}/>;
-  const logout=()=>{localStorage.clear();setUser(null)};
+  const logout=()=>{localStorage.removeItem('token');setUser(null)};
   return user.role==='parent'?<Parent user={user} logout={logout}/>:<Student user={user} logout={logout}/>;
 }
 
-function Login({onLogin}:{onLogin:(u:User)=>void}){
-  const[username,setUsername]=useState('student');
+export function Login({onLogin}:{onLogin:(u:User)=>void}){
+  const[username,setUsername]=useState('sienna');
   const[password,setPassword]=useState('');
   const[error,setError]=useState('');
   async function login(event:React.FormEvent){
@@ -152,7 +157,8 @@ function WorksheetStatus({ws,q,open}:{ws:WorksheetData;q:Question;open:()=>void}
 function statusLabel(status:QuestionStatus){return({not_started:'Not started',current:'Current',skipped:'Skipped',correct:'Correct',incorrect:'Incorrect',retry_available:'Retry available'} as any)[status]}
 function QuestionOverview({ws,activeId,close,goTo}:{ws:WorksheetData;activeId:number;close:()=>void;goTo:(id:number)=>void}){return <div className="modal-backdrop"><section className="overview-modal"><div className="modal-title"><div><p className="eyebrow">WORKSHEET MAP</p><h2>All questions</h2></div><button className="icon-button" onClick={close}><X/></button></div><div className="question-table"><div className="question-table-head"><b>#</b><b>Question</b><b>Status</b></div>{ws.questions.map(q=>{const locked=['correct','incorrect'].includes(q.status);return <button key={q.id} className={'question-row '+(q.id===activeId?'active':'')} disabled={locked} onClick={()=>goTo(q.id)}><span>{q.position+1}</span><span><b>{q.summary}</b><small>{q.topic} · {q.skill.replaceAll('_',' ')}{q.hint_count?` · 💡 ${q.hint_count}`:''}</small></span><span className={'status-pill '+q.status}>{statusLabel(q.status)}</span></button>})}</div><p className="overview-note">Completed questions are read-only. Skipped and unanswered questions can be opened.</p></section></div>}
 function ConfirmExit({cancel,exit}:{cancel:()=>void;exit:()=>void}){return <div className="modal-backdrop"><section className="confirm-modal"><div className="question-icon">💾</div><h2>Exit today’s worksheet?</h2><p>Your progress, answers, hints, skipped questions and current position will be saved. You can continue later.</p><div className="modal-actions"><button onClick={cancel}>Keep working</button><button className="primary" onClick={exit}>Save and exit</button></div></section></div>}
-function Answer({q,value,setValue}:any){if(q.answer_type==='choice')return <div className="choices">{q.payload.choices.map((x:string)=><button type="button" className={value===x?'selected':''} onClick={()=>setValue(String(x))} key={x}>{x}</button>)}</div>;const capture=(e:any)=>setValue(String(e.currentTarget.value));return <div className="answer-row">{q.answer_type==='money'&&<span>$</span>}<input inputMode={q.answer_type==='text'?'text':'decimal'} value={value} onInput={capture} onChange={capture} autoFocus autoComplete="off" aria-label="Your answer" placeholder="Type your answer"/>{q.payload.unit&&<span>{q.payload.unit}</span>}</div>}
+export function NumberLineAnswer({q,value,setValue}:any){const visual=q?.payload?.visual||{};const min=Number(visual.min)||0;const steps=Math.max(1,Number(visual.steps)||1);const interval=Number(visual.interval)||1;const labels=new Set<number>((visual.label_indices||[]).map(Number));return <div className="interactive-number-line" role="group" aria-label={`Select a position on the number line from ${min} to ${min+steps*interval}`}><div className="interactive-number-line-track">{Array.from({length:steps+1},(_,index)=>{const tickValue=min+index*interval;const selected=String(value)===String(tickValue);const labelled=labels.has(index);return <button type="button" key={index} aria-label={labelled?`Tick labelled ${tickValue}`:`Unlabelled tick ${index+1}`} aria-pressed={selected} className={selected?'selected':''} onClick={()=>setValue(String(tickValue))}><i/><span>{labelled?tickValue:''}</span></button>})}</div><p aria-live="polite">{value!==''?'Position selected. Check your answer when ready.':'Tap the tick mark that matches the value in the question.'}</p></div>}
+export function Answer({q,value,setValue}:any){if(q.answer_type==='number_line')return <NumberLineAnswer q={q} value={value} setValue={setValue}/>;if(q.answer_type==='choice')return <div className="choices">{q.payload.choices.map((x:string)=><button type="button" className={value===x?'selected':''} onClick={()=>setValue(String(x))} key={x}>{x}</button>)}</div>;const capture=(e:any)=>setValue(String(e.currentTarget.value));return <div className="answer-row">{q.answer_type==='money'&&<span>$</span>}<input inputMode={q.answer_type==='text'?'text':'decimal'} value={value} onInput={capture} onChange={capture} autoFocus autoComplete="off" aria-label="Your answer" placeholder="Type your answer"/>{q.payload.unit&&<span>{q.payload.unit}</span>}</div>}
 function FractionShape({parts,shaded}:{parts:number;shaded:number}){return <div className="fraction-shape">{Array.from({length:parts}).map((_,i)=><i key={i} className={i<shaded?'on':''}/>)}</div>}
 function Result({data,back}:any){return <main className="result"><section><MissionOutcome adventure={data.adventure}/><div className="result-score">{data.score}/{data.total}</div><h1>{data.message}</h1><p>{data.accuracy}% accuracy · +{data.xp_earned} XP</p><div className="result-grid"><Metric label="Strongest" value={data.strongest_topic}/><Metric label="Practise next" value={data.weakest_topic}/><Metric icon={<Lightbulb/>} label="Hints used" value={data.hints_used||0}/><Metric label="Level" value={data.level}/></div><button className="primary" onClick={back}>Back to dashboard</button></section></main>}
 function Parent({user,logout}:{user:User;logout:()=>void}){

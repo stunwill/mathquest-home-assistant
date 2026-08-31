@@ -28,6 +28,12 @@ function logFailure(path:string,status:number,category:ApiFailureCategory){
   console.error('[MathQuest] API request failed',{path,status,category});
 }
 
+function broadcastAuthExpiry(path:string,category:ApiFailureCategory){
+  if(category==='mathquest_auth'&&path!=='/auth/login'&&typeof window!=='undefined'){
+    window.dispatchEvent(new CustomEvent('mathquest-auth-expired'));
+  }
+}
+
 export async function apiRequest<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('token');
   let response: Response;
@@ -58,6 +64,7 @@ export async function apiRequest<T = any>(path: string, options: RequestInit = {
       if (data?.detail) message = String(data.detail);
     }
     logFailure(path,response.status,category);
+    broadcastAuthExpiry(path,category);
     throw new ApiError(message, response.status, path, category);
   }
   return (contentType.includes('json') ? response.json() : response.blob()) as Promise<T>;

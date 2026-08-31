@@ -22,17 +22,17 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     lowered = notes.lower()
-    assert 'home assistant' in lowered
-    assert 'daily learning' in lowered
-    assert 'parent tests' in lowered
-    assert 'local-first' in lowered
-    assert 'v0.34.0' not in notes
+    assert 'number line' in lowered
+    assert 'adaptive' in lowered
+    assert 'session' in lowered
+    assert 'sienna' in lowered
+    assert 'v0.35.1' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.35.1'}
+    assert set(versions.values()) == {'0.36.0'}
 
 
 def test_release_workflow_validates_versions_before_publishing():
@@ -43,7 +43,7 @@ def test_release_workflow_validates_versions_before_publishing():
     assert validation < existing_tag_check < publish
 
 
-def test_validation_workflow_does_not_hard_code_release_version():
+def test_validation_workflow_does_not_hard_code_release_version_for_notes():
     workflow = (ROOT / '.github/workflows/validate.yml').read_text(encoding='utf-8')
     extraction_step = workflow.split('- name: Validate release-note extraction', 1)[1]
     assert "config['version']" in extraction_step
