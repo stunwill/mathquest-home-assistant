@@ -2,6 +2,29 @@
 
 MathQuest is a Victorian Curriculum aligned, adaptive mathematics learning application for short, purposeful daily practice. This file is the authoritative development roadmap for repository tooling and DevHub.
 
+## v0.36.0 - Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
+
+Status: Completed
+
+### Learning
+- [x] Make number-line location questions first-class interactive answers selected directly on the number line.
+- [x] Keep number-line scoring and evidence inside the existing backend-authoritative worksheet and attempt architecture.
+- [x] Extend worksheet-quality safeguards so straightforward two-digit additions such as `20 + 28` are recognised as low-complexity practice when learner evidence supports progression.
+- [x] Preserve purposeful foundational review, consolidation and spaced retrieval rather than globally removing easy arithmetic.
+- [x] Keep Story Adventure on the same adaptive-learning and answer-validation path.
+
+### UX
+- [x] Add child-friendly mouse, touch and keyboard-focus targets for interactive number lines.
+- [x] Default the editable student login username to `sienna` while leaving passwords blank and parent login available.
+- [x] Treat normal MathQuest token expiry as a return-to-login state rather than a generic `Invalid session` application failure.
+- [x] Keep Home Assistant ingress authentication failures distinct from MathQuest authentication expiry.
+
+### Testing
+- [x] Add deterministic number-line generation tests and frontend interaction coverage.
+- [x] Add regression coverage for simple two-digit addition classification and purposeful-foundation preservation.
+- [x] Add login and session-expiry recovery coverage.
+- [x] Preserve backend, frontend, metadata and aarch64 add-on startup validation.
+
 ## v0.35.1 - Parent Dashboard Reliability Corrective Release
 
 Status: Completed
