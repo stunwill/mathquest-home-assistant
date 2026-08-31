@@ -1,4 +1,4 @@
-# MathQuest 0.35.1
+# MathQuest 0.36.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -6,12 +6,15 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 
 ## Included
 
-- Student and parent authentication
+- Student and parent authentication, with `sienna` prefilled for the normal student login flow
+- Automatic recovery from expired MathQuest sessions back to the login screen while keeping Home Assistant ingress failures distinct
 - Student dashboard, streak, XP, levels, calendar and badges
 - Multiple generated worksheets per day
 - Save and exit, resume, skip-for-now and skipped-question round
 - Exact worksheet resume, completed worksheet review and weekly learning history
+- Interactive number-line location questions answered directly on the visual number line
 - Duplicate-safe question generation with visual question guardrails
+- Evidence-aware reduction of unnecessarily basic two-digit arithmetic while preserving purposeful review, consolidation and retrieval
 - Immediate retry-first feedback with optional Math Mentor support
 - Tablet-optimised worksheet and tutoring layouts
 - Adaptive strand weighting and progressive difficulty
@@ -27,19 +30,25 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Parent Dashboard reliability safeguards for loading, retry and optional-section failure
 - SQLite persistence and Home Assistant backup support
 
+## Interactive number lines
+
+Number-line location questions now use a first-class `number_line` answer type. The learner taps or clicks a tick on the number line itself, and the selected numeric position is submitted through the normal backend-authoritative answer route. The requested internal value is intentionally not labelled on the line, so the question assesses scale interpretation rather than recognition of an answer button.
+
+## Adaptive Number and Algebra quality
+
+v0.36.0 extends the existing worksheet-quality safeguards beyond the previous `≤12` trivial-arithmetic check. Straightforward two-digit additions such as `20 + 28` are now recognised as low-complexity practice and are suppressed once learner readiness supports progression, unless the question is deliberately present for review, consolidation or retrieval. Foundational practice remains available when learning evidence gives it a purpose.
+
+## Student login and session recovery
+
+The login form now defaults the editable username to `sienna`, leaves the password blank and focuses the password field. The existing 24-hour MathQuest token lifetime is retained. A JSON `401` from MathQuest authentication is treated as normal session expiry and returns the learner directly to the login screen. A non-JSON/plain-text `401` from Home Assistant ingress remains a separate recovery state and does not automatically clear the MathQuest token.
+
 ## Parent Dashboard reliability
 
-v0.35.1 fixes a Parent Learning Intelligence render crash caused by inconsistent React hook ordering during the initial null-to-loaded data transition. Required Parent Dashboard bootstrap failures are now visible and retryable, while backups and optional learning-intelligence data no longer block the core dashboard.
-
-MathQuest continues to use standard Home Assistant add-on ingress. The application does not expose a `/ingress/validate_session` route, so Home Assistant's ingress session validation remains outside the MathQuest API surface.
+The v0.35.1 Parent Learning Intelligence and Parent Dashboard reliability corrections remain in place. Required bootstrap failures are visible and retryable, while backups and optional learning-intelligence data degrade independently.
 
 ## Home Assistant parent learning
 
-v0.35.0 made the existing learning intelligence useful outside the MathQuest UI without creating a second mastery system. Home Assistant reads a compact backend-generated learning state from `/api/ha/learning` and `/api/ha/weekly-summary` using the existing local service token.
-
-Daily Practice and Story Adventure count as daily learning only when a learner session is completed with answered-question evidence. Parent Tests, opening the app, starting a worksheet and abandoned no-evidence sessions do not satisfy daily learning.
-
-The Home Assistant contract exposes a small number of stable concepts rather than dozens of internal metrics. It includes current learning purpose, evidence confidence, review-due state, persistent support dependency, repeated misconception evidence, meaningful progress and a seven-day parent summary. Parent Dashboard and Home Assistant derive from the same Parent Learning Intelligence helpers.
+MathQuest remains authoritative for educational decisions and exposes compact read-only learning state through the existing Home Assistant endpoints. Daily Practice and Story Adventure count as daily learning only after meaningful completed learner work with answered questions. Parent Tests and abandoned no-evidence sessions do not count as daily learning.
 
 ## Adaptive Story Adventures
 
