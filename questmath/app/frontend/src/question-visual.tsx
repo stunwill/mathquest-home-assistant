@@ -65,6 +65,7 @@ export function QuestionVisual({question}: {question: any}) {
   if (visual.type === 'clock') return <Clock key={key} visual={visual}/>;
   if (visual.type === 'angle') return <Angle key={key} visual={visual}/>;
   if (visual.type === 'bar_chart') return <BarChart key={key} visual={visual}/>;
+  if (visual.type === 'number_line' && visual.interactive) return null;
   if (visual.type === 'number_line') return <StaticNumberLine key={key} visual={visual}/>;
   if (visual.type === 'array') return <div className="mq-visual" key={key}><ArrayModel rows={Number(visual.rows)||3} columns={Number(visual.columns)||4}/></div>;
   if (visual.type === 'place_value') return <div className="mq-visual" key={key}><PlaceValueModel value={Number(visual.value)||0}/></div>;
