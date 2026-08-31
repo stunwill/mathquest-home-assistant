@@ -9,7 +9,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0120, v0301, v0321, v0330, v0351
+from . import v0120, v0301, v0321, v0351
 
 app = v0351.app
 app.version = '0.36.0'
@@ -84,7 +84,9 @@ def _number_line_question(rng: random.Random):
     target_index = rng.randint(1, steps - 1)
     target = start + target_index * interval
     end = start + steps * interval
-    labels = sorted({0, steps, rng.randint(1, steps - 1)})
+    optional_labels = [index for index in range(1, steps) if index != target_index]
+    extra_label = rng.choice(optional_labels) if optional_labels else None
+    labels = sorted({0, steps, *([extra_label] if extra_label is not None else [])})
     payload = {
         'visual': {
             'type': 'number_line',
@@ -94,7 +96,6 @@ def _number_line_question(rng: random.Random):
             'interval': interval,
             'steps': steps,
             'label_indices': labels,
-            'tick_labels': 'selected',
         },
         'number_line_selection': {
             'min': start,
@@ -104,13 +105,13 @@ def _number_line_question(rng: random.Random):
         },
     }
     return legacy.q(
-        'VC2M5N02',
+        'VC2M4N02',
         'number_line_location',
         f'Select {target} on the number line.',
         'number_line',
         payload,
         target,
-        f'Each interval increases by {interval}. Count from a labelled value until you reach {target}.',
+        f'Each tick is an equal interval of {interval}. Use the labelled values to work out the scale, then count equal steps from a known point.',
     )
 
 
@@ -131,17 +132,13 @@ def apply_v0360_quality(session: Session, worksheet: legacy.Worksheet, student_i
 
     for question in sorted(worksheet.questions, key=lambda item: item.position):
         family = v0301.question_family(question)
-        payload = _payload(question)
         is_simple = _simple_two_digit_addition(question)
         purposeful = _purposeful_foundation(question)
         if is_simple:
             simple_seen += 1
-            if readiness['ready'] and not purposeful:
-                if _replace_with_richer_question(question, worksheet, rng, seen):
-                    family = v0301.question_family(question)
-            elif simple_seen > simple_budget and not purposeful:
-                if _replace_with_richer_question(question, worksheet, rng, seen):
-                    family = v0301.question_family(question)
+            should_replace = (readiness['ready'] and not purposeful) or (simple_seen > simple_budget and not purposeful)
+            if should_replace and _replace_with_richer_question(question, worksheet, rng, seen):
+                family = v0301.question_family(question)
         seen.add(family)
         payload = _payload(question)
         payload['v0360_quality'] = {
