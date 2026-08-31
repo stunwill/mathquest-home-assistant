@@ -1,10 +1,10 @@
 import React from 'react';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import '@testing-library/jest-dom';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import matchers from '@testing-library/jest-dom/matchers';
 import {Answer, App, Login, NumberLineAnswer} from './main';
 
-const user={id:1,username:'sienna',role:'student',display_name:'Sienna',xp:0,level:5,highest_level:5};
+expect.extend(matchers);
 
 beforeEach(()=>{
   localStorage.clear();
