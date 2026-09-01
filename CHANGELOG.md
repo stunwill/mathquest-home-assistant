@@ -1,3 +1,7 @@
+## v0.37.1 - Duplicate-Safe Reasoning Mix
+- Prevent the richer interactive-question mix from replacing a question with an identity already present in the worksheet.
+- Preserve duplicate-safe worksheet generation and add regression coverage for repeated reasoning candidates.
+
 # MathQuest Changelog
 
 This is the authoritative project and GitHub changelog consumed by repository tooling and DevHub. Home Assistant user-facing release notes are maintained separately in `questmath/CHANGELOG.md`.
