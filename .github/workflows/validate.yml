@@ -84,12 +84,12 @@ jobs:
         run: |
           PYTHONPATH=questmath/app/backend QUESTMATH_DATA_DIR=/tmp/mathquest-metadata-health python - <<'PY'
           import yaml
-          from app import v0360
+          from app import v0370
 
           with open('questmath/config.yaml', encoding='utf-8') as handle:
               expected = str(yaml.safe_load(handle)['version'])
           health_route = next(
-              route for route in v0360.app.routes
+              route for route in v0370.app.routes
               if getattr(route, 'path', None) == '/api/health' and 'GET' in getattr(route, 'methods', set())
           )
           actual = str(health_route.endpoint()['version'])
@@ -148,7 +148,7 @@ jobs:
           import json
           from pathlib import Path
           payload=json.loads(Path('/tmp/mathquest-health.json').read_text())
-          if payload.get('version') != '0.36.0':
+          if payload.get('version') != '0.37.0':
               raise SystemExit(f"unexpected health version: {payload}")
           PY
               exit 0
