@@ -22,17 +22,18 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     lowered = notes.lower()
-    assert 'interactive' in lowered
-    assert 'fraction' in lowered
-    assert 'ruler' in lowered
+    assert 'duplicate' in lowered
     assert 'reasoning' in lowered
-    assert 'v0.36.0' not in notes
+    assert 'worksheet' in lowered
+    assert 'interactive fractions now include' not in lowered
+    assert 'measurement practice can include interactive scaled rulers' not in lowered
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.37.0'}
+    expected_version = versions['questmath/config.yaml']
+    assert set(versions.values()) == {expected_version}
     module.validate_frontend_lockfile()
 
 
