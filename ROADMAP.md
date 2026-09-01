@@ -2,6 +2,30 @@
 
 MathQuest is a Victorian Curriculum aligned, adaptive mathematics learning application for short, purposeful daily practice. This file is the authoritative development roadmap for repository tooling and DevHub.
 
+## v0.37.0 - Richer Interactive Mathematics and Mathematical Reasoning
+
+Status: Completed
+
+### Learning
+- [x] Extend first-class interactive answers beyond whole-number number lines into fraction bars, fraction number lines, scaled ruler reading and grid-reference selection.
+- [x] Keep every new interaction inside the existing backend-authoritative worksheet, attempt, evidence, misconception and adaptive-learning architecture.
+- [x] Add structured mathematical reasoning including operation selection, reasonableness, conceptual comparison and age-appropriate error analysis.
+- [x] Reuse existing misconception evidence for regrouping/place-value reasoning instead of creating a parallel taxonomy.
+- [x] Preserve purposeful review, consolidation, spaced retrieval and existing adaptive-difficulty decisions.
+- [x] Keep Story Adventure on the same question, validation and evidence path as Daily Practice.
+
+### Tutoring and UX
+- [x] Add child-friendly touch, mouse and keyboard-focus interactions with clear selected states and responsive layouts.
+- [x] Hide requested internal targets where revealing a ruler or fraction-number-line label would undermine the learning objective.
+- [x] Extend Math Mentor with representation-specific guidance and different-number worked examples for the new interactive models.
+- [x] Preserve immediate retry after an incorrect answer without requiring Math Mentor.
+
+### Testing
+- [x] Add deterministic backend generator, scale/partition, target-hiding, reasoning and misconception tests.
+- [x] Add frontend interaction and accessibility coverage for each new first-class answer model.
+- [x] Preserve Parent Test isolation, Story Adventure compatibility and existing regression coverage.
+- [x] Preserve backend, frontend, metadata and real aarch64 add-on startup validation.
+
 ## v0.36.0 - Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
 
 Status: Completed
