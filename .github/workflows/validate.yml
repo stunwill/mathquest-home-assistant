@@ -129,6 +129,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          EXPECTED_VERSION="$(python - <<'PY'
+          import yaml
+          from pathlib import Path
+          config = yaml.safe_load(Path('questmath/config.yaml').read_text(encoding='utf-8'))
+          print(config['version'])
+          PY
+          )"
+          export EXPECTED_VERSION
           docker network create mathquest-smoke
           docker run -d --name supervisor \
             --network mathquest-smoke \
@@ -146,10 +154,12 @@ jobs:
               cat /tmp/mathquest-health.json
               python - <<'PY'
           import json
+          import os
           from pathlib import Path
           payload=json.loads(Path('/tmp/mathquest-health.json').read_text())
-          if payload.get('version') != '0.37.0':
-              raise SystemExit(f"unexpected health version: {payload}")
+          expected=os.environ['EXPECTED_VERSION']
+          if payload.get('version') != expected:
+              raise SystemExit(f"unexpected health version: expected {expected}, got {payload}")
           PY
               exit 0
             fi
