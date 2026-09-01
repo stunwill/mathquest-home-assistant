@@ -5,6 +5,7 @@ import {
   LogOut, Play, Settings, SkipForward, Sparkles, Star, Trophy, X
 } from 'lucide-react';
 import './styles.css';
+import './interactive-math.css';
 import {APP_VERSION} from './version';
 import {ApiError, apiRequest as req, createSession, loadActiveWorksheet, questionDraft, rememberActiveWorksheet, rememberQuestionDraft} from './api';
 import {ErrorNotice, LearningCalendar, StoryAdventures, WorksheetHistory} from './student-foundation';
