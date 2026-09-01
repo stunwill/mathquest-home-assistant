@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.37.0`
+Version `0.37.1`
 
 ## Development Metadata
 
