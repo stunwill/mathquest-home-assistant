@@ -6,7 +6,11 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.37.0, Richer Interactive Mathematics and Mathematical Reasoning
+## Current release scope, 0.37.1, Duplicate-Safe Reasoning Mix
+
+The v0.37.1 corrective release preserves the v0.37.0 interactive mathematics scope and prevents structured reasoning augmentation from introducing duplicate worksheet question identities.
+
+## Previous release scope, 0.37.0, Richer Interactive Mathematics and Mathematical Reasoning
 
 This release extends MathQuest's first-class interactive answer architecture beyond whole-number number lines into a small set of representations where direct manipulation improves understanding rather than adding decoration.
 
