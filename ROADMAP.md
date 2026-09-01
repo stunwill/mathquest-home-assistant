@@ -1,3 +1,14 @@
+## v0.37.1 - Duplicate-Safe Reasoning Mix
+
+Status: Completed
+
+### Reliability and learning quality
+- [x] Preserve worksheet question-identity uniqueness when adding structured reasoning questions.
+- [x] Leave the original question unchanged when no unique reasoning replacement can be generated.
+
+### Testing
+- [x] Add regression coverage for duplicate reasoning candidates and preserve existing worksheet duplicate-safety tests.
+
 # MathQuest Product Roadmap
 
 MathQuest is a Victorian Curriculum aligned, adaptive mathematics learning application for short, purposeful daily practice. This file is the authoritative development roadmap for repository tooling and DevHub.
