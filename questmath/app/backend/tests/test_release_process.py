@@ -33,6 +33,7 @@ def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
     assert set(versions.values()) == {'0.37.0'}
+    module.validate_frontend_lockfile()
 
 
 def test_release_workflow_validates_versions_before_publishing():
