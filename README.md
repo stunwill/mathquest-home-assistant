@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.36.0`
+Version `0.37.0`
 
 ## Development Metadata
 
@@ -30,14 +30,15 @@ The release metadata validator derives the expected version from the repository 
 - Responsive student dashboard
 - Tablet-optimised worksheet and tutoring flow for portrait and landscape use
 - Multiple daily worksheets with save, exact resume, review and skip support
-- Interactive number-line location questions answered directly on the line rather than through answer-choice buttons
+- First-class interactive mathematics including whole-number number lines, fraction bars, fraction number lines, scaled rulers and selectable grid references
+- Structured mathematical reasoning including operation selection, reasonableness, conceptual statements and age-appropriate error analysis
 - Duplicate-safe adaptive question generation and visual learning guardrails
 - Evidence-aware suppression of unnecessarily basic arithmetic while preserving purposeful review and consolidation
 - Victorian Curriculum F–10 Version 2.0 Level 5 pathway, adapting across Levels 2–6 from diagnostic evidence
 - Parent Learning Intelligence with independent versus supported success, evidence confidence, recommendations, misconception grouping, retention and difficulty calibration
 - Adaptive Daily Learning with current learning, consolidation, spaced review and limited challenge purposes
-- Story Adventure as a presentation layer over the same adaptive learning plan as Daily Practice
-- Method-first Math Mentor, aligned worked examples, Visual Mathematics and Interactive Maths Lab
+- Story Adventure as a presentation layer over the same adaptive learning plan, answer validation and evidence path as Daily Practice
+- Method-first Math Mentor with representation-specific support, aligned worked examples, Visual Mathematics and Interactive Maths Lab
 - Parent-only tests isolated from learner mastery and adaptive evidence
 - Home Assistant ingress and a persistent local service token
 - Compact Home Assistant parent-learning summary for daily completion, current focus, review due, persistent support needs, recurring misconceptions, meaningful progress and weekly learning
@@ -45,6 +46,20 @@ The release metadata validator derives the expected version from the repository 
 - Notification-ready learning alerts based on meaningful accumulated evidence rather than individual wrong answers
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
+
+## Interactive mathematics and reasoning
+
+MathQuest keeps interactive questions inside the same backend-authoritative worksheet architecture as conventional questions. The learner's selected mathematical value or grid reference is submitted through the normal answer endpoint, so correctness, attempts, support use and learning evidence remain consistent.
+
+The current interactive models include:
+
+- whole-number number-line positions;
+- fraction-bar part selection;
+- fraction locations between 0 and 1;
+- scaled ruler marks;
+- grid-reference squares.
+
+Where revealing a label would give away the answer, internal targets are intentionally left unlabelled. Reasoning questions add controlled variety such as selecting an operation, judging a reasonable estimate, distinguishing perimeter from area, recognising symmetry statements and analysing a plausible mathematical mistake.
 
 ## Home Assistant Parent Learning Integration
 
