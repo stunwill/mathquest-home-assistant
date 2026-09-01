@@ -8,7 +8,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0120, v0200, v0290, v0300, v0301, v0310, v0321, v0360
+from . import v0120, v0290, v0310, v0321, v0360
 
 app = v0360.app
 app.version = '0.37.0'
@@ -17,6 +17,7 @@ legacy.APP_VERSION = '0.37.0'
 _prior_create_worksheet = legacy.create_worksheet
 _prior_make_question = legacy.make_question
 _prior_mentor_payload = v0310.mentor_payload_v0310
+_prior_misconception = v0290._misconception
 
 
 def _payload(question: legacy.Question) -> dict[str, Any]:
@@ -78,7 +79,9 @@ def _ruler_question(rng: random.Random):
     steps = rng.choice([6, 8, 10])
     target_index = rng.randint(1, steps - 1)
     target = target_index * interval
-    label_indices = sorted({0, steps, rng.choice([i for i in range(1, steps) if i != target_index])})
+    optional_labels = [i for i in range(1, steps) if i != target_index]
+    extra_label = rng.choice(optional_labels) if optional_labels else None
+    label_indices = sorted({0, steps, *([extra_label] if extra_label is not None else [])})
     payload = {
         'visual': {
             'type': 'ruler_select',
@@ -139,9 +142,11 @@ def _reasoning_question(topic: str, rng: random.Random):
             a = rng.randint(280, 780)
             b = rng.randint(120, 390)
             estimate = round(a, -2) + round(b, -2)
-            choices = sorted({estimate, max(0, estimate - 300), estimate + 300, estimate + 100})
+            choices = list(dict.fromkeys([estimate, max(0, estimate - 300), estimate + 300, estimate + 100]))
             while len(choices) < 4:
-                choices.append(max(0, estimate + 200 * len(choices)))
+                candidate = estimate + 200 * len(choices)
+                if candidate not in choices:
+                    choices.append(candidate)
             rng.shuffle(choices)
             return legacy.q('VC2M4N07', 'reasonableness_reasoning', f'Which estimate is most reasonable for {a} + {b}?', 'choice', {'choices':[str(x) for x in choices[:4]], 'reasoning_type': 'reasonableness'}, estimate, f'Round each addend to a nearby hundred, then add the rounded values. This gives an estimate near {estimate}.')
         a = rng.randint(220, 480)
@@ -210,25 +215,65 @@ def create_worksheet_v0370(session: Session, student_id: int, selected: str, **k
     return apply_v0370_mix(session, worksheet, student_id)
 
 
+def _different_example(skill: str, payload: dict[str, Any]) -> str | None:
+    visual = payload.get('visual') if isinstance(payload.get('visual'), dict) else {}
+    if skill == 'fraction_bar_selection':
+        denominator = int(visual.get('denominator') or 5)
+        example_denominator = 4 if denominator != 4 else 5
+        example_numerator = min(3, example_denominator - 1)
+        return f'Example: to show {example_numerator}/{example_denominator}, split one whole into {example_denominator} equal parts and shade {example_numerator} of them.'
+    if skill == 'fraction_number_line_location':
+        denominator = int(visual.get('denominator') or 5)
+        example_denominator = 4 if denominator != 4 else 5
+        return f'Example: for 1/{example_denominator}, split the distance from 0 to 1 into {example_denominator} equal intervals and select the first tick after 0.'
+    if skill == 'scaled_ruler_reading':
+        interval = int(visual.get('interval') or 1)
+        example_interval = 2 if interval != 2 else 5
+        return f'Example: if each ruler interval is {example_interval} cm, the third mark after 0 represents {3 * example_interval} cm.'
+    if skill == 'grid_reference_selection':
+        return 'Example: for B3, find column B first, then move to row 3 and select the square where they meet.'
+    return None
+
+
 def mentor_payload_v0370(question: legacy.Question, action: str) -> dict[str, Any]:
     result = _prior_mentor_payload(question, action)
     skill = (question.skill or '').split(':', 1)[-1]
+    payload = _payload(question)
     if skill == 'fraction_bar_selection':
         result['visual_connection'] = 'Treat the bar as one whole. Check how many equal parts it has before deciding how many parts should be selected.'
+        if action == 'hint':
+            result['body'] = 'The denominator tells you how many equal parts make the whole. Use the numerator to decide how many of those parts to select.'
     elif skill == 'fraction_number_line_location':
         result['visual_connection'] = 'Use 0 and 1 as landmarks. The denominator tells you how many equal intervals make one whole.'
+        if action == 'hint':
+            result['body'] = 'Count the equal intervals between 0 and 1. The denominator tells you how many intervals make the whole.'
     elif skill == 'scaled_ruler_reading':
         result['visual_connection'] = 'Read two labelled ruler marks first and work out how much each interval represents before selecting a mark.'
+        if action == 'hint':
+            result['body'] = 'Use the labelled ruler marks to work out the value of one interval before counting to the requested measurement.'
     elif skill == 'grid_reference_selection':
         result['visual_connection'] = 'Read the column first and the row second, then select the square where they meet.'
+        if action == 'hint':
+            result['body'] = 'Find the column letter first. Then find the row number. The correct square is where they meet.'
     elif _reasoning_family(question):
         result['visual_connection'] = 'Use the mathematical relationship shown in the question to justify the choice rather than guessing from the answer options.'
+    example = _different_example(skill, payload)
+    if action == 'worked_example' and example:
+        result['worked_example'] = example
     return result
+
+
+def misconception_v0370(question: legacy.Question, answer: str):
+    payload = _payload(question)
+    if payload.get('reasoning_type') == 'error_analysis' and payload.get('misconception_type'):
+        return str(payload['misconception_type']), 'Needs more evidence distinguishing regrouping and place-value errors when analysing another student’s method.'
+    return _prior_misconception(question, answer)
 
 
 legacy.make_question = make_question_v0370
 legacy.create_worksheet = create_worksheet_v0370
 v0310.mentor_payload_v0310 = mentor_payload_v0370
+v0290._misconception = misconception_v0370
 
 
 @app.get('/api/v0370/capabilities')
