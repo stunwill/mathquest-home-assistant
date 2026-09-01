@@ -2,6 +2,19 @@
 
 This is the authoritative project and GitHub changelog consumed by repository tooling and DevHub. Home Assistant user-facing release notes are maintained separately in `questmath/CHANGELOG.md`.
 
+## v0.37.0 - Richer Interactive Mathematics and Mathematical Reasoning
+
+- Extended first-class interactive mathematics beyond whole-number number lines with fraction-bar selection, fraction number-line location, scaled ruler reading and selectable grid-reference questions.
+- Kept every new interaction backend-authoritative by submitting a mathematical value or grid reference through the existing worksheet answer, attempt and learning-evidence path.
+- Added target-hiding safeguards for fraction number lines and scaled rulers so the requested answer must be inferred from equal partitions or scale rather than read directly from the visual.
+- Added structured Grade 5 mathematical reasoning including operation selection, reasonableness, perimeter-versus-area concepts, symmetry statements and age-appropriate error analysis.
+- Reused the existing misconception-evidence architecture for regrouping/place-value error analysis instead of introducing a separate reasoning taxonomy.
+- Added a controlled reasoning mix to learner worksheets while preserving purposeful review, consolidation, spaced retrieval and Parent Test isolation.
+- Extended Math Mentor with representation-specific guidance and different-number worked examples for the new interactive models while preserving retry-first answers and optional tutoring.
+- Kept Story Adventure on the same adaptive worksheet, answer-validation and evidence architecture so compatible interactive questions work without Story Adventure-only mathematics.
+- Added reusable accessible touch/mouse/keyboard-focus answer components with selected-state feedback and responsive tablet/mobile layouts.
+- Updated the product roadmap, DevHub metadata, release documentation and runtime validation for v0.37.0 while preserving all v0.36.0 session, login and interactive-number-line behaviour.
+
 ## v0.36.0 - Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
 
 - Added first-class interactive number-line location questions so learners answer by selecting a tick on the line instead of choosing a button that repeats the requested value.
