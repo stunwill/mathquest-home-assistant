@@ -8,7 +8,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0120, v0290, v0310, v0321, v0360
+from . import v0120, v0280, v0290, v0310, v0321, v0360
 
 app = v0360.app
 app.version = '0.37.0'
@@ -16,7 +16,6 @@ legacy.APP_VERSION = '0.37.0'
 
 _prior_create_worksheet = legacy.create_worksheet
 _prior_make_question = legacy.make_question
-_prior_mentor_payload = v0310.mentor_payload_v0310
 _prior_misconception = v0290._misconception
 
 
@@ -235,8 +234,29 @@ def _different_example(skill: str, payload: dict[str, Any]) -> str | None:
     return None
 
 
+def _mentor_payload_before_v0370(question: legacy.Question, action: str) -> dict[str, Any]:
+    """Build the inherited v0.32.3 mentor payload without following the mutable v0310 wrapper."""
+    base = v0280._mentor_payload(question, action if action in ('guide', 'hint', 'why', 'teach') else 'worked_example')
+    content = v0310.tutoring_content(question)
+    stage = min(3, max(1, question.hint_count or question.mentor_stage or 1))
+    base['question_context'] = v0310._question_context(question)
+    base['strategy_name'] = content['strategy']
+    base['hint_kind'] = ('nudge', 'strategy', 'worked_next_step')[stage - 1]
+    if action == 'hint':
+        base['body'] = content['hints'][stage - 1]
+    elif action == 'teach':
+        base['body'] = ''
+        base['teach_steps'] = content['teach_steps']
+        base['guiding_question'] = content['teach_steps'][-1].get('text')
+    elif action == 'worked_example':
+        base['worked_example'] = v0321.aligned_worked_example(question)
+        base['example_is_aligned'] = True
+        base['method_first'] = True
+    return base
+
+
 def mentor_payload_v0370(question: legacy.Question, action: str) -> dict[str, Any]:
-    result = _prior_mentor_payload(question, action)
+    result = _mentor_payload_before_v0370(question, action)
     skill = (question.skill or '').split(':', 1)[-1]
     payload = _payload(question)
     if skill == 'fraction_bar_selection':
