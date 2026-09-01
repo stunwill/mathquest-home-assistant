@@ -122,3 +122,40 @@ def test_generator_is_deterministic_for_same_seed():
     first = v0370.make_question_v0370('measurement', 4, random.Random(1234))
     second = v0370.make_question_v0370('measurement', 4, random.Random(1234))
     assert first == second
+
+
+def test_reasoning_mix_preserves_question_identity_uniqueness():
+    class FakeSession:
+        def commit(self):
+            pass
+
+        def refresh(self, worksheet):
+            pass
+
+    class FakeWorksheet:
+        id = 42
+        session_kind = 'practice'
+
+        def __init__(self, questions):
+            self.questions = questions
+
+    first = _question(prompt='Calculate 327 + 286.')
+    first.id = 1
+    second = _question(prompt='Calculate 96 − 23.')
+    second.id = 2
+    second.topic = 'number'
+    second.skill = 'VC2M4N06:written_subtraction'
+    second.correct_answer = '73'
+    worksheet = FakeWorksheet([first, second])
+    duplicate = ('VC2M4N06:written_subtraction', second.prompt, 'number', {}, second.correct_answer, 'work')
+
+    original = v0370._reasoning_question
+    try:
+        v0370._reasoning_question = lambda topic, rng: duplicate
+        v0370.apply_v0370_mix(FakeSession(), worksheet, 1)
+    finally:
+        v0370._reasoning_question = original
+
+    identities = [main.stored_question_identity(question) for question in worksheet.questions]
+    assert len(identities) == len(set(identities))
+    assert first.prompt == 'Calculate 327 + 286.'
