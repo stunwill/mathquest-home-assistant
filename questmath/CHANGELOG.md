@@ -2,6 +2,17 @@
 
 Concise user-facing release notes for the Home Assistant add-on. The detailed project/GitHub changelog is maintained at the repository root in `CHANGELOG.md`.
 
+## v0.37.0 - Richer Interactive Mathematics and Mathematical Reasoning
+
+- Interactive fractions now include selecting parts of a fraction bar and locating fractions directly on a 0-to-1 number line.
+- Measurement practice can include interactive scaled rulers where the learner must work out the value of each interval before selecting the requested mark.
+- Space practice can include selectable grid references so the learner chooses the actual square rather than typing a coordinate from the prompt.
+- Added more mathematical reasoning, including operation selection, reasonableness, perimeter-versus-area understanding, symmetry statements and age-appropriate find-the-mistake questions.
+- New interactive questions remain backend-authoritative and feed the same attempts, learning evidence, adaptive difficulty and misconception evidence as conventional questions.
+- Math Mentor now gives representation-specific guidance and different-number worked examples for the new interactive models while keeping retry-first answers and optional tutoring.
+- Story Adventure continues to use the same adaptive worksheet and evidence path, so compatible interactive mathematics works there without a separate story question engine.
+- Preserved interactive whole-number number lines, adaptive suppression of unnecessarily basic arithmetic, session-expiry recovery, Parent Dashboard reliability, Parent Tests and Home Assistant learning APIs.
+
 ## v0.36.0 - Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
 
 - Number-line location questions can now be answered by tapping or clicking the correct tick directly on the number line instead of selecting a separate number button.

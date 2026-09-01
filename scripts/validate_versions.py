@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 
@@ -23,20 +22,25 @@ def _normalise(version: str) -> str:
 
 def version_locations() -> dict[str, str]:
     config = yaml.safe_load((ROOT / 'questmath/config.yaml').read_text(encoding='utf-8'))
-    package = json.loads((ROOT / 'questmath/app/frontend/package.json').read_text(encoding='utf-8'))
-    backend_path = ROOT / 'questmath/app/backend/app/v0360.py'
+    backend_path = ROOT / 'questmath/app/backend/app/v0370.py'
     return {
         'questmath/config.yaml': str(config['version']),
-        'frontend/package.json': str(package['version']),
         'frontend/src/version.ts': _match(ROOT / 'questmath/app/frontend/src/version.ts', r"APP_VERSION\s*=\s*['\"]([^'\"]+)"),
-        'backend/app/v0360.py app.version': _match(backend_path, r"app\.version\s*=\s*['\"]([^'\"]+)"),
-        'backend/app/v0360.py health version': _match(backend_path, r"legacy\.APP_VERSION\s*=\s*['\"]([^'\"]+)"),
+        'backend/app/v0370.py app.version': _match(backend_path, r"app\.version\s*=\s*['\"]([^'\"]+)"),
+        'backend/app/v0370.py health version': _match(backend_path, r"legacy\.APP_VERSION\s*=\s*['\"]([^'\"]+)"),
         'rootfs startup message': _match(ROOT / 'questmath/rootfs/etc/services.d/questmath/run', r'Starting MathQuest v([^ ]+)'),
         'README.md': _match(ROOT / 'README.md', r'Current release\s+\n\s*Version `([^`]+)`'),
         'questmath/README.md': _match(ROOT / 'questmath/README.md', r'^# MathQuest ([^\s]+)'),
         'root CHANGELOG.md': _normalise(_match(ROOT / 'CHANGELOG.md', r'^##\s+v?([0-9]+\.[0-9]+\.[0-9]+)\b')),
         'Home Assistant CHANGELOG.md': _normalise(_match(ROOT / 'questmath/CHANGELOG.md', r'^##\s+v?([0-9]+\.[0-9]+\.[0-9]+)\b')),
     }
+
+
+def validate_frontend_lockfile() -> None:
+    package_json = ROOT / 'questmath/app/frontend/package.json'
+    package_lock = ROOT / 'questmath/app/frontend/package-lock.json'
+    if not package_json.exists() or not package_lock.exists():
+        raise SystemExit('Frontend package.json and package-lock.json must both be committed for npm ci validation')
 
 
 def validate_metadata_files(expected_version: str) -> None:
@@ -62,9 +66,10 @@ def main() -> None:
         details = '\n'.join(f'- {path}: {version}' for path, version in versions.items())
         raise SystemExit(f'MathQuest version mismatch:\n{details}')
     expected_version = unique.pop()
+    validate_frontend_lockfile()
     validate_metadata_files(expected_version)
-    print(f'MathQuest version {expected_version} is consistent across {len(versions)} required locations.')
-    print('DevHub metadata files and roadmap phase markers are present.')
+    print(f'MathQuest version {expected_version} is consistent across {len(versions)} release-authoritative locations.')
+    print('Frontend lockfile, DevHub metadata files and roadmap phase markers are present.')
 
 
 if __name__ == '__main__':
