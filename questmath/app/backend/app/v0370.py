@@ -11,8 +11,8 @@ from . import main as legacy
 from . import v0120, v0280, v0290, v0310, v0321, v0360
 
 app = v0360.app
-app.version = '0.37.0'
-legacy.APP_VERSION = '0.37.0'
+app.version = '0.37.1'
+legacy.APP_VERSION = '0.37.1'
 
 _prior_create_worksheet = legacy.create_worksheet
 _prior_make_question = legacy.make_question
@@ -196,14 +196,27 @@ def apply_v0370_mix(session: Session, worksheet: legacy.Worksheet, student_id: i
         candidates = [q for q in questions if q.topic in ('number', 'algebra', 'measurement', 'space') and not v0360._purposeful_foundation(q)]
         if candidates:
             question = rng.choice(candidates)
-            skill, prompt, answer_type, payload, answer, working = _reasoning_question(question.topic, rng)
-            question.skill = skill
-            question.prompt = prompt
-            question.answer_type = answer_type
-            question.payload = json.dumps(payload)
-            question.correct_answer = str(answer)
-            question.working = working
-            v0321._restore_runtime_annotations(question, worksheet)
+            occupied = {
+                legacy.stored_question_identity(item)
+                for item in questions
+                if item.id != question.id
+            }
+            replacement = None
+            for _ in range(40):
+                candidate = _reasoning_question(question.topic, rng)
+                candidate_identity = legacy.question_identity(candidate[1], candidate[3])
+                if candidate_identity not in occupied:
+                    replacement = candidate
+                    break
+            if replacement is not None:
+                skill, prompt, answer_type, payload, answer, working = replacement
+                question.skill = skill
+                question.prompt = prompt
+                question.answer_type = answer_type
+                question.payload = json.dumps(payload)
+                question.correct_answer = str(answer)
+                question.working = working
+                v0321._restore_runtime_annotations(question, worksheet)
     session.commit()
     session.refresh(worksheet)
     return worksheet
@@ -299,7 +312,7 @@ v0290._misconception = misconception_v0370
 @app.get('/api/v0370/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
     return {
-        'version': '0.37.0',
+        'version': '0.37.1',
         'release_name': 'Richer Interactive Mathematics and Mathematical Reasoning',
         'interactive_fraction_bar': True,
         'interactive_fraction_number_line': True,
