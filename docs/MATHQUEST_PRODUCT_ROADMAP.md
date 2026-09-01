@@ -6,53 +6,60 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.35.0, Home Assistant Parent Integration and Actionable Learning Insights
+## Current release scope, 0.37.0, Richer Interactive Mathematics and Mathematical Reasoning
 
-This release makes MathQuest's existing learning intelligence genuinely useful to a parent through Home Assistant without creating a second mastery system.
+This release extends MathQuest's first-class interactive answer architecture beyond whole-number number lines into a small set of representations where direct manipulation improves understanding rather than adding decoration.
 
-### One learning-intelligence source
+### Interactive mathematics with one learning engine
 
-- Keep MathQuest backend-authoritative for mastery, progression, prerequisites, retention, review, misconceptions and recommendations.
-- Reuse Parent Learning Intelligence, Adaptive Daily Learning and Story Adventure evidence rather than reimplementing those algorithms for Home Assistant.
-- Keep Parent Dashboard and Home Assistant learning state aligned through shared backend helpers.
+- Keep MathQuest backend-authoritative for correctness, adaptive selection, progression, prerequisites, retention, misconceptions and learning evidence.
+- Add interactive fraction-bar selection, fraction number-line location, scaled ruler reading and grid-reference selection through the existing worksheet answer route.
+- Hide requested internal targets when labels would reveal the answer, including internal fraction-number-line ticks and ruler marks.
+- Keep the interaction layer reusable and responsive rather than building unrelated one-off visual widgets.
 
-### Actionable parent learning state
+### Mathematical reasoning
 
-- Expose a compact Home Assistant learning summary covering daily completion, current focus, review due, persistent support needs, repeated misconceptions, meaningful progress and a weekly summary.
-- Use stable conceptual identifiers suitable for dashboards and automations.
-- Avoid exposing every internal statistic as a separate entity.
-- Preserve evidence confidence and use parent-readable learning-purpose labels.
+- Add structured operation-selection, reasonableness, conceptual comparison and age-appropriate error-analysis questions.
+- Prefer assessable structured choices over long free-text explanations that cannot be reliably validated.
+- Reuse the existing misconception-evidence architecture for regrouping/place-value error analysis.
+- Keep arithmetic fluency and purposeful foundational retrieval available rather than replacing calculation practice with reasoning-only sessions.
 
-### Daily learning and timing
+### Tutoring and Story Adventure
 
-- Count completed Daily Practice and Story Adventure sessions with answered-question evidence as legitimate daily learning.
-- Do not count opening the app, starting a worksheet, abandoned no-evidence work or Parent Tests as completed daily learning.
-- Distinguish actual elapsed learning time from configured 5, 10 or 15-minute session targets to avoid false precision.
-
-### Conservative alerts
-
-- Surface review-due state from existing spaced-retrieval and retention evidence.
-- Surface persistent support dependence only after accumulated evidence, not a single difficult question.
-- Surface repeated misconception evidence only after existing misconception thresholds are met.
-- Surface meaningful progress from secure learning evidence or strong trend changes, not XP or Story Adventure completion.
-- Provide notification-ready state without hard-coding reminder schedules or creating notification spam.
-
-### Privacy and performance
-
-- Keep learning data local and use the existing persistent Home Assistant service token.
-- Add no cloud telemetry, analytics or third-party learner tracking.
-- Use compact summary queries and reuse existing learning-intelligence calculations rather than continuous full-history recomputation.
+- Extend Math Mentor with representation-specific hints and different-number worked examples without revealing the active answer.
+- Preserve immediate retry after an incorrect answer with tutoring remaining optional.
+- Keep Story Adventure as presentation over the same adaptive worksheet, answer and evidence architecture.
+- Preserve Parent Test isolation from learner mastery and adaptive evidence.
 
 ### Release acceptance criteria
 
-- `/api/ha/learning` returns stable parent-readable learning state.
-- `/api/ha/weekly-summary` returns a concise educationally useful seven-day summary.
-- Daily Practice and Story Adventure contribute legitimate activity.
+- Each new interactive model submits through the normal backend-authoritative answer path.
+- Fraction partitions, number-line intervals, ruler scales and grid references are mathematically consistent and responsive.
+- Requested internal targets are not accidentally labelled.
+- At least one structured reasoning family can appear in an appropriate learner session without imposing a rigid session sequence.
+- Error-analysis questions use plausible distractors and existing misconception evidence where justified.
+- Math Mentor support is aligned with the representation and worked examples use different values.
+- Story Adventure automatically supports compatible interactive questions without a separate story question generator.
 - Parent Tests remain isolated.
-- No-data and insufficient-evidence states are meaningful rather than misleadingly unavailable.
-- Stable Home Assistant identifiers do not include worksheet, question, date, adventure or skill IDs.
-- Frontend validation continues to use the committed dependency lockfile with `npm ci`, tests and production build.
-- Full backend, frontend, production build, version and release-validation checks pass before merge.
+- Full backend, frontend, production build, metadata and aarch64 startup checks pass before merge.
+
+## Recently completed release, 0.36.0, Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
+
+- Made whole-number number-line location a first-class interactive answer selected directly on the line.
+- Reduced unnecessarily basic two-digit addition when learner evidence supports progression while preserving purposeful review, consolidation and retrieval.
+- Defaulted the editable student username to `sienna` and made normal MathQuest token expiry return automatically to login.
+- Preserved Home Assistant ingress distinction, Parent Dashboard reliability and the existing adaptive-learning architecture.
+
+## Recently completed release, 0.35.1, Parent Dashboard Reliability
+
+- Fixed Parent Learning Intelligence rendering and Parent Dashboard bootstrap recovery.
+- Kept backups and optional learning-intelligence failures from blocking the core parent experience.
+
+## Recently completed release, 0.35.0, Home Assistant Parent Integration and Actionable Learning Insights
+
+- Exposed compact parent-readable Home Assistant learning state derived from MathQuest's existing Learning Intelligence.
+- Added daily completion, current focus, review, support, misconception, progress and weekly-summary signals without duplicating mastery logic.
+- Preserved Parent Test isolation and local-first operation.
 
 ## Recently completed release, 0.34.0, Story Adventure Expansion and Purposeful Daily Learning
 
@@ -100,13 +107,13 @@ This release makes MathQuest's existing learning intelligence genuinely useful t
 - Expand adventure themes and context where real usage shows it improves engagement without weakening mathematical clarity.
 - Improve continuity between learner recommendations, Daily Practice and Story Adventure.
 - Continue refining Grade 5 question variety and appropriate difficulty based on evidence from real sessions.
-- Add richer visual models where they improve understanding rather than decoration.
+- Add further visual models only where they materially improve mathematical understanding.
 
 ## Later opportunities
 
 - Deeper Parent Learning Intelligence and learning-goal planning.
 - Additional verified Victorian Curriculum coverage.
-- Richer Visual Mathematics models and manipulatives.
+- Richer Visual Mathematics models and manipulatives after evidence from real learner use.
 - Dependency/security maintenance without unsafe forced upgrades.
 - Performance and Home Assistant operational improvements where real usage demonstrates a need.
 - Consolidation of historical backend version-wrapper architecture as a focused platform release.
