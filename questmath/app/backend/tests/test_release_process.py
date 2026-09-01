@@ -22,17 +22,17 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     lowered = notes.lower()
-    assert 'number line' in lowered
-    assert 'adaptive' in lowered
-    assert 'session' in lowered
-    assert 'sienna' in lowered
-    assert 'v0.35.1' not in notes
+    assert 'interactive' in lowered
+    assert 'fraction' in lowered
+    assert 'ruler' in lowered
+    assert 'reasoning' in lowered
+    assert 'v0.36.0' not in notes
 
 
 def test_required_version_locations_agree():
     module = load_script('validate_versions')
     versions = module.version_locations()
-    assert set(versions.values()) == {'0.36.0'}
+    assert set(versions.values()) == {'0.37.0'}
 
 
 def test_release_workflow_validates_versions_before_publishing():
