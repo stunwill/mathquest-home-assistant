@@ -25,7 +25,8 @@ def test_release_notes_extract_current_version_section_only():
     assert 'duplicate' in lowered
     assert 'reasoning' in lowered
     assert 'worksheet' in lowered
-    assert 'v0.37.0' not in notes
+    assert 'interactive fractions now include' not in lowered
+    assert 'measurement practice can include interactive scaled rulers' not in lowered
 
 
 def test_required_version_locations_agree():
