@@ -16,6 +16,7 @@ export function PostAnswerFeedbackModal({feedback, working, reflection, testFeed
   const titleId = useId();
   const descriptionId = useId();
   const primaryRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
   const correct = Boolean(feedback?.correct);
   const retry = Boolean(feedback?.retry_allowed);
 
@@ -23,8 +24,23 @@ export function PostAnswerFeedbackModal({feedback, working, reflection, testFeed
     primaryRef.current?.focus({preventScroll: true});
   }, [feedback]);
 
+  useEffect(() => {
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', keydown);
+    return () => document.removeEventListener('keydown', keydown);
+  }, []);
+
   return <div className="post-answer-backdrop" data-post-answer-feedback="true">
     <section
+      ref={dialogRef}
       className={'post-answer-modal '+(correct?'is-correct':'is-incorrect')}
       role="dialog"
       aria-modal="true"
