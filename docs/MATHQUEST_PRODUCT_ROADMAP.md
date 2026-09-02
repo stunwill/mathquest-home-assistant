@@ -6,7 +6,46 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.37.1, Duplicate-Safe Reasoning Mix
+## Current release scope, 0.38.0, iPad Landscape Feedback and Worksheet UX
+
+This focused learner-experience release optimises the worksheet for Sienna's primary device and workflow: iPad 10th generation in landscape with a physical keyboard.
+
+### Answer → immediate feedback → understand → reflect → continue
+
+- Replace below-question post-answer content with one shared accessible feedback dialog so result and next action are visible without page scrolling.
+- Preserve a fast two-Enter typed-answer flow: Enter submits, feedback appears immediately, and Enter continues after a terminal answer or returns to a clean focused answer field for retry.
+- Keep retry-first answers educational rather than punitive. Do not expose final working while another attempt is expected, and do not require Math Mentor merely because an answer is wrong.
+- Keep concise question-specific explanation in the dialog where useful, while deeper tutoring remains available through Math Mentor.
+- Move the existing optional confidence reflection into the dialog without changing the evidence it records or contaminating Parent Tests.
+
+### iPad landscape layout and accessibility
+
+- Treat the typical iPad 10th-generation landscape CSS viewport as a tablet layout rather than a scaled desktop layout.
+- Reduce unnecessary header, card, progress, support and sidebar space while retaining readable question typography and useful working area.
+- Keep result and primary action fixed within the visible dialog. Only genuinely long supporting content should scroll internally.
+- Provide explicit Correct answer and Incorrect answer text and iconography, logical focus movement and containment, visible focus, touch-size controls and screen-reader result announcements.
+- Use restrained, non-blocking correct-answer motion with `prefers-reduced-motion` support and no punitive incorrect-answer animation.
+- Preserve iPad portrait, iPhone/mobile and desktop layouts outside the landscape-specific optimisation.
+
+### One worksheet and learning engine
+
+- Apply the same feedback architecture to typed numeric answers, choices, whole-number number lines, fraction bars, fraction number lines, scaled rulers, grid references, structured reasoning and Story Adventure.
+- Keep answer correctness, attempts, adaptive difficulty, prerequisite routing, spaced retrieval, misconception evidence, confidence evidence, scoring, completion and resume backend-authoritative.
+- Preserve Parent Test isolation from learner mastery and evidence.
+
+### Release acceptance criteria
+
+- Correct/incorrect status is immediately visible after submission without page scrolling on an iPad 10th generation in landscape.
+- A typed answer can be completed with the intended two-Enter keyboard flow.
+- Retry returns to an empty focused input and cannot accidentally duplicate-submit or skip a question through rapid Enter presses.
+- Mathematical feedback remains aligned to the actual question and retryable feedback does not reveal the final answer.
+- Confidence evidence is still recorded from the post-answer experience when the learner chooses to reflect.
+- Touch-first interactive mathematics and Story Adventure use the same feedback architecture.
+- Keyboard focus remains contained in the dialog while it is open and moves to the correct next control on close.
+- Full backend, frontend, production build, metadata and real aarch64 startup/health checks pass before merge.
+- Real-device iPad acceptance remains a manual step and is not claimed by automated CI.
+
+## Previous release scope, 0.37.1, Duplicate-Safe Reasoning Mix
 
 The v0.37.1 corrective release preserves the v0.37.0 interactive mathematics scope and prevents structured reasoning augmentation from introducing duplicate worksheet question identities.
 

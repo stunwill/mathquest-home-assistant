@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.37.1`
+Version `0.38.0`
 
 ## Development Metadata
 
@@ -28,6 +28,7 @@ The release metadata validator derives the expected version from the repository 
 
 - Student and parent logins, with `sienna` prefilled for the normal student login flow and automatic recovery from expired MathQuest sessions
 - Responsive student dashboard
+- iPad 10th-generation landscape worksheet optimisation with viewport-fixed post-answer feedback and keyboard-first continuation/retry
 - Tablet-optimised worksheet and tutoring flow for portrait and landscape use
 - Multiple daily worksheets with save, exact resume, review and skip support
 - First-class interactive mathematics including whole-number number lines, fraction bars, fraction number lines, scaled rulers and selectable grid references
@@ -46,6 +47,14 @@ The release metadata validator derives the expected version from the repository 
 - Notification-ready learning alerts based on meaningful accumulated evidence rather than individual wrong answers
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
+
+## iPad landscape worksheet feedback
+
+MathQuest v0.38.0 changes the normal student flow to `Answer → Immediate feedback → Understand → Reflect → Continue` without requiring page scrolling between those steps. Typed answers still submit with Enter. The feedback dialog then receives focus so a second Enter continues after a terminal answer or returns to a clean, focused answer field when another attempt is expected.
+
+The dialog keeps the result and primary action visible while allowing only genuinely long supporting content to scroll internally. Correct answers use restrained, non-blocking celebration and incorrect answers use supportive learning language. Retryable incorrect answers continue to hide terminal working, and Math Mentor remains optional unless the backend explicitly requires support.
+
+The same shared feedback architecture is used by ordinary typed answers, choices, first-class interactive mathematics and Story Adventure questions. Learner confidence reflection remains optional and continues to record the existing learning evidence. Parent Tests remain isolated.
 
 ## Interactive mathematics and reasoning
 

@@ -1,3 +1,34 @@
+## v0.38.0 - iPad Landscape Feedback and Worksheet UX
+
+Status: In release validation
+
+### Student worksheet UX
+- [x] Replace below-question post-answer feedback with a reusable accessible feedback dialog.
+- [x] Keep correct/incorrect status and the primary next action visible independently of worksheet page scroll.
+- [x] Move the existing optional confidence reflection into the feedback dialog without changing its evidence endpoint.
+- [x] Preserve retry-first incorrect-answer behaviour and keep Math Mentor optional unless backend learning logic requires it.
+- [x] Make the normal physical-keyboard flow Answer → Enter → Feedback → Enter → Continue or Retry explicit and predictable.
+- [x] Restore a cleared, focused typed-answer field after retry.
+- [x] Protect against rapid repeated Enter presses causing duplicate submission or question skipping.
+- [x] Add restrained non-blocking success motion and reduced-motion support.
+
+### iPad landscape layout
+- [x] Add an iPad 10th-generation landscape layout band around the typical 1180 × 820 CSS viewport.
+- [x] Reduce unnecessary header, progress, card, sidebar and support spacing while retaining readable question typography.
+- [x] Keep portrait/mobile and desktop layouts outside the landscape-specific optimisation.
+- [x] Keep long dialog support content internally scrollable while result and action remain visible.
+
+### Shared learning architecture
+- [x] Reuse the same result experience for typed, choice, whole-number number-line, fraction, ruler, grid, reasoning and Story Adventure questions through the shared Worksheet answer path.
+- [x] Preserve adaptive selection, prerequisite graph, spaced retrieval, misconception evidence, confidence evidence, scoring, completion, resume and skipped-question handling.
+- [x] Preserve Parent Test isolation from learner mastery and evidence.
+
+### Accessibility and testing
+- [x] Add dialog semantics, explicit result text/icons, screen-reader result announcement, focus movement, focus containment, visible focus styling and touch-size controls.
+- [x] Add frontend coverage for keyboard submit/continue/retry, retry focus, rapid Enter, confidence evidence, optional Math Mentor, touch interaction, Story Adventure and viewport-fixed feedback.
+- [ ] Complete repository CI including backend pytest, frontend Vitest/build, metadata validation and real aarch64 startup/health check.
+- [ ] Complete the real-device iPad 10th-generation manual acceptance checklist in `questmath/MANUAL_ACCEPTANCE_0.38.0.md`.
+
 ## v0.37.1 - Duplicate-Safe Reasoning Mix
 
 Status: Completed

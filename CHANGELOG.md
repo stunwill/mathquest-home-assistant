@@ -1,3 +1,14 @@
+## v0.38.0 - iPad Landscape Feedback and Worksheet UX
+
+- Replaced below-question post-answer results with a reusable feedback dialog designed around the iPad 10th-generation landscape worksheet workflow.
+- Made correct/incorrect status, concise explanation, confidence reflection and the primary next action visible independently of page scroll.
+- Preserved retry-first incorrect-answer behaviour, terminal-answer hiding during retry, existing misconception/mastery evidence, optional Math Mentor and Parent Test isolation.
+- Added keyboard-first continuation and retry, focus restoration, dialog focus containment and rapid-Enter protection.
+- Added restrained success motion, explicit non-colour result semantics and reduced-motion support.
+- Tightened landscape tablet spacing so the mathematics question receives more of the viewport without shrinking core text or regressing portrait/mobile layouts.
+- Reused the same result experience for typed, choice, interactive mathematics and Story Adventure questions.
+- Added regression coverage for the result-dialog state machine, keyboard/touch operation, reflection evidence, responsive layout contracts and shared Story Adventure/interactive paths.
+
 ## v0.37.1 - Duplicate-Safe Reasoning Mix
 - Prevent the richer interactive-question mix from replacing a question with an identity already present in the worksheet.
 - Preserve duplicate-safe worksheet generation and add regression coverage for repeated reasoning candidates.

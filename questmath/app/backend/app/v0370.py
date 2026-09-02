@@ -11,8 +11,8 @@ from . import main as legacy
 from . import v0120, v0280, v0290, v0310, v0321, v0360
 
 app = v0360.app
-app.version = '0.37.1'
-legacy.APP_VERSION = '0.37.1'
+app.version = '0.38.0'
+legacy.APP_VERSION = '0.38.0'
 
 _prior_create_worksheet = legacy.create_worksheet
 _prior_make_question = legacy.make_question
@@ -312,7 +312,7 @@ v0290._misconception = misconception_v0370
 @app.get('/api/v0370/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
     return {
-        'version': '0.37.1',
+        'version': '0.38.0',
         'release_name': 'Richer Interactive Mathematics and Mathematical Reasoning',
         'interactive_fraction_bar': True,
         'interactive_fraction_number_line': True,

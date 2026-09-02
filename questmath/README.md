@@ -1,4 +1,4 @@
-# MathQuest 0.37.1
+# MathQuest 0.38.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -12,6 +12,7 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Multiple generated worksheets per day
 - Save and exit, resume, skip-for-now and skipped-question round
 - Exact worksheet resume, completed worksheet review and weekly learning history
+- iPad 10th-generation landscape worksheet optimisation with immediate post-answer feedback and a keyboard-first two-Enter flow
 - First-class interactive whole-number number lines, fraction bars, fraction number lines, scaled rulers and grid-reference selection
 - Structured Grade 5 reasoning including operation choice, reasonableness, conceptual comparison and find-the-mistake questions
 - Duplicate-safe question generation with visual question guardrails
@@ -31,9 +32,17 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Parent Dashboard reliability safeguards for loading, retry and optional-section failure
 - SQLite persistence and Home Assistant backup support
 
+## iPad landscape feedback
+
+v0.38.0 makes the post-answer experience viewport-fixed rather than placing the result beneath the question card. Sienna can type an ordinary answer, press Enter, immediately see the result and supporting explanation, optionally record confidence, then press Enter again to continue.
+
+Retryable incorrect answers preserve the existing retry-first learning model. The final answer is not revealed, Math Mentor remains optional, and choosing Retry returns to a cleared, focused answer field. The feedback dialog contains keyboard focus while open, provides explicit Correct answer or Incorrect answer text and iconography, and respects reduced-motion preferences.
+
+The iPad landscape breakpoint also reduces unnecessary header, card, progress and sidebar space without shrinking the mathematical question into a desktop layout. Portrait, iPhone/mobile and desktop layouts retain their existing responsive behaviour.
+
 ## Richer interactive mathematics
 
-v0.37.0 extends the first-class interactive answer architecture introduced for whole-number number lines. Learners can now interact directly with selected high-value mathematical representations:
+v0.37.0 extended the first-class interactive answer architecture introduced for whole-number number lines. Learners can interact directly with selected high-value mathematical representations:
 
 - shade a requested number of equal parts on a fraction bar;
 - locate a fraction between 0 and 1 using equal intervals;
@@ -46,13 +55,13 @@ Internal targets are deliberately left unlabelled where a visible label would re
 
 ## Mathematical reasoning
 
-Learner sessions can now include a controlled amount of structured reasoning alongside calculation practice. Question families include selecting an appropriate operation, choosing a reasonable estimate, identifying true statements about perimeter, area and symmetry, and analysing a plausible regrouping or place-value mistake.
+Learner sessions can include a controlled amount of structured reasoning alongside calculation practice. Question families include selecting an appropriate operation, choosing a reasonable estimate, identifying true statements about perimeter, area and symmetry, and analysing a plausible regrouping or place-value mistake.
 
 This is not a separate reasoning engine. The questions use the same curriculum mappings, worksheet selection, answer validation and learning-evidence architecture as other MathQuest practice.
 
 ## Math Mentor
 
-Math Mentor remains optional and retry-first behaviour is preserved. New interactive questions receive representation-specific support. Hints refer to equal parts, scale, landmarks or grid coordinates without revealing the active answer. Worked examples demonstrate the same method with different numbers or references.
+Math Mentor remains optional and retry-first behaviour is preserved. Interactive questions receive representation-specific support. Hints refer to equal parts, scale, landmarks or grid coordinates without revealing the active answer. Worked examples demonstrate the same method with different numbers or references.
 
 ## Interactive number lines and adaptive Number quality
 
@@ -68,7 +77,7 @@ Parent Dashboard reliability corrections remain in place. MathQuest remains auth
 
 ## Adaptive Story Adventures
 
-Story Adventure remains a presentation layer over MathQuest's adaptive learning engine. Compatible interactive questions use the same answer components and backend validation as Daily Practice. Story progression never counts as mastery. Correctness, attempts, support use, misconception evidence and retention continue to determine learning progress.
+Story Adventure remains a presentation layer over MathQuest's adaptive learning engine. Compatible interactive questions use the same answer components, post-answer feedback and backend validation as Daily Practice. Story progression never counts as mastery. Correctness, attempts, support use, misconception evidence and retention continue to determine learning progress.
 
 ## Parent Learning Intelligence
 
