@@ -49,7 +49,7 @@ export function PostAnswerFeedbackModal({feedback, working, reflection, testFeed
     >
       <header className="post-answer-result" aria-live="assertive" aria-atomic="true">
         <div className="post-answer-icon" aria-hidden="true">
-          {correct?<CheckCircle2 size={34}/>:<Lightbulb size={34}/>} 
+          {correct?<CheckCircle2 size={34}/>:<Lightbulb size={34}/>}
           {correct&&<span className="post-answer-sparkle"><Sparkles size={20}/></span>}
         </div>
         <div>
