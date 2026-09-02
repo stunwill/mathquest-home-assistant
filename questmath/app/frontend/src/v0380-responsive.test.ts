@@ -13,7 +13,8 @@ describe('v0.38 responsive feedback contracts',()=>{
     expect(feedbackStyles).toContain('max-height:calc(100dvh - 28px)');
   });
 
-  it('keeps the feedback result and primary action fixed while only the modal body can scroll',()=>{
+  it('makes correct and incorrect feedback viewport-fixed while only the modal body can scroll',()=>{
+    expect(feedbackStyles).toContain('.post-answer-backdrop{position:fixed;inset:0');
     expect(feedbackStyles).toContain('grid-template-rows:auto minmax(0,1fr) auto');
     expect(feedbackStyles).toContain('.post-answer-scroll{min-height:0;overflow:auto');
     expect(feedbackStyles).toContain('.post-answer-actions{display:flex');

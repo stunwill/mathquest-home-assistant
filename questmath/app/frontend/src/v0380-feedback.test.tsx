@@ -6,7 +6,7 @@ import {PostAnswerFeedbackModal} from './post-answer-feedback';
 import './test-setup';
 
 function response(data: any, ok = true, status = 200) {
-  return Promise.resolve(new Response(JSON.stringify(data), {status, headers: {'content-type': 'application/json'}}));
+  return Promise.resolve({ok,status,headers:{get:()=> 'application/json'},json:async()=>data} as Response);
 }
 
 const q1 = {id: 1, topic: 'number', skill: 'VC2M5N06:addition', level: 5, prompt: 'Calculate 327 + 286.', summary: 'Calculate 327 + 286.', answer_type: 'number', payload: {}, position: 0, status: 'current', skipped_count: 0, hint_count: 0, last_hint: null, attempts: []};
@@ -39,8 +39,21 @@ describe('v0.38 iPad landscape answer feedback', () => {
     const next = screen.getByRole('button', {name: /Next question/i});
     await waitFor(() => expect(next).toHaveFocus());
     fireEvent.keyDown(next, {key: 'Enter'});
-    fireEvent.click(next);
     await waitFor(() => expect(fetchMock.mock.calls.some(call => String(call[0]) === 'api/worksheets/10/navigate/2')).toBe(true));
+  });
+
+  it('blocks rapid Enter from submitting the same typed answer twice', async () => {
+    let resolveAnswer: ((value: Response)=>void)|null = null;
+    const pending = new Promise<Response>(resolve => {resolveAnswer = resolve;});
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(input => String(input) === 'api/questions/1/answer' ? pending : response({detail: 'missing'}, false, 404));
+    render(<Worksheet ws={worksheet() as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
+    const input = screen.getByRole('textbox', {name: 'Your answer'});
+    fireEvent.change(input, {target: {value: '613'}});
+    fireEvent.keyDown(input, {key: 'Enter'});
+    fireEvent.keyDown(input, {key: 'Enter'});
+    expect(fetchMock.mock.calls.filter(call => String(call[0]) === 'api/questions/1/answer')).toHaveLength(1);
+    resolveAnswer?.({ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>({correct:false,retry_allowed:true,message:'Try again.'})} as Response);
+    expect(await screen.findByRole('dialog', {name: 'Incorrect answer'})).toBeInTheDocument();
   });
 
   it('keeps retry-first feedback supportive, does not reveal terminal working, and restores an empty focused input', async () => {
@@ -56,7 +69,7 @@ describe('v0.38 iPad landscape answer feedback', () => {
     expect(screen.getByText('Check the hundreds regrouping.')).toBeInTheDocument();
     expect(screen.queryByText('The final answer is 613.')).not.toBeInTheDocument();
     const retry = screen.getByRole('button', {name: /Try again/i});
-    fireEvent.click(retry);
+    fireEvent.keyDown(retry, {key: 'Enter'});
     await waitFor(() => expect(screen.getByRole('textbox', {name: 'Your answer'})).toHaveFocus());
     expect(screen.getByRole('textbox', {name: 'Your answer'})).toHaveValue('');
   });
@@ -118,7 +131,8 @@ describe('v0.38 iPad landscape answer feedback', () => {
   });
 
   it('uses the same feedback experience for Story Adventure questions', async () => {
-    const story = {...q1, payload: {adventure: {title: 'Space Mission', mission: 'Repair the navigation', stage_name: 'Launch', stage_index: 0, stage_count: 3}}};
+    const adventure = {theme:'space',title:'Space Mission',mission:'Repair the navigation',objective:'Use maths to restore the route.',stage:'Launch',stage_number:1,stages:['Launch','Orbit','Return'],question:1,total:2,learning_goal:'addition',learning_purpose_label:'Current learning',context:{lead_in:'The navigation console needs a calculation.'}};
+    const story = {...q1, payload: {adventure}};
     const ws = worksheet({session_kind: 'adventure', selected_topic: 'Space Mission', questions: [story, q2]});
     const answered = worksheet({session_kind: 'adventure', selected_topic: 'Space Mission', counts: {correct: 1, incorrect: 0, skipped: 0, remaining: 1, hints: 0}, questions: [{...story, status: 'correct'}, q2]});
     vi.spyOn(globalThis, 'fetch').mockImplementation(input => String(input) === 'api/questions/1/answer' ? response({correct: true, retry_allowed: false, message: 'Mission maths correct.', working: 'Use place value.'}) : response(answered));

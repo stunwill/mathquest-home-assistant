@@ -47,7 +47,7 @@ export function PostAnswerFeedbackModal({feedback, working, reflection, testFeed
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <header className="post-answer-result">
+      <header className="post-answer-result" aria-live="assertive" aria-atomic="true">
         <div className="post-answer-icon" aria-hidden="true">
           {correct?<CheckCircle2 size={34}/>:<Lightbulb size={34}/>} 
           {correct&&<span className="post-answer-sparkle"><Sparkles size={20}/></span>}
@@ -69,7 +69,7 @@ export function PostAnswerFeedbackModal({feedback, working, reflection, testFeed
 
       <footer className="post-answer-actions">
         <span className="post-answer-keyboard-hint">Press Enter to {retry?'try again':'continue'}</span>
-        <button ref={primaryRef} type="button" className="primary" disabled={primaryBusy} onClick={onPrimary}>
+        <button ref={primaryRef} type="button" className="primary" disabled={primaryBusy} onClick={onPrimary} onKeyDown={event=>{if(event.key==='Enter'&&!event.repeat){event.preventDefault();onPrimary()}}}>
           {retry?<RotateCcw size={19}/>:<ChevronRight size={19}/>} {primaryLabel}
         </button>
       </footer>
