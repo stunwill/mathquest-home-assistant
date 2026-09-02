@@ -5,17 +5,31 @@ import {Worksheet} from './main';
 import {PostAnswerFeedbackModal} from './post-answer-feedback';
 import './test-setup';
 
-function response(data: any, ok = true, status = 200) {
-  return Promise.resolve({ok,status,headers:{get:()=> 'application/json'},json:async()=>data} as Response);
+function mockResponse(data: unknown, ok = true, status = 200): Response {
+  return {
+    ok,
+    status,
+    headers: {get: () => 'application/json'},
+    json: async () => data,
+  } as unknown as Response;
+}
+
+function response(data: unknown, ok = true, status = 200): Promise<Response> {
+  return Promise.resolve(mockResponse(data, ok, status));
 }
 
 const q1 = {id: 1, topic: 'number', skill: 'VC2M5N06:addition', level: 5, prompt: 'Calculate 327 + 286.', summary: 'Calculate 327 + 286.', answer_type: 'number', payload: {}, position: 0, status: 'current', skipped_count: 0, hint_count: 0, last_hint: null, attempts: []};
 const q2 = {id: 2, topic: 'algebra', skill: 'VC2M5A01:unknown', level: 5, prompt: '□ + 18 = 43', summary: 'Solve the equation.', answer_type: 'number', payload: {}, position: 1, status: 'not_started', skipped_count: 0, hint_count: 0, last_hint: null, attempts: []};
+
 function worksheet(overrides: any = {}) {
   return {id: 10, date: '2026-09-02', completed_at: null, score: 0, total: 2, xp_earned: 0, current_question_id: 1, current_phase: 'main', elapsed_seconds: 0, status: 'in_progress', selected_topic: 'number', session_kind: 'practice', test_mode: false, counts: {correct: 0, incorrect: 0, skipped: 0, remaining: 2, hints: 0}, questions: [q1, q2], ...overrides};
 }
 
-beforeEach(() => { localStorage.clear(); localStorage.setItem('token', 'student-token'); vi.restoreAllMocks(); });
+beforeEach(() => {
+  localStorage.clear();
+  localStorage.setItem('token', 'student-token');
+  vi.restoreAllMocks();
+});
 afterEach(cleanup);
 
 describe('v0.38 iPad landscape answer feedback', () => {
@@ -29,10 +43,12 @@ describe('v0.38 iPad landscape answer feedback', () => {
       if (url === 'api/worksheets/10/navigate/2') return response(moved);
       return response({detail: 'missing'}, false, 404);
     });
+
     render(<Worksheet ws={worksheet() as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
     const input = screen.getByRole('textbox', {name: 'Your answer'});
     fireEvent.change(input, {target: {value: '613'}});
     fireEvent.keyDown(input, {key: 'Enter'});
+
     const dialog = await screen.findByRole('dialog', {name: 'Correct answer'});
     expect(dialog).toHaveAttribute('aria-modal', 'true');
     expect(screen.getByText('327 + 286 = 613.')).toBeInTheDocument();
@@ -43,16 +59,20 @@ describe('v0.38 iPad landscape answer feedback', () => {
   });
 
   it('blocks rapid Enter from submitting the same typed answer twice', async () => {
-    let resolveAnswer: ((value: Response)=>void)|null = null;
-    const pending = new Promise<Response>(resolve => {resolveAnswer = resolve;});
+    let resolveAnswer!: (value: Response | PromiseLike<Response>) => void;
+    const pending = new Promise<Response>(resolve => {
+      resolveAnswer = resolve;
+    });
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(input => String(input) === 'api/questions/1/answer' ? pending : response({detail: 'missing'}, false, 404));
+
     render(<Worksheet ws={worksheet() as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
     const input = screen.getByRole('textbox', {name: 'Your answer'});
     fireEvent.change(input, {target: {value: '613'}});
     fireEvent.keyDown(input, {key: 'Enter'});
     fireEvent.keyDown(input, {key: 'Enter'});
+
     expect(fetchMock.mock.calls.filter(call => String(call[0]) === 'api/questions/1/answer')).toHaveLength(1);
-    resolveAnswer?.({ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>({correct:false,retry_allowed:true,message:'Try again.'})} as Response);
+    resolveAnswer(mockResponse({correct: false, retry_allowed: true, message: 'Try again.'}));
     expect(await screen.findByRole('dialog', {name: 'Incorrect answer'})).toBeInTheDocument();
   });
 
@@ -61,10 +81,12 @@ describe('v0.38 iPad landscape answer feedback', () => {
       if (String(input) === 'api/questions/1/answer') return response({correct: false, retry_allowed: true, message: 'Check the hundreds regrouping.', working: 'The final answer is 613.'});
       return response({detail: 'missing'}, false, 404);
     });
+
     render(<Worksheet ws={worksheet() as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
     const input = screen.getByRole('textbox', {name: 'Your answer'});
     fireEvent.change(input, {target: {value: '513'}});
     fireEvent.keyDown(input, {key: 'Enter'});
+
     expect(await screen.findByRole('dialog', {name: 'Incorrect answer'})).toBeInTheDocument();
     expect(screen.getByText('Check the hundreds regrouping.')).toBeInTheDocument();
     expect(screen.queryByText('The final answer is 613.')).not.toBeInTheDocument();
@@ -79,10 +101,12 @@ describe('v0.38 iPad landscape answer feedback', () => {
       if (String(input) === 'api/questions/1/answer') return response({correct: false, retry_allowed: true, message: 'Try another strategy.'});
       return response({detail: 'missing'}, false, 404);
     });
+
     render(<Worksheet ws={worksheet() as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
     const input = screen.getByRole('textbox', {name: 'Your answer'});
     fireEvent.change(input, {target: {value: '500'}});
     fireEvent.keyDown(input, {key: 'Enter'});
+
     await screen.findByRole('dialog', {name: 'Incorrect answer'});
     fireEvent.click(screen.getByRole('button', {name: 'Math Mentor'}));
     expect(screen.queryByRole('dialog', {name: 'Incorrect answer'})).not.toBeInTheDocument();
@@ -98,9 +122,12 @@ describe('v0.38 iPad landscape answer feedback', () => {
       if (url === 'api/questions/1/confidence') return response({saved: true});
       return response({detail: 'missing'}, false, 404);
     });
+
     render(<Worksheet ws={worksheet() as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
     const input = screen.getByRole('textbox', {name: 'Your answer'});
-    fireEvent.change(input, {target: {value: '613'}}); fireEvent.keyDown(input, {key: 'Enter'});
+    fireEvent.change(input, {target: {value: '613'}});
+    fireEvent.keyDown(input, {key: 'Enter'});
+
     await screen.findByRole('dialog', {name: 'Correct answer'});
     fireEvent.click(screen.getByRole('button', {name: '🙂 Pretty sure'}));
     await waitFor(() => expect(fetchMock.mock.calls.some(call => String(call[0]) === 'api/questions/1/confidence')).toBe(true));
@@ -124,6 +151,7 @@ describe('v0.38 iPad landscape answer feedback', () => {
     const ws = worksheet({questions: [interactive, q2]});
     const answered = worksheet({counts: {correct: 1, incorrect: 0, skipped: 0, remaining: 1, hints: 0}, questions: [{...interactive, status: 'correct'}, q2]});
     vi.spyOn(globalThis, 'fetch').mockImplementation(input => String(input) === 'api/questions/1/answer' ? response({correct: true, retry_allowed: false, message: 'Correct!', working: 'Three of four equal parts is 3/4.'}) : response(answered));
+
     render(<Worksheet ws={ws as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
     fireEvent.click(screen.getByRole('button', {name: 'Select 3 of 4 equal parts'}));
     fireEvent.click(screen.getByRole('button', {name: 'Check answer'}));
@@ -131,13 +159,16 @@ describe('v0.38 iPad landscape answer feedback', () => {
   });
 
   it('uses the same feedback experience for Story Adventure questions', async () => {
-    const adventure = {theme:'space',title:'Space Mission',mission:'Repair the navigation',objective:'Use maths to restore the route.',stage:'Launch',stage_number:1,stages:['Launch','Orbit','Return'],question:1,total:2,learning_goal:'addition',learning_purpose_label:'Current learning',context:{lead_in:'The navigation console needs a calculation.'}};
+    const adventure = {theme: 'space', title: 'Space Mission', mission: 'Repair the navigation', objective: 'Use maths to restore the route.', stage: 'Launch', stage_number: 1, stages: ['Launch', 'Orbit', 'Return'], question: 1, total: 2, learning_goal: 'addition', learning_purpose_label: 'Current learning', context: {lead_in: 'The navigation console needs a calculation.'}};
     const story = {...q1, payload: {adventure}};
     const ws = worksheet({session_kind: 'adventure', selected_topic: 'Space Mission', questions: [story, q2]});
     const answered = worksheet({session_kind: 'adventure', selected_topic: 'Space Mission', counts: {correct: 1, incorrect: 0, skipped: 0, remaining: 1, hints: 0}, questions: [{...story, status: 'correct'}, q2]});
     vi.spyOn(globalThis, 'fetch').mockImplementation(input => String(input) === 'api/questions/1/answer' ? response({correct: true, retry_allowed: false, message: 'Mission maths correct.', working: 'Use place value.'}) : response(answered));
+
     render(<Worksheet ws={ws as any} onUpdate={vi.fn()} onExit={vi.fn()} onDone={vi.fn()}/>);
-    const input = screen.getByRole('textbox', {name: 'Your answer'}); fireEvent.change(input, {target: {value: '613'}}); fireEvent.keyDown(input, {key: 'Enter'});
+    const input = screen.getByRole('textbox', {name: 'Your answer'});
+    fireEvent.change(input, {target: {value: '613'}});
+    fireEvent.keyDown(input, {key: 'Enter'});
     expect(await screen.findByRole('dialog', {name: 'Correct answer'})).toBeInTheDocument();
   });
 });
