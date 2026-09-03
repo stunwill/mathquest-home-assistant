@@ -1,3 +1,10 @@
+## v0.38.1 - Number & Algebra Quality and Melbourne Time
+
+- Reduced repeated low-complexity Number & Algebra addition/subtraction by upgrading smaller direct calculations to larger Grade 5-appropriate place-value work.
+- Equal-groups questions now ask for the numerical total instead of only asking which operation should be used.
+- Worksheet history now displays `Australia/Melbourne` local time and observes AEST/AEDT daylight-saving changes.
+- Added regression tests for arithmetic difficulty, equal-groups answers and timezone conversion.
+
 ## v0.38.0 - iPad Landscape Feedback and Worksheet UX
 
 - Replaced below-question answer results with an accessible post-answer feedback dialog so correct/incorrect status, concise mathematical support, reflection and the next action are immediately visible without page scrolling.

@@ -1,4 +1,4 @@
-# MathQuest 0.38.0
+# MathQuest 0.38.1
 
 **Sienna’s daily adventure in maths.**
 
@@ -14,7 +14,10 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Exact worksheet resume, completed worksheet review and weekly learning history
 - iPad 10th-generation landscape worksheet optimisation with immediate post-answer feedback and a keyboard-first two-Enter flow
 - First-class interactive whole-number number lines, fraction bars, fraction number lines, scaled rulers and grid-reference selection
-- Structured Grade 5 reasoning including operation choice, reasonableness, conceptual comparison and find-the-mistake questions
+- Grade 5 reasoning including reasonableness, conceptual comparison and find-the-mistake questions
+- Direct Number & Algebra addition/subtraction biased toward larger Grade 5-appropriate values rather than repeated low-complexity sums
+- Equal-groups questions ask for the numerical total instead of only asking the learner to name the operation
+- Worksheet history uses Melbourne local time with AEST/AEDT daylight-saving handling
 - Duplicate-safe question generation with visual question guardrails
 - Evidence-aware reduction of unnecessarily basic arithmetic while preserving purposeful review, consolidation and retrieval
 - Immediate retry-first feedback with optional Math Mentor support
@@ -32,9 +35,17 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Parent Dashboard reliability safeguards for loading, retry and optional-section failure
 - SQLite persistence and Home Assistant backup support
 
+## Number & Algebra quality corrective release
+
+v0.38.1 reduces low-value direct arithmetic such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` in normal Number & Algebra worksheets. When a small direct addition or subtraction is selected, MathQuest upgrades it to a larger place-value calculation instead of letting a worksheet become dominated by easy fluency items.
+
+Equal-groups modelling questions now require an answer to the actual problem. For example, rather than asking which operation would find the total for 5 groups of 8, MathQuest asks how many items there are altogether. The learner still has to recognise multiplication, but that decision is now part of solving the calculation.
+
+Worksheet-history clock times are converted from stored UTC timestamps to `Australia/Melbourne`, including the correct daylight-saving offset for the date.
+
 ## iPad landscape feedback
 
-v0.38.0 makes the post-answer experience viewport-fixed rather than placing the result beneath the question card. Sienna can type an ordinary answer, press Enter, immediately see the result and supporting explanation, optionally record confidence, then press Enter again to continue.
+v0.38.0 made the post-answer experience viewport-fixed rather than placing the result beneath the question card. Sienna can type an ordinary answer, press Enter, immediately see the result and supporting explanation, optionally record confidence, then press Enter again to continue.
 
 Retryable incorrect answers preserve the existing retry-first learning model. The final answer is not revealed, Math Mentor remains optional, and choosing Retry returns to a cleared, focused answer field. The feedback dialog contains keyboard focus while open, provides explicit Correct answer or Incorrect answer text and iconography, and respects reduced-motion preferences.
 
@@ -55,7 +66,7 @@ Internal targets are deliberately left unlabelled where a visible label would re
 
 ## Mathematical reasoning
 
-Learner sessions can include a controlled amount of structured reasoning alongside calculation practice. Question families include selecting an appropriate operation, choosing a reasonable estimate, identifying true statements about perimeter, area and symmetry, and analysing a plausible regrouping or place-value mistake.
+Learner sessions can include a controlled amount of structured reasoning alongside calculation practice. Question families include choosing a reasonable estimate, identifying true statements about perimeter, area and symmetry, and analysing a plausible regrouping or place-value mistake. Equal-groups modelling now asks for the numerical result rather than an operation label.
 
 This is not a separate reasoning engine. The questions use the same curriculum mappings, worksheet selection, answer validation and learning-evidence architecture as other MathQuest practice.
 
@@ -65,7 +76,7 @@ Math Mentor remains optional and retry-first behaviour is preserved. Interactive
 
 ## Interactive number lines and adaptive Number quality
 
-The v0.36.0 whole-number number-line interaction remains available. Straightforward two-digit additions can still be reduced when learner evidence supports progression, while purposeful review, consolidation and retrieval remain available.
+The v0.36.0 whole-number number-line interaction remains available. Straightforward addition/subtraction is retained only when it offers useful practice, with low-complexity items upgraded to larger values for normal Number & Algebra work.
 
 ## Student login and session recovery
 
