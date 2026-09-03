@@ -1,3 +1,11 @@
+## v0.38.1 - Number & Algebra Quality and Melbourne Time
+
+- Reduced low-complexity Number & Algebra direct arithmetic by upgrading small addition/subtraction items such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` to larger Grade 5-appropriate place-value calculations.
+- Preserved useful calculation fluency while preventing small direct sums from dominating normal learner worksheets.
+- Replaced equal-groups “Which operation?” questions with numerical total questions so the learner chooses multiplication as part of solving the problem rather than naming the operation only.
+- Converted worksheet-history timestamps from stored UTC to `Australia/Melbourne`, including AEST/AEDT daylight-saving transitions.
+- Added backend regression coverage for arithmetic upgrading, equal-groups numerical answers and Melbourne time conversion.
+
 ## v0.38.0 - iPad Landscape Feedback and Worksheet UX
 
 - Replaced below-question post-answer results with a reusable feedback dialog designed around the iPad 10th-generation landscape worksheet workflow.
