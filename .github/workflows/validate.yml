@@ -83,19 +83,29 @@ jobs:
       - name: Validate runtime health version source
         run: |
           PYTHONPATH=questmath/app/backend QUESTMATH_DATA_DIR=/tmp/mathquest-metadata-health python - <<'PY'
+          import importlib
+          import re
+          from pathlib import Path
           import yaml
-          from app import v0370
 
           with open('questmath/config.yaml', encoding='utf-8') as handle:
               expected = str(yaml.safe_load(handle)['version'])
+
+          run_script = Path('questmath/rootfs/etc/services.d/questmath/run').read_text(encoding='utf-8')
+          match = re.search(r'uvicorn\s+(app\.[A-Za-z0-9_]+):app', run_script)
+          if not match:
+              raise SystemExit('Unable to derive active backend module from MathQuest runtime script')
+          module_name = match.group(1)
+          runtime_module = importlib.import_module(module_name)
+
           health_route = next(
-              route for route in v0370.app.routes
+              route for route in runtime_module.app.routes
               if getattr(route, 'path', None) == '/api/health' and 'GET' in getattr(route, 'methods', set())
           )
           actual = str(health_route.endpoint()['version'])
           if actual != expected:
-              raise SystemExit(f'/api/health version mismatch: expected {expected}, got {actual}')
-          print(f'/api/health reports expected version {actual}')
+              raise SystemExit(f'/api/health version mismatch: expected {expected}, got {actual} from {module_name}')
+          print(f'/api/health reports expected version {actual} from {module_name}')
           PY
       - name: Validate release-note extraction
         run: |
