@@ -1,6 +1,24 @@
-## v0.38.0 - iPad Landscape Feedback and Worksheet UX
+## v0.38.1 - Number & Algebra Quality and Melbourne Time
 
 Status: In release validation
+
+### Learning quality
+- [x] Reduce low-complexity direct addition/subtraction in normal Number & Algebra worksheets.
+- [x] Upgrade small direct calculations to larger Grade 5-appropriate place-value values rather than removing calculation fluency entirely.
+- [x] Replace equal-groups operation-label questions with numerical total questions so operation choice is part of solving the problem.
+- [x] Preserve adaptive learning, purposeful retrieval, Story Adventure and Parent Test isolation.
+
+### Home Assistant / history
+- [x] Display worksheet-history timestamps using `Australia/Melbourne` rather than raw stored UTC.
+- [x] Use timezone-aware conversion so AEST/AEDT daylight-saving transitions are correct.
+
+### Testing
+- [x] Add regression coverage for arithmetic upgrading, equal-groups numerical answers and Melbourne timezone conversion.
+- [ ] Complete repository CI including backend pytest, frontend Vitest/build, metadata validation and aarch64 startup/health check.
+
+## v0.38.0 - iPad Landscape Feedback and Worksheet UX
+
+Status: Completed
 
 ### Student worksheet UX
 - [x] Replace below-question post-answer feedback with a reusable accessible feedback dialog.
@@ -26,7 +44,7 @@ Status: In release validation
 ### Accessibility and testing
 - [x] Add dialog semantics, explicit result text/icons, screen-reader result announcement, focus movement, focus containment, visible focus styling and touch-size controls.
 - [x] Add frontend coverage for keyboard submit/continue/retry, retry focus, rapid Enter, confidence evidence, optional Math Mentor, touch interaction, Story Adventure and viewport-fixed feedback.
-- [ ] Complete repository CI including backend pytest, frontend Vitest/build, metadata validation and real aarch64 startup/health check.
+- [x] Complete repository CI including backend pytest, frontend Vitest/build, metadata validation and real aarch64 startup/health check.
 - [ ] Complete the real-device iPad 10th-generation manual acceptance checklist in `questmath/MANUAL_ACCEPTANCE_0.38.0.md`.
 
 ## v0.37.1 - Duplicate-Safe Reasoning Mix
