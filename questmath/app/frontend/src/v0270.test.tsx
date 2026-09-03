@@ -42,12 +42,12 @@ describe('MathQuest 0.27 learner and parent-test interactions', () => {
     expect(screen.getByText('After one matching turn')).toBeInTheDocument();
   });
 
-  it('answers and advances a parent test with Enter without requiring a note', async () => {
+  it('answers and advances a parent test with the two-Enter feedback flow without requiring a note', async () => {
     const answered = worksheet({counts: {correct: 1, incorrect: 0, skipped: 0, remaining: 1, hints: 0}, questions: [{...questions[0], status: 'correct', attempts: [{answer: '8', correct: true, attempt_number: 1}]}, questions[1]]});
     const moved = {...answered, current_question_id: 2, questions: [answered.questions[0], {...questions[1], status: 'current'}]};
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
       const url = String(input);
-      if (url === 'api/questions/1/answer') return response({correct: true, retry_allowed: false, working: 'Use a known double.'});
+      if (url === 'api/questions/1/answer') return response({correct: true, retry_allowed: false, message: 'Correct!', working: 'Use a known double.'});
       if (url === 'api/worksheets/10/view') return response(answered);
       if (url === 'api/worksheets/10/navigate/2') return response(moved);
       return response({detail: 'missing'}, false, 404);
@@ -56,9 +56,11 @@ describe('MathQuest 0.27 learner and parent-test interactions', () => {
     const input = screen.getByRole('textbox', {name: 'Your answer'});
     fireEvent.change(input, {target: {value: '8'}});
     fireEvent.keyDown(input, {key: 'Enter'});
-    expect(await screen.findByText(/Great job/i)).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', {name: 'Correct answer'})).toBeInTheDocument();
     expect(screen.getByLabelText(/Note.*optional/i).closest('label')).toHaveTextContent('optional');
-    fireEvent.keyDown(input, {key: 'Enter'});
+    const next = screen.getByRole('button', {name: /Next question/i});
+    await waitFor(() => expect(next).toHaveFocus());
+    fireEvent.keyDown(next, {key: 'Enter'});
     await waitFor(() => expect(fetchMock.mock.calls.some(call => String(call[0]) === 'api/worksheets/10/navigate/2')).toBe(true));
   });
 });

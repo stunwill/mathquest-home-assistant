@@ -1,10 +1,22 @@
-## v0.37.1 - Duplicate-Safe Reasoning Mix
-- Prevent duplicate question identities when the v0.37.0 reasoning mix replaces a worksheet question.
-- Preserve existing worksheet variety and retry the replacement generator before leaving the original question unchanged.
+## v0.38.0 - iPad Landscape Feedback and Worksheet UX
+
+- Replaced below-question answer results with an accessible post-answer feedback dialog so correct/incorrect status, concise mathematical support, reflection and the next action are immediately visible without page scrolling.
+- Preserved retry-first learning: retryable incorrect answers do not reveal terminal working, Math Mentor remains optional, and Retry clears the previous response and returns focus to the typed-answer field.
+- Made the physical-keyboard flow explicit: Enter submits a typed answer, the feedback primary action receives focus, and Enter continues or retries without requiring touch.
+- Added rapid-Enter protection so a fast second key press cannot submit the same answer twice or skip a question.
+- Moved learner confidence reflection into the feedback dialog while preserving the existing confidence-evidence endpoint and Parent Test isolation.
+- Added restrained, non-blocking correct-answer celebration with explicit text/icon state and `prefers-reduced-motion` support.
+- Added an iPad 10th-generation landscape layout band that reduces unnecessary header/card/side-panel space while preserving readable question typography and existing portrait/mobile behaviour.
+- Kept whole-number number lines, fraction bars, fraction number lines, rulers, grid references, choices, structured reasoning and Story Adventure on the shared worksheet answer and feedback architecture.
+- Added frontend regression coverage for keyboard submission/continuation, retry focus, optional Math Mentor, confidence evidence, focus trapping, rapid Enter, touch-first interactive answers, Story Adventure and viewport-fixed feedback.
 
 # MathQuest Home Assistant Changelog
 
 Concise user-facing release notes for the Home Assistant add-on. The detailed project/GitHub changelog is maintained at the repository root in `CHANGELOG.md`.
+
+## v0.37.1 - Duplicate-Safe Reasoning Mix
+- Prevent duplicate question identities when the v0.37.0 reasoning mix replaces a worksheet question.
+- Preserve existing worksheet variety and retry the replacement generator before leaving the original question unchanged.
 
 ## v0.37.0 - Richer Interactive Mathematics and Mathematical Reasoning
 

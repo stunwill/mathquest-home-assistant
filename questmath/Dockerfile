@@ -1,6 +1,6 @@
 ARG BUILD_FROM
 
-FROM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /frontend
 COPY app/frontend/package*.json ./
 RUN npm install
