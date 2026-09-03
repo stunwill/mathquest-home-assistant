@@ -124,10 +124,11 @@ def improve_number_algebra_quality(session: Session, worksheet: legacy.Worksheet
     rng = random.Random(f'v0381:{worksheet.id}:number-algebra-quality')
     changed = False
     for question in sorted(worksheet.questions, key=lambda item: item.position):
-        changed = _replace_operation_only_question(question) or changed
-        changed = _upgrade_direct_arithmetic(question, rng) or changed
-        if changed:
+        question_changed = _replace_operation_only_question(question)
+        question_changed = _upgrade_direct_arithmetic(question, rng) or question_changed
+        if question_changed:
             v0321._restore_runtime_annotations(question, worksheet)
+            changed = True
     if changed:
         session.commit()
         session.refresh(worksheet)
