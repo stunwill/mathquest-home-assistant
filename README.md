@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.38.0`
+Version `0.38.1`
 
 ## Development Metadata
 
@@ -32,7 +32,10 @@ The release metadata validator derives the expected version from the repository 
 - Tablet-optimised worksheet and tutoring flow for portrait and landscape use
 - Multiple daily worksheets with save, exact resume, review and skip support
 - First-class interactive mathematics including whole-number number lines, fraction bars, fraction number lines, scaled rulers and selectable grid references
-- Structured mathematical reasoning including operation selection, reasonableness, conceptual statements and age-appropriate error analysis
+- Structured mathematical reasoning including reasonableness, conceptual statements and age-appropriate error analysis
+- Number & Algebra direct addition/subtraction practice biased toward larger Grade 5-appropriate values instead of repeated low-complexity sums
+- Equal-groups modelling questions require the learner to calculate the total rather than merely name the operation
+- Worksheet history times are displayed in `Australia/Melbourne`, including daylight-saving transitions
 - Duplicate-safe adaptive question generation and visual learning guardrails
 - Evidence-aware suppression of unnecessarily basic arithmetic while preserving purposeful review and consolidation
 - Victorian Curriculum F–10 Version 2.0 Level 5 pathway, adapting across Levels 2–6 from diagnostic evidence
@@ -48,9 +51,17 @@ The release metadata validator derives the expected version from the repository 
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
 
+## Number & Algebra question quality
+
+MathQuest v0.38.1 reduces low-value direct arithmetic in Number & Algebra. Straight addition and subtraction questions remain useful for fluency, but examples such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` are no longer allowed to dominate normal learner worksheets. When direct addition or subtraction is selected, smaller examples are upgraded to larger place-value calculations suitable for Grade 5 practice.
+
+Equal-groups modelling also now asks for the mathematical result. Instead of asking which operation would find the total, MathQuest asks how many items there are altogether, so Sienna must choose multiplication as part of actually solving the problem.
+
+Worksheet-history clock times are converted from stored UTC timestamps to `Australia/Melbourne` before display, using the correct AEST/AEDT offset for the date.
+
 ## iPad landscape worksheet feedback
 
-MathQuest v0.38.0 changes the normal student flow to `Answer → Immediate feedback → Understand → Reflect → Continue` without requiring page scrolling between those steps. Typed answers still submit with Enter. The feedback dialog then receives focus so a second Enter continues after a terminal answer or returns to a clean, focused answer field when another attempt is expected.
+MathQuest v0.38.0 changed the normal student flow to `Answer → Immediate feedback → Understand → Reflect → Continue` without requiring page scrolling between those steps. Typed answers still submit with Enter. The feedback dialog then receives focus so a second Enter continues after a terminal answer or returns to a clean, focused answer field when another attempt is expected.
 
 The dialog keeps the result and primary action visible while allowing only genuinely long supporting content to scroll internally. Correct answers use restrained, non-blocking celebration and incorrect answers use supportive learning language. Retryable incorrect answers continue to hide terminal working, and Math Mentor remains optional unless the backend explicitly requires support.
 
@@ -68,7 +79,7 @@ The current interactive models include:
 - scaled ruler marks;
 - grid-reference squares.
 
-Where revealing a label would give away the answer, internal targets are intentionally left unlabelled. Reasoning questions add controlled variety such as selecting an operation, judging a reasonable estimate, distinguishing perimeter from area, recognising symmetry statements and analysing a plausible mathematical mistake.
+Where revealing a label would give away the answer, internal targets are intentionally left unlabelled. Reasoning questions add controlled variety such as judging a reasonable estimate, distinguishing perimeter from area, recognising symmetry statements and analysing a plausible mathematical mistake.
 
 ## Home Assistant Parent Learning Integration
 
