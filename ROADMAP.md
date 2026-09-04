@@ -1,6 +1,30 @@
-## v0.38.1 - Number & Algebra Quality and Melbourne Time
+## v0.39.0 - Session Learning Quality and Adaptive Continuity
 
 Status: In release validation
+
+### Learning quality
+- [x] Add a final session-level quality policy after existing generation and adaptive composition.
+- [x] Detect meaningful near-duplicate structures rather than only exact prompt or skill duplicates.
+- [x] Add lightweight recent-exposure awareness across answered Daily Practice and Story Adventure work.
+- [x] Preserve deliberate review, consolidation and retrieval while reducing accidental repetition.
+- [x] Record multidimensional direct-arithmetic difficulty metadata including operation, digit size and regrouping demand.
+- [x] Refresh adaptive purpose/evidence metadata after final question replacements so later learning decisions describe the final worksheet.
+- [x] Preserve the established challenge limit and Parent Test isolation.
+
+### Release integrity
+- [x] Derive the release-authoritative backend module from the runtime startup script instead of hard-coding the previous wrapper.
+- [x] Bring the frontend `package.json` version into the release consistency contract.
+- [x] Reconcile v0.38.1 roadmap status with its completed merge/release state.
+
+### Testing
+- [x] Add deterministic tests for near-duplicate structure, difficulty dimensions, recent exposure, purposeful retrieval, Parent Test isolation, final annotations and challenge limits.
+- [ ] Complete backend, frontend, metadata and real aarch64 startup/health validation.
+- [ ] Record the current npm dependency audit and remaining findings.
+- [ ] Complete manual real-session acceptance on representative iPad landscape and mobile/desktop views.
+
+## v0.38.1 - Number & Algebra Quality and Melbourne Time
+
+Status: Completed
 
 ### Learning quality
 - [x] Reduce low-complexity direct addition/subtraction in normal Number & Algebra worksheets.
@@ -14,7 +38,7 @@ Status: In release validation
 
 ### Testing
 - [x] Add regression coverage for arithmetic upgrading, equal-groups numerical answers and Melbourne timezone conversion.
-- [ ] Complete repository CI including backend pytest, frontend Vitest/build, metadata validation and aarch64 startup/health check.
+- [x] Complete repository CI including backend pytest, frontend Vitest/build, metadata validation and aarch64 startup/health check.
 
 ## v0.38.0 - iPad Landscape Feedback and Worksheet UX
 
@@ -116,7 +140,7 @@ Status: Completed
 ### Reliability
 - [x] Fix Parent Learning Intelligence rendering when data transitions from initial loading to loaded state.
 - [x] Prevent required Parent Dashboard bootstrap failures from leaving an indefinite splash screen.
-- [x] Let backups and optional learning-intelligence sections degrade independently without blocking the core parent experience.
+- [x] Let backups and optional learning-intelligence failures degrade independently without blocking the core parent experience.
 - [x] Preserve Home Assistant ingress, authentication, Parent Tests and learner functionality.
 
 ### Testing
@@ -137,7 +161,7 @@ Status: Completed
 ### UX
 - [x] Provide a compact stable Home Assistant entity/API contract instead of an entity for every internal metric.
 - [x] Add concise parent-facing seven-day learning summaries and notification-ready learning signals without per-question notification noise.
-- [x] Distinguish actual elapsed learning time from configured timed-session targets.
+- [x] Distinguish actual active minutes from configured timed-session target minutes.
 - [x] Document standard Home Assistant REST sensor and reminder automation examples without requiring HACS.
 - [x] Preserve local-first privacy, Home Assistant ingress compatibility and existing learner/parent experiences.
 
@@ -265,6 +289,6 @@ Status: Planned
 - [ ] Continue improving parent progress visibility and learning-goal planning.
 
 ### Platform
-- [ ] Review dependency/security maintenance recorded during v0.34.0 and v0.35.0 without using unsafe forced upgrades.
+- [ ] Review dependency/security maintenance without unsafe forced upgrades.
 - [ ] Continue performance and Home Assistant operational improvements where real usage demonstrates a need.
-- [ ] Consider consolidation of historical backend version-wrapper architecture as a focused platform release.
+- [ ] Consolidate historical backend version-wrapper architecture only as a dedicated platform release with explicit migration tests.
