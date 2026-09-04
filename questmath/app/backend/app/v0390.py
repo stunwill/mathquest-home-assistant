@@ -28,26 +28,64 @@ def _payload(question: legacy.Question) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def _direct_arithmetic_signature(question: legacy.Question) -> tuple[str, str] | None:
-    match = re.fullmatch(r'Calculate\s+(\d+)\s*([+−\-×x÷/])\s*(\d+)\.', (question.prompt or '').strip())
-    if not match:
-        return None
-    left, operator, right = int(match.group(1)), match.group(2), int(match.group(3))
-    operation = {
-        '+': 'addition', '−': 'subtraction', '-': 'subtraction',
-        '×': 'multiplication', 'x': 'multiplication',
-        '÷': 'division', '/': 'division',
-    }[operator]
-    magnitude = max(left, right)
-    if magnitude < 20:
-        band = 'tiny'
-    elif magnitude < 100:
-        band = 'two_digit'
-    elif magnitude < 1000:
-        band = 'hundreds'
-    else:
-        band = 'thousands'
-    return operation, band
+def _regroup_steps(operation: str, left: int, right: int) -> int:
+    if operation == 'addition':
+        carry = 0
+        count = 0
+        a, b = left, right
+        while a or b or carry:
+            total = (a % 10) + (b % 10) + carry
+            if total >= 10:
+                count += 1
+            carry = 1 if total >= 10 else 0
+            a //= 10
+            b //= 10
+        return count
+    if operation == 'subtraction' and left >= right:
+        count = 0
+        borrow = 0
+        a, b = left, right
+        while a or b:
+            top = (a % 10) - borrow
+            bottom = b % 10
+            if top < bottom:
+                count += 1
+                borrow = 1
+            else:
+                borrow = 0
+            a //= 10
+            b //= 10
+        return count
+    return 0
+
+
+def difficulty_dimensions(question: legacy.Question) -> dict[str, Any]:
+    prompt = (question.prompt or '').strip()
+    match = re.fullmatch(r'Calculate\s+(\d+)\s*([+−\-×x÷/])\s*(\d+)\.', prompt)
+    payload = _payload(question)
+    if match:
+        left, operator, right = int(match.group(1)), match.group(2), int(match.group(3))
+        operation = {
+            '+': 'addition', '−': 'subtraction', '-': 'subtraction',
+            '×': 'multiplication', 'x': 'multiplication',
+            '÷': 'division', '/': 'division',
+        }[operator]
+        return {
+            'operation': operation,
+            'left_digits': len(str(left)),
+            'right_digits': len(str(right)),
+            'regroup_steps': _regroup_steps(operation, left, right),
+            'representation': question.answer_type,
+            'reasoning_type': payload.get('reasoning_type'),
+        }
+    visual = payload.get('visual') if isinstance(payload.get('visual'), dict) else {}
+    adaptive = payload.get('adaptive') if isinstance(payload.get('adaptive'), dict) else {}
+    return {
+        'operation': payload.get('operation'),
+        'representation': visual.get('type') or question.answer_type,
+        'reasoning_type': payload.get('reasoning_type'),
+        'prerequisite_dependency': bool(adaptive.get('prerequisite_for')),
+    }
 
 
 def question_structure(question: legacy.Question) -> str:
@@ -55,9 +93,14 @@ def question_structure(question: legacy.Question) -> str:
     reasoning = payload.get('reasoning_type')
     if reasoning:
         return f"reasoning:{reasoning}"
-    direct = _direct_arithmetic_signature(question)
-    if direct:
-        return f"direct:{direct[0]}:{direct[1]}"
+    dims = difficulty_dimensions(question)
+    if dims.get('left_digits'):
+        symbol = 'x' if dims['operation'] in {'multiplication', 'division'} else '+'
+        return (
+            f"direct:{dims['operation']}:"
+            f"{dims['left_digits']}d{symbol}{dims['right_digits']}d:"
+            f"regroup{min(2, int(dims['regroup_steps']))}"
+        )
     return v0301.question_family(question)
 
 
@@ -67,8 +110,11 @@ def _purposeful_foundation(question: legacy.Question) -> bool:
 
 
 def _is_low_complexity(question: legacy.Question) -> bool:
-    direct = _direct_arithmetic_signature(question)
-    return bool(direct and direct[1] in {'tiny', 'two_digit'} and not _purposeful_foundation(question))
+    dims = difficulty_dimensions(question)
+    if dims.get('operation') not in {'addition', 'subtraction'} or not dims.get('left_digits'):
+        return False
+    max_digits = max(int(dims['left_digits']), int(dims['right_digits']))
+    return max_digits <= 2 and int(dims.get('regroup_steps') or 0) <= 1 and not _purposeful_foundation(question)
 
 
 def _recent_structures(session: Session, student_id: int, current_worksheet_id: int, limit: int = 24) -> Counter[str]:
@@ -139,6 +185,31 @@ def _replacement(
     return True
 
 
+def _refresh_adaptive_annotations(session: Session, worksheet: legacy.Worksheet, student_id: int) -> None:
+    challenge_used = 0
+    challenge_budget = 1 if len(worksheet.questions) >= 5 else 0
+    for question in sorted(worksheet.questions, key=lambda item: item.position):
+        payload = _payload(question)
+        purpose, reason = v0330._purpose_for_question(session, student_id, question, payload)
+        if purpose == 'challenge':
+            if challenge_used >= challenge_budget:
+                purpose = 'current'
+                reason = 'Challenge is limited so the session stays balanced.'
+            else:
+                challenge_used += 1
+        payload['learning_purpose'] = purpose
+        payload['learning_purpose_label'] = v0330.PURPOSE_LABELS[purpose]
+        payload['adaptive_reason'] = reason
+        evidence = v0330._question_evidence(session, student_id, question.skill)
+        payload['adaptive_evidence'] = {
+            'attempts': evidence['attempts'],
+            'independent_successes': evidence['independent'],
+            'support_rate': round(evidence['support'], 3),
+            'state': v0330._progression_state(evidence),
+        }
+        question.payload = json.dumps(payload)
+
+
 def enforce_session_learning_quality(session: Session, worksheet: legacy.Worksheet, student_id: int) -> legacy.Worksheet:
     if worksheet.session_kind == 'parent_test':
         return worksheet
@@ -169,7 +240,12 @@ def enforce_session_learning_quality(session: Session, worksheet: legacy.Workshe
                 structure = question_structure(question)
 
         seen[structure] += 1
+
+    _refresh_adaptive_annotations(session, worksheet, student_id)
+    for question in questions:
         payload = _payload(question)
+        structure = question_structure(question)
+        payload['difficulty_dimensions'] = difficulty_dimensions(question)
         payload['session_quality'] = {
             'structure': structure,
             'recent_exposure': int(recent.get(structure, 0)),
@@ -179,9 +255,6 @@ def enforce_session_learning_quality(session: Session, worksheet: legacy.Workshe
         }
         question.payload = json.dumps(payload)
 
-    # Re-derive adaptive purpose after any replacement so recommendations and
-    # evidence metadata remain aligned with the final question set.
-    v0330.apply_adaptive_daily_learning(session, worksheet, student_id)
     session.commit()
     session.refresh(worksheet)
     return worksheet
@@ -200,6 +273,7 @@ def capabilities(_: legacy.User = Depends(legacy.current_user)):
     return {
         'version': '0.39.0',
         'session_level_learning_quality': True,
+        'multidimensional_difficulty_metadata': True,
         'recent_structure_exposure': True,
         'near_duplicate_structure_control': True,
         'adaptive_metadata_reconciled_after_quality': True,
