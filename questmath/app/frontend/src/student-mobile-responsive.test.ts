@@ -48,7 +48,8 @@ describe('v0.40 student responsive layout contracts', () => {
   });
 
   it('does not replace the established tablet worksheet feedback rules', () => {
-    expect(worksheetCss).toContain('post-answer-feedback');
+    expect(worksheetCss).toContain('.post-answer-backdrop{position:fixed;inset:0');
+    expect(worksheetCss).toContain('.post-answer-scroll{min-height:0;overflow:auto');
     expect(worksheetCss).toContain('@media (min-width:900px) and (max-width:1200px) and (orientation:landscape)');
     expect(mobileCss).toContain('@media(min-width:761px)');
   });
