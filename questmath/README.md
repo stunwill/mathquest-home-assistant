@@ -1,4 +1,4 @@
-# MathQuest 0.39.0
+# MathQuest 0.40.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -8,6 +8,11 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 
 - Student and parent authentication, with `sienna` prefilled for the normal student login flow
 - Automatic recovery from expired MathQuest sessions back to the login screen while keeping Home Assistant ingress failures distinct
+- Action-first student mobile Home that promotes unfinished learning ahead of completed history
+- Student-only mobile Home, Adventure, Worksheets and Progress navigation with iPhone safe-area support
+- Compact horizontal Story Adventure selection on narrow screens while preserving adaptive learning selection
+- Recent worksheet history limited to three rows by default with progressive disclosure for older work
+- Responsive mobile weekly learning navigation with readable previous/next week controls and Today
 - Student dashboard, streak, XP, levels, calendar and badges
 - Multiple generated worksheets per day
 - Save and exit, resume, skip-for-now and skipped-question round
@@ -37,6 +42,22 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Parent Dashboard reliability safeguards for loading, retry and optional-section failure
 - SQLite persistence and Home Assistant backup support
 
+## Student mobile Home and navigation
+
+v0.40.0 reorganises the student mobile experience around current learning action. Real iPhone use showed that the Home page had become too long and dashboard-like, with Story Adventure, large worksheet cards, technical skill evidence and the weekly calendar all competing for attention.
+
+When unfinished learning exists, MathQuest now surfaces a **Continue Learning** card before historical content. An unfinished worksheet can be resumed directly, and completed work with skipped questions can be reopened for another attempt without inventing urgency. Completed history is reduced to three recent rows until the learner chooses to view more.
+
+Story Adventure cards become horizontally swipeable on narrow screens so title, purpose and Start action stay visible without requiring a long stack of large cards. The underlying Story Adventure flow still creates a normal adaptive practice session first, then applies theme framing, so the mathematics remains selected by the same learning engine.
+
+A student-only bottom navigation provides Home, Adventure, Worksheets and Progress destinations. It uses text and icons, has accessible current-state semantics, supports keyboard focus and reserves iPhone safe-area space so content is not covered. Parent Dashboard and Parent Tests remain outside student navigation.
+
+The mobile MathQuest header is compressed when student navigation is present, reducing duplicated application identity beneath the Home Assistant ingress header while keeping sign-out accessible.
+
+The weekly learning calendar now treats the previously compressed five-control iPhone layout as a responsive defect. Mobile shows readable previous week, date range, next week and Today controls, while the day content becomes a one-column weekly activity list. Tablet and desktop retain richer day navigation and the seven-day layout.
+
+This release does not change worksheet generation, adaptive purpose selection, mastery calculations, learning evidence, Parent Tests or the v0.38 answer-feedback interaction.
+
 ## Session learning quality
 
 v0.39.0 adds a final worksheet-quality pass after the existing adaptive generators. It checks the completed question set for educationally repetitive structures rather than only exact duplicate prompts.
@@ -59,7 +80,7 @@ v0.38.0 made the post-answer experience viewport-fixed rather than placing the r
 
 Retryable incorrect answers preserve the existing retry-first learning model. The final answer is not revealed, Math Mentor remains optional, and choosing Retry returns to a cleared, focused answer field. The feedback dialog contains keyboard focus while open, provides explicit Correct answer or Incorrect answer text and iconography, and respects reduced-motion preferences.
 
-The iPad landscape breakpoint also reduces unnecessary header, card, progress and sidebar space without shrinking the mathematical question into a desktop layout. Portrait, iPhone/mobile and desktop layouts retain their existing responsive behaviour.
+The iPad landscape breakpoint also reduces unnecessary header, card, progress and sidebar space without shrinking the mathematical question into a desktop layout. Portrait, iPhone/mobile and desktop layouts retain responsive behaviour.
 
 ## Richer interactive mathematics
 
