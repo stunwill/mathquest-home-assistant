@@ -6,9 +6,67 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.39.0, Session Learning Quality and Adaptive Continuity
+## Current release scope, 0.40.0, Student Mobile Home, Navigation & Responsive UX
 
-MathQuest already has strong per-question generation, adaptive purpose, tutoring, interactive mathematics and duplicate safeguards. Real learner sessions nevertheless showed that a collection of individually valid questions can still form a repetitive or weak worksheet. v0.39.0 therefore treats the final worksheet as a learning product in its own right.
+MathQuest's learning intelligence has become stronger, but real iPhone use showed that the student Home page had accumulated too many equal-weight dashboard sections. The current learning action, Story Adventure, completed worksheets, technical skill evidence and the weekly calendar all competed for vertical space. v0.40.0 changes the information architecture so the phone experience answers three questions sooner: what should I do, why am I doing it, and how am I progressing?
+
+### Action-first mobile Home
+
+- Promote an active worksheet or skipped-question recovery through a clear Continue Learning treatment.
+- Keep completed historical worksheets below unfinished learning.
+- Show only three recent completed worksheets initially, with explicit progressive disclosure for older history.
+- Preserve the existing recommendation and intervention services rather than creating a second mobile recommendation model.
+- Reduce nested card density and mobile padding where it does not add comprehension.
+
+### Story Adventure and navigation
+
+- Keep Story Adventure on the existing timed adaptive session service and learning-evidence path.
+- Present Adventure themes as compact horizontally swipeable cards on narrow screens so title, context, learning purpose and action remain discoverable without a long vertical stack.
+- Add student-only Home, Adventure, Worksheets and Progress navigation on phones.
+- Use text and icons, accessible selected-state semantics, minimum touch targets, visible focus and iPhone safe-area padding.
+- Keep Parent Dashboard and Parent Tests outside student navigation.
+
+### Home Assistant ingress and responsive layout
+
+- Reduce the MathQuest student header when mobile navigation is active so it does not unnecessarily duplicate the Home Assistant ingress identity area.
+- Preserve sign-out and Home Assistant's own navigation.
+- Reserve bottom safe-area space and prevent horizontal page overflow.
+- Use responsive CSS rather than device-name detection.
+- Preserve iPad portrait, iPad 10th-generation landscape and desktop layouts outside the narrow-screen presentation changes.
+
+### Weekly learning calendar
+
+- Treat the compressed five-control iPhone calendar header as a responsive defect.
+- On mobile, show readable previous-week, date-range, next-week and Today controls.
+- Hide the lower-value one-day controls only at the narrow breakpoint while retaining them on larger layouts.
+- Present weekly activity as a vertical day-by-day learning list on phones instead of forcing seven desktop columns into the available width.
+- Keep worksheet activity, accuracy, hints, duration and review access available.
+
+### Learning continuity
+
+- Do not change worksheet generation, mastery calculations or adaptive recommendation rules for this release.
+- Preserve the v0.39 final session learning-quality policy, recent exposure logic and adaptive annotation reconciliation.
+- Preserve prerequisite routing, spaced retrieval, misconceptions, support dependency, confidence evidence and difficulty adaptation.
+- Preserve Math Mentor, hints, worked examples, Interactive Mathematics, Visual Mathematics and Story Adventure evidence integrity.
+- Preserve Parent Learning Intelligence and Parent Test isolation.
+- Preserve the v0.38 worksheet interaction: Answer → Immediate feedback → Understand → Reflect → Continue.
+
+### Acceptance criteria
+
+- Unfinished learning appears before completed history on narrow student layouts.
+- Continue Learning is rendered only when an active worksheet or meaningful skipped-question recovery exists.
+- Only three recent completed worksheets are initially rendered in the history list, with View all worksheets available.
+- Story Adventure remains accessible and continues to create the same adaptive practice session before applying theme framing.
+- Student mobile navigation contains no parent-only destination and does not obscure content above the iPhone safe area.
+- The mobile calendar date range remains readable and no five-column compressed navigation is used below the mobile breakpoint.
+- Phone weekly activity is readable without horizontal page overflow.
+- Existing iPad landscape worksheet keyboard and feedback behaviour remains covered by regression tests.
+- Full backend, frontend, version metadata and real aarch64 startup/health validation passes before merge.
+- Physical iPhone and iPad checks remain explicitly unverified until performed on hardware.
+
+## Recently completed release, 0.39.0, Session Learning Quality and Adaptive Continuity
+
+MathQuest already had strong per-question generation, adaptive purpose, tutoring, interactive mathematics and duplicate safeguards. Real learner sessions nevertheless showed that a collection of individually valid questions could still form a repetitive or weak worksheet. v0.39.0 therefore treats the final worksheet as a learning product in its own right.
 
 ### Session-level learning quality
 
@@ -26,26 +84,6 @@ MathQuest already has strong per-question generation, adaptive purpose, tutoring
 - Retain the established one-question challenge budget.
 - Preserve prerequisite, misconception, support-dependency and retention evidence.
 - Preserve Parent Test isolation.
-
-### Release integrity
-
-- Derive the active backend release module from the Home Assistant runtime startup script rather than pinning validation to the previous version wrapper.
-- Include the frontend package manifest in release-version consistency validation so stale package metadata cannot silently persist across releases.
-- Continue validating package-lock dependency metadata for `npm ci` compatibility.
-
-### Acceptance criteria
-
-- A normal learner worksheet cannot contain repeated structurally equivalent questions merely because the numeric values differ.
-- Similar calculations are distinguished from genuinely different mathematical demand; all three-digit addition is not treated as one family.
-- Purposeful review/consolidation/retrieval questions remain eligible even when easy.
-- Recent exposure influences variety without overriding a genuine adaptive learning need.
-- Final questions contain multidimensional difficulty metadata where it can be derived reliably.
-- Adaptive purpose/evidence metadata still matches the final question after quality replacement.
-- Challenge remains limited to the existing session budget.
-- Parent Tests remain unchanged by session-quality recomposition.
-- Story Adventure continues to use the same adaptive questions and evidence architecture.
-- Full backend, frontend, metadata and real aarch64 startup/health validation passes.
-- Current dependency-audit findings are recorded rather than hidden or force-fixed.
 
 ## Recently completed release, 0.38.1, Number & Algebra Quality and Melbourne Time
 
