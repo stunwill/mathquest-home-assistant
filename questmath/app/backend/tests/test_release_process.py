@@ -22,11 +22,11 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     lowered = notes.lower()
-    assert 'session learning quality' in lowered
-    assert 'recent' in lowered
-    assert 'adaptive' in lowered
-    assert 'melbourne' not in lowered
-    assert 'ipad landscape' not in lowered
+    assert 'student mobile home' in lowered
+    assert 'continue learning' in lowered
+    assert 'calendar' in lowered
+    assert 'session learning quality' not in lowered
+    assert 'melbourne time' not in lowered
 
 
 def test_required_version_locations_agree():
@@ -35,7 +35,7 @@ def test_required_version_locations_agree():
     expected_version = versions['questmath/config.yaml']
     assert set(versions.values()) == {expected_version}
     assert 'frontend/package.json' in versions
-    assert any('v0390.py app.version' in key for key in versions)
+    assert any('v0400.py app.version' in key for key in versions)
     module.validate_frontend_lockfile()
 
 
