@@ -43,7 +43,7 @@ function StudentMobileNavigation() {
   return <nav className="student-mobile-nav" aria-label="Student navigation">
     <button type="button" aria-current={selected === 'home' ? 'page' : undefined} onClick={() => move('home')}><Home size={20}/><span>Home</span></button>
     <button type="button" aria-current={selected === 'adventure' ? 'page' : undefined} onClick={() => move('adventure', 'mq-story-adventures')}><BookOpen size={20}/><span>Adventure</span></button>
-    <button type="button" aria-current={selected === 'worksheets' ? 'page' : undefined} onClick={() => move('worksheets', 'mq-worksheet-history')}><List size={20}/><span>Worksheets</span></button>
+    <button type="button" aria-current={selected === 'worksheets' ? 'page' : undefined} onClick={() => move('worksheets', 'mq-worksheet-history-secondary')}><List size={20}/><span>Worksheets</span></button>
     <button type="button" aria-current={selected === 'progress' ? 'page' : undefined} onClick={() => move('progress', 'mq-learning-calendar')}><BarChart3 size={20}/><span>Progress</span></button>
   </nav>;
 }
@@ -103,7 +103,7 @@ export function WorksheetHistory({onCreate, onOpen, homeLimit = 3}:{onCreate: ()
 
   return <section id="mq-worksheet-history" className={`panel mq-v0160-history${continuation ? ' mq-has-continue' : ''}`} aria-label="Worksheet history">
     {continuation && <article className="mq-continue-learning" aria-label="Continue learning"><div><p className="eyebrow">CONTINUE LEARNING</p><h2>{incomplete ? continuation.display_title : `${continuation.skipped} questions need another try`}</h2><p>{incomplete ? `${continuation.answered} of ${continuation.total} answered. Your progress is saved.` : 'Finish the skipped questions when you are ready.'}</p></div><button type="button" className="primary" onClick={() => incomplete ? open(continuation.id) : restart(continuation.id)}><Play size={18}/>{incomplete ? 'Continue' : 'Finish worksheet'}</button></article>}
-    <div className="mq-history-secondary">
+    <div id="mq-worksheet-history-secondary" className="mq-history-secondary">
       <div className="mq-v0160-head"><div><p className="eyebrow">WORKSHEETS</p><h2>Recent worksheets</h2><p>Completed work stays available without outranking what you should do next.</p></div><button className="primary" type="button" onClick={onCreate}>+ New worksheet</button></div>
       {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>} {rows === null && !error ? <p>Loading worksheet history…</p> : <>
         {!homeLimit&&<div className="mq-v0160-summary"><article><small>Worksheets today</small><strong>{today.length}</strong></article><article><small>Questions</small><strong>{totals.answered}</strong></article><article><small>Accuracy</small><strong>{totals.answered ? `${Math.round(totals.score / totals.answered * 100)}%` : '—'}</strong></article><article><small>Hints</small><strong>{totals.hints}</strong></article><article><small>XP</small><strong>{totals.xp}</strong></article></div>}
