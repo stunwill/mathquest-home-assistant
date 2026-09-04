@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0120, v0301, v0321, v0330, v0381
+from . import v0120, v0230, v0301, v0321, v0330, v0381
 
 app = v0381.app
 app.version = '0.39.0'
@@ -186,26 +186,34 @@ def _replacement(
 
 
 def _refresh_adaptive_annotations(session: Session, worksheet: legacy.Worksheet, student_id: int) -> None:
+    outcomes = v0230.outcome_mastery(session, student_id)
+    outcome_map = {item['code']: item for item in outcomes}
     challenge_used = 0
     challenge_budget = 1 if len(worksheet.questions) >= 5 else 0
     for question in sorted(worksheet.questions, key=lambda item: item.position):
         payload = _payload(question)
-        purpose, reason = v0330._purpose_for_question(session, student_id, question, payload)
+        purpose, reason = v0330._purpose_for_question(session, student_id, question, outcome_map)
         if purpose == 'challenge':
             if challenge_used >= challenge_budget:
                 purpose = 'current'
                 reason = 'Challenge is limited so the session stays balanced.'
             else:
                 challenge_used += 1
+        evidence = v0330._question_evidence(session, student_id, question.skill)
+        state = v0330._progression_state(evidence)
+        questions = int(evidence.get('questions', evidence.get('attempts', 0)) or 0)
+        independent = float(evidence.get('independent', 0.0) or 0.0)
+        eventual = float(evidence.get('eventual', 0.0) or 0.0)
+        support = float(evidence.get('support', 0.0) or 0.0)
         payload['learning_purpose'] = purpose
         payload['learning_purpose_label'] = v0330.PURPOSE_LABELS[purpose]
         payload['adaptive_reason'] = reason
-        evidence = v0330._question_evidence(session, student_id, question.skill)
+        payload['progression_state'] = state
         payload['adaptive_evidence'] = {
-            'attempts': evidence['attempts'],
-            'independent_successes': evidence['independent'],
-            'support_rate': round(evidence['support'], 3),
-            'state': v0330._progression_state(evidence),
+            'questions': questions,
+            'independent_accuracy': round(independent * 100) if independent <= 1 else round(independent),
+            'eventual_accuracy': round(eventual * 100) if eventual <= 1 else round(eventual),
+            'support_dependency': round(support * 100) if support <= 1 else round(support),
         }
         question.payload = json.dumps(payload)
 
