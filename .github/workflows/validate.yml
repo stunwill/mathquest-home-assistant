@@ -36,6 +36,24 @@ jobs:
       - name: Install frontend dependencies
         working-directory: questmath/app/frontend
         run: npm ci
+      - name: Audit frontend dependencies
+        working-directory: questmath/app/frontend
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > /tmp/mathquest-npm-audit.json
+          status=$?
+          set -e
+          node - <<'NODE'
+          const fs = require('fs');
+          const audit = JSON.parse(fs.readFileSync('/tmp/mathquest-npm-audit.json', 'utf8'));
+          const vulnerabilities = audit.metadata?.vulnerabilities ?? {};
+          console.log('npm audit vulnerability counts:', JSON.stringify(vulnerabilities));
+          for (const [name, finding] of Object.entries(audit.vulnerabilities ?? {})) {
+            console.log(`${name}: severity=${finding.severity}; direct=${Boolean(finding.isDirect)}; fixAvailable=${JSON.stringify(finding.fixAvailable)}`);
+          }
+          NODE
+          echo "npm audit exit code: ${status} (recorded for release review; dependency upgrades are assessed separately)"
       - name: Run frontend tests
         working-directory: questmath/app/frontend
         run: npm test
