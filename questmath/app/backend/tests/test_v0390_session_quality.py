@@ -3,8 +3,24 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from sqlalchemy.pool import StaticPool
+
 from app import main as legacy
 from app import v0390
+
+
+def make_session():
+    engine = create_engine('sqlite:///:memory:', connect_args={'check_same_thread': False}, poolclass=StaticPool)
+    legacy.Base.metadata.create_all(engine)
+    session = Session(engine)
+    student = legacy.User(username='quality-student', password_hash='x', role='student', display_name='Learner')
+    session.add(student)
+    session.flush()
+    session.add(legacy.Setting(student_id=student.id, question_count=6, adaptive_mode=True, enabled_topics='["number"]', manual_levels='{}'))
+    session.commit()
+    return session, student
 
 
 def _question(position: int, prompt: str, skill: str, payload: dict | None = None, answered_at=None) -> legacy.Question:
@@ -60,10 +76,8 @@ def test_reasoning_structure_uses_reasoning_type_not_numbers():
     assert v0390.question_structure(q) == 'reasoning:reasonableness'
 
 
-def test_parent_test_is_not_recomposed(db_session):
-    student = legacy.User(username='quality-parent-test', password_hash='x', role='student', display_name='Learner')
-    db_session.add(student)
-    db_session.flush()
+def test_parent_test_is_not_recomposed():
+    session, student = make_session()
     ws = legacy.Worksheet(
         student_id=student.id,
         worksheet_date=datetime.utcnow().date(),
@@ -71,8 +85,8 @@ def test_parent_test_is_not_recomposed(db_session):
         session_kind='parent_test',
         total=1,
     )
-    db_session.add(ws)
-    db_session.flush()
+    session.add(ws)
+    session.flush()
     q = legacy.Question(
         worksheet_id=ws.id,
         topic='number',
@@ -85,17 +99,15 @@ def test_parent_test_is_not_recomposed(db_session):
         working='8 + 8 = 16',
         position=1,
     )
-    db_session.add(q)
-    db_session.commit()
+    session.add(q)
+    session.commit()
     before = q.prompt
-    result = v0390.enforce_session_learning_quality(db_session, ws, student.id)
+    result = v0390.enforce_session_learning_quality(session, ws, student.id)
     assert result.questions[0].prompt == before
 
 
-def test_recent_structure_count_uses_answered_practice_and_adventure_only(db_session):
-    student = legacy.User(username='quality-history', password_hash='x', role='student', display_name='Learner')
-    db_session.add(student)
-    db_session.flush()
+def test_recent_structure_count_uses_answered_practice_and_adventure_only():
+    session, student = make_session()
     for idx, kind in enumerate(['practice', 'adventure', 'parent_test'], start=1):
         ws = legacy.Worksheet(
             student_id=student.id,
@@ -104,9 +116,9 @@ def test_recent_structure_count_uses_answered_practice_and_adventure_only(db_ses
             session_kind=kind,
             total=1,
         )
-        db_session.add(ws)
-        db_session.flush()
-        db_session.add(legacy.Question(
+        session.add(ws)
+        session.flush()
+        session.add(legacy.Question(
             worksheet_id=ws.id,
             topic='number',
             skill='VC2M4N06:written_addition',
@@ -126,7 +138,7 @@ def test_recent_structure_count_uses_answered_practice_and_adventure_only(db_ses
         session_kind='practice',
         total=0,
     )
-    db_session.add(current)
-    db_session.commit()
-    counts = v0390._recent_structures(db_session, student.id, current.id)
+    session.add(current)
+    session.commit()
+    counts = v0390._recent_structures(session, student.id, current.id)
     assert counts['direct:addition:hundreds'] == 2
