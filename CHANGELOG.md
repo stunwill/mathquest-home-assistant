@@ -1,3 +1,18 @@
+## v0.40.0 - Student Mobile Home, Navigation & Responsive UX
+
+- Reorganised the student mobile experience around current learning action so unfinished work and recommended learning no longer compete equally with history and detailed progress.
+- Added an explicit Continue Learning experience for active worksheets and completed worksheets with skipped-question recovery.
+- Limited the default student Home history DOM to three recent completed worksheets, with View all worksheets progressive disclosure.
+- Added student-only mobile navigation for Home, Adventure, Worksheets and Progress with text labels, accessible current-state semantics, keyboard focus and iPhone safe-area spacing.
+- Converted Story Adventure on narrow screens from a long vertical stack into compact horizontally swipeable cards while preserving the same timed adaptive session and evidence path.
+- Reduced the MathQuest student header beneath Home Assistant ingress on mobile without removing sign-out.
+- Replaced the broken five-column phone calendar navigation with readable previous-week, date-range, next-week and Today controls; one-day controls remain available on wider layouts.
+- Changed narrow-screen weekly activity to a readable vertical list rather than forcing a desktop-style seven-column calendar into the phone viewport.
+- Flattened mobile worksheet-history presentation and reduced nested card density while retaining detailed review data after disclosure.
+- Added frontend regression tests for unfinished-work priority, skipped recovery, recent-history limits, mobile student navigation, calendar controls and Story Adventure continuity.
+- Added a v0.40.0 presentation-only backend wrapper so runtime/version metadata advances without changing the v0.39 learning-quality engine.
+- Preserved adaptive daily learning, prerequisite routing, spaced retrieval, misconception evidence, confidence evidence, Math Mentor, Visual Mathematics, Story Adventure learning selection, Parent Learning Intelligence, Parent Test isolation and the v0.38 keyboard-first worksheet feedback flow.
+
 ## v0.39.0 - Session Learning Quality and Adaptive Continuity
 
 - Added a final session-level learning-quality pass so MathQuest evaluates the generated worksheet as a whole rather than relying only on individual question safeguards.
