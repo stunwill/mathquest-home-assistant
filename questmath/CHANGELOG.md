@@ -1,3 +1,13 @@
+## v0.39.0 - Session Learning Quality and Adaptive Continuity
+
+- MathQuest now checks the final learner worksheet as a whole for repeated mathematical structures, accidental low-complexity work and recently overused question patterns.
+- Added multidimensional arithmetic difficulty metadata so direct calculations distinguish number size and regrouping demand rather than treating all addition or subtraction as equivalent.
+- Preserved purposeful review, consolidation and retrieval while diversifying accidental near-duplicates.
+- Recent answered Daily Practice and Story Adventure questions influence variety without creating a separate history or mastery system.
+- Adaptive learning purpose and evidence annotations are refreshed after final worksheet-quality replacements so parent-facing learning information matches the mathematics actually shown.
+- Parent Tests remain isolated and the existing one-question challenge limit is preserved.
+- Release validation now derives the active backend module from the runtime configuration and checks the frontend package version alongside add-on, frontend display, backend, README and changelog versions.
+
 ## v0.38.1 - Number & Algebra Quality and Melbourne Time
 
 - Reduced repeated low-complexity Number & Algebra addition/subtraction by upgrading smaller direct calculations to larger Grade 5-appropriate place-value work.
@@ -38,7 +48,7 @@ Concise user-facing release notes for the Home Assistant add-on. The detailed pr
 
 ## v0.36.0 - Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
 
-- Number-line location questions can now be answered by tapping or clicking the correct tick directly on the number line instead of selecting a separate number button.
+- Number-line location questions can now be answered by tapping or clicking the correct tick directly on the number line instead of selecting a separate number button that repeats the requested value.
 - Adaptive Number & Algebra practice now recognises overly simple two-digit additions such as `20 + 28` and reduces them when learning evidence shows the student is ready for richer work, while still allowing purposeful review and consolidation.
 - New installs default the student username to `sienna`, and the login screen pre-fills `sienna` while leaving the password blank and editable parent login available.
 - Expired MathQuest sessions now return automatically to the normal login screen instead of leaving the learner on a `Something went wrong - Invalid session` screen.
@@ -48,9 +58,9 @@ Concise user-facing release notes for the Home Assistant add-on. The detailed pr
 ## v0.35.1 - Parent Dashboard Reliability Corrective Release
 
 - Fixed a Parent Learning Intelligence frontend crash that could stop the Parent Dashboard rendering even though its API calls succeeded.
-- Parent Dashboard startup failures now show a retryable error instead of remaining indefinitely on the MathQuest loading screen.
+- Parent Dashboard startup failures now show a retryable error instead of remaining indefinitely on a MathQuest splash screen.
 - Backups and optional learning-intelligence sections no longer block the core Parent Dashboard from loading.
-- Preserved Home Assistant ingress, Daily Learning, Parent Tests, local-first operation, authentication and existing learner functionality.
+- Preserved Home Assistant ingress, authentication, Parent Tests and learner functionality.
 
 ## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
 
