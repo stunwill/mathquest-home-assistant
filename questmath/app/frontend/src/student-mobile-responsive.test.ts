@@ -1,9 +1,11 @@
 import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
 import {describe, expect, it} from 'vitest';
 
-const mobileCss = readFileSync(new URL('./student-mobile.css', import.meta.url), 'utf8');
-const calendarCss = readFileSync(new URL('./v0160.css', import.meta.url), 'utf8');
-const worksheetCss = readFileSync(new URL('./student-feedback.css', import.meta.url), 'utf8') + readFileSync(new URL('./styles.css', import.meta.url), 'utf8');
+const sourceDir = resolve(process.cwd(), 'src');
+const mobileCss = readFileSync(resolve(sourceDir, 'student-mobile.css'), 'utf8');
+const calendarCss = readFileSync(resolve(sourceDir, 'v0160.css'), 'utf8');
+const worksheetCss = readFileSync(resolve(sourceDir, 'student-feedback.css'), 'utf8') + readFileSync(resolve(sourceDir, 'styles.css'), 'utf8');
 
 describe('v0.40 student responsive layout contracts', () => {
   it('uses responsive breakpoints rather than device-name detection for phone navigation', () => {
@@ -47,7 +49,7 @@ describe('v0.40 student responsive layout contracts', () => {
 
   it('does not replace the established tablet worksheet feedback rules', () => {
     expect(worksheetCss).toContain('post-answer-feedback');
-    expect(worksheetCss).toMatch(/orientation:\s*landscape|landscape/);
+    expect(worksheetCss).toContain('@media (min-width:900px) and (max-width:1200px) and (orientation:landscape)');
     expect(mobileCss).toContain('@media(min-width:761px)');
   });
 });
