@@ -9,10 +9,14 @@ function response(data: any, ok = true, status = 200) {
   return Promise.resolve(new Response(JSON.stringify(data), {status, headers: {'content-type': 'application/json'}}));
 }
 
+const completedRow = (id: number, title = `Worksheet ${id}`) => ({id, date: '2026-09-03', completed_at: '2026-09-03T01:00:00', display_title: title, answered: 12, total: 12, score: 12, skipped: 0, hints: 0, xp_earned: 10, elapsed_seconds: 540, progress: 100, restartable_skipped: false});
+
 beforeEach(() => {
   localStorage.clear();
   localStorage.setItem('token', 'test-token');
   vi.restoreAllMocks();
+  Object.defineProperty(window, 'scrollTo', {value: vi.fn(), writable: true});
+  Object.defineProperty(Element.prototype, 'scrollIntoView', {value: vi.fn(), writable: true});
 });
 afterEach(cleanup);
 
@@ -58,6 +62,49 @@ describe('student learning foundation', () => {
     expect(screen.getByRole('button', {name: '15 min'})).toBeInTheDocument();
   });
 
+  it('renders semantic student navigation without exposing parent functions', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => response([{id: 'space', icon: '🚀', title: 'Space Mission', intro: 'Launch', objective: 'Bring the crew home'}]));
+    render(<StoryAdventures onOpen={vi.fn()}/>);
+    const nav = await screen.findByRole('navigation', {name: 'Student navigation'});
+    expect(nav).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Home'})).toHaveAttribute('aria-current', 'page');
+    fireEvent.click(screen.getByRole('button', {name: 'Worksheets'}));
+    expect(screen.getByRole('button', {name: 'Worksheets'})).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByText(/Parent Dashboard/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Parent Tests/i)).not.toBeInTheDocument();
+  });
+
+  it('puts unfinished work in Continue Learning ahead of completed history', async () => {
+    const inProgress = {id: 90, date: '2026-09-05', completed_at: null, display_title: 'Space Mission', answered: 4, total: 20, score: 4, skipped: 1, hints: 1, xp_earned: 0, elapsed_seconds: 180, progress: 20, restartable_skipped: false};
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => response([completedRow(1, 'Old completed'), inProgress, completedRow(2, 'Recent completed')]));
+    render(<WorksheetHistory onCreate={vi.fn()} onOpen={vi.fn()}/>);
+    const continueRegion = await screen.findByRole('article', {name: 'Continue learning'});
+    expect(continueRegion).toHaveTextContent('Space Mission');
+    expect(continueRegion).toHaveTextContent('4 of 20 answered');
+    expect(screen.getAllByRole('button', {name: 'Review'})).toHaveLength(2);
+    expect(screen.queryByText('In progress · 20%')).not.toBeInTheDocument();
+  });
+
+  it('shows skipped-question recovery when there is no active worksheet', async () => {
+    const recovery = {...completedRow(8, 'Fractions'), skipped: 2, restartable_skipped: true};
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => response([recovery, completedRow(9)]));
+    render(<WorksheetHistory onCreate={vi.fn()} onOpen={vi.fn()}/>);
+    expect(await screen.findByRole('article', {name: 'Continue learning'})).toHaveTextContent('2 questions need another try');
+    expect(screen.getByRole('button', {name: 'Finish worksheet'})).toBeInTheDocument();
+  });
+
+  it('limits recent history to three rows and provides progressive disclosure', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => response([completedRow(1), completedRow(2), completedRow(3), completedRow(4), completedRow(5)]));
+    render(<WorksheetHistory onCreate={vi.fn()} onOpen={vi.fn()}/>);
+    await screen.findByText('Worksheet 1');
+    expect(screen.getAllByRole('button', {name: 'Review'})).toHaveLength(3);
+    const viewAll = screen.getByRole('button', {name: 'View all worksheets →'});
+    expect(viewAll).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(viewAll);
+    expect(screen.getAllByRole('button', {name: 'Review'})).toHaveLength(5);
+    expect(screen.getByRole('button', {name: 'Show recent only'})).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('renders worksheet history in React and opens the shared new-worksheet picker', async () => {
     const onCreate = vi.fn();
     vi.spyOn(globalThis, 'fetch').mockImplementation(() => response([]));
@@ -65,6 +112,15 @@ describe('student learning foundation', () => {
     fireEvent.click(await screen.findByRole('button', {name: '+ New worksheet'}));
     expect(onCreate).toHaveBeenCalledOnce();
     expect(screen.getByRole('region', {name: 'Worksheet history'})).toBeInTheDocument();
+  });
+
+  it('uses readable previous and next week controls and retains Today', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => response({start: '2026-08-31', end: '2026-09-06', days: []}));
+    render(<LearningCalendar onOpen={vi.fn()}/>);
+    expect(await screen.findByRole('button', {name: 'Previous week'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Next week'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Today'})).toBeInTheDocument();
+    expect(screen.getByText(/31 Aug/)).toBeInTheDocument();
   });
 
   it('navigates the React-owned calendar and shows recoverable request errors', async () => {
@@ -93,7 +149,7 @@ describe('student learning foundation', () => {
     const review = {selected_topic: 'space', date: '2026-08-16', score: 1, total: 1, counts: {hints: 0}, questions: [{id: 3, position: 0, prompt: 'Which square?', payload: {visual_key: '7:3', visual: {type: 'grid', columns: ['A', 'B'], rows: 2, target: 'B2'}}, student_answers: [{answer: 'B2'}], correct_answer: 'B2', working: 'Read across then down.'}]};
     vi.spyOn(globalThis, 'fetch').mockImplementation(input => String(input).endsWith('/review') ? response(review) : response([row]));
     render(<WorksheetHistory onCreate={vi.fn()} onOpen={vi.fn()}/>);
-    const open = await screen.findByRole('button', {name: 'View worksheet'});
+    const open = await screen.findByRole('button', {name: 'Review'});
     fireEvent.click(open);
     expect(await screen.findByRole('dialog', {name: /space/i})).toBeInTheDocument();
     expect(screen.getByRole('group', {name: /Grid reference diagram/i})).toBeInTheDocument();
