@@ -1,0 +1,132 @@
+from __future__ import annotations
+
+import json
+from datetime import datetime
+
+from app import main as legacy
+from app import v0390
+
+
+def _question(position: int, prompt: str, skill: str, payload: dict | None = None, answered_at=None) -> legacy.Question:
+    return legacy.Question(
+        worksheet_id=1,
+        topic='number',
+        skill=skill,
+        level=4,
+        prompt=prompt,
+        answer_type='number',
+        payload=json.dumps(payload or {}),
+        correct_answer='0',
+        working='',
+        position=position,
+        answered_at=answered_at,
+    )
+
+
+def test_direct_arithmetic_structure_groups_near_duplicates_by_operation_and_magnitude():
+    a = _question(1, 'Calculate 121 + 22.', 'VC2M4N06:written_addition')
+    b = _question(2, 'Calculate 132 + 23.', 'VC2M4N06:written_addition')
+    c = _question(3, 'Calculate 468 + 357.', 'VC2M4N06:written_addition')
+    assert v0390.question_structure(a) == 'direct:addition:hundreds'
+    assert v0390.question_structure(b) == 'direct:addition:hundreds'
+    assert v0390.question_structure(c) == 'direct:addition:hundreds'
+
+
+def test_tiny_and_two_digit_arithmetic_are_low_complexity_when_not_purposeful():
+    tiny = _question(1, 'Calculate 8 + 8.', 'VC2M4N06:written_addition')
+    two_digit = _question(2, 'Calculate 50 + 38.', 'VC2M4N06:written_addition')
+    assert v0390._is_low_complexity(tiny) is True
+    assert v0390._is_low_complexity(two_digit) is True
+
+
+def test_purposeful_review_is_not_classified_as_accidental_low_complexity():
+    review = _question(
+        1,
+        'Calculate 8 + 8.',
+        'VC2M4N06:written_addition',
+        {'learning_purpose': 'review', 'retrieval_item': True},
+    )
+    assert v0390._purposeful_foundation(review) is True
+    assert v0390._is_low_complexity(review) is False
+
+
+def test_reasoning_structure_uses_reasoning_type_not_numbers():
+    q = _question(
+        1,
+        'Which estimate is most reasonable for 405 + 260?',
+        'VC2M4N07:reasonableness_reasoning',
+        {'reasoning_type': 'reasonableness'},
+    )
+    assert v0390.question_structure(q) == 'reasoning:reasonableness'
+
+
+def test_parent_test_is_not_recomposed(db_session):
+    student = legacy.User(username='quality-parent-test', password_hash='x', role='student', display_name='Learner')
+    db_session.add(student)
+    db_session.flush()
+    ws = legacy.Worksheet(
+        student_id=student.id,
+        worksheet_date=datetime.utcnow().date(),
+        selected_topic='number',
+        session_kind='parent_test',
+        total=1,
+    )
+    db_session.add(ws)
+    db_session.flush()
+    q = legacy.Question(
+        worksheet_id=ws.id,
+        topic='number',
+        skill='VC2M4N06:written_addition',
+        level=4,
+        prompt='Calculate 8 + 8.',
+        answer_type='number',
+        payload='{}',
+        correct_answer='16',
+        working='8 + 8 = 16',
+        position=1,
+    )
+    db_session.add(q)
+    db_session.commit()
+    before = q.prompt
+    result = v0390.enforce_session_learning_quality(db_session, ws, student.id)
+    assert result.questions[0].prompt == before
+
+
+def test_recent_structure_count_uses_answered_practice_and_adventure_only(db_session):
+    student = legacy.User(username='quality-history', password_hash='x', role='student', display_name='Learner')
+    db_session.add(student)
+    db_session.flush()
+    for idx, kind in enumerate(['practice', 'adventure', 'parent_test'], start=1):
+        ws = legacy.Worksheet(
+            student_id=student.id,
+            worksheet_date=datetime.utcnow().date(),
+            selected_topic='number',
+            session_kind=kind,
+            total=1,
+        )
+        db_session.add(ws)
+        db_session.flush()
+        db_session.add(legacy.Question(
+            worksheet_id=ws.id,
+            topic='number',
+            skill='VC2M4N06:written_addition',
+            level=4,
+            prompt=f'Calculate {300 + idx} + {120 + idx}.',
+            answer_type='number',
+            payload='{}',
+            correct_answer='0',
+            working='',
+            position=1,
+            answered_at=datetime.utcnow(),
+        ))
+    current = legacy.Worksheet(
+        student_id=student.id,
+        worksheet_date=datetime.utcnow().date(),
+        selected_topic='number',
+        session_kind='practice',
+        total=0,
+    )
+    db_session.add(current)
+    db_session.commit()
+    counts = v0390._recent_structures(db_session, student.id, current.id)
+    assert counts['direct:addition:hundreds'] == 2
