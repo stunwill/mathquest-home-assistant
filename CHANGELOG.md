@@ -1,3 +1,15 @@
+## v0.39.0 - Session Learning Quality and Adaptive Continuity
+
+- Added a final session-level learning-quality pass so MathQuest evaluates the generated worksheet as a whole rather than relying only on individual question safeguards.
+- Added multidimensional direct-arithmetic difficulty metadata covering operation, operand digit counts, regrouping demand and representation.
+- Added meaningful near-duplicate detection so structurally equivalent calculations can be diversified without treating all Grade 5 addition or subtraction as the same question.
+- Added lightweight recent-exposure awareness across answered Daily Practice and Story Adventure questions so overused structures are deprioritised without introducing a new learner-history subsystem.
+- Preserved deliberate review, consolidation and retrieval instead of globally banning easy questions.
+- Reconciled adaptive purpose and evidence metadata after final question replacement so Parent Learning Intelligence and later adaptive decisions describe the question Sienna actually received.
+- Preserved the existing one-question challenge budget, Parent Test isolation, Story Adventure presentation architecture and v0.38 keyboard-first feedback experience.
+- Made the active backend module release-authoritative in version validation and added the previously stale frontend `package.json` version to the consistency gate.
+- Added deterministic learning-quality regression tests for near-duplicate structures, multidimensional difficulty, recent-exposure isolation, purposeful review, Parent Test isolation, final quality annotations and challenge limits.
+
 ## v0.38.1 - Number & Algebra Quality and Melbourne Time
 
 - Reduced low-complexity Number & Algebra direct arithmetic by upgrading small addition/subtraction items such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` to larger Grade 5-appropriate place-value calculations.
@@ -47,7 +59,7 @@ This is the authoritative project and GitHub changelog consumed by repository to
 - Made suppression evidence-aware: learners ready for progression receive richer replacement questions, while purposeful review, consolidation and retrieval remain available.
 - Changed new-install student username defaults and the login form convenience value to `sienna`; passwords remain blank and parent usernames remain editable.
 - Retained the existing 24-hour MathQuest token lifetime while treating expired/invalid MathQuest authentication as a normal transition back to login rather than a generic `Invalid session` failure screen.
-- Preserved the v0.35.1 distinction between MathQuest JSON authentication failures and Home Assistant ingress/proxy authentication failures so ingress problems do not automatically destroy valid MathQuest credentials.
+- Preserved the v0.35.1 distinction between MathQuest JSON authentication failures and Home Assistant ingress/proxy authentication failures so ingress problems do not automatically destroy MathQuest credentials.
 - Preserved Parent Dashboard reliability, Story Adventure's adaptive-learning integration, Math Mentor, Parent Test isolation, Home Assistant learning APIs and local-first operation.
 
 ## v0.35.1 - Parent Dashboard Reliability Corrective Release

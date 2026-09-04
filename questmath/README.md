@@ -1,4 +1,4 @@
-# MathQuest 0.38.1
+# MathQuest 0.39.0
 
 **Sienna’s daily adventure in maths.**
 
@@ -15,6 +15,8 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - iPad 10th-generation landscape worksheet optimisation with immediate post-answer feedback and a keyboard-first two-Enter flow
 - First-class interactive whole-number number lines, fraction bars, fraction number lines, scaled rulers and grid-reference selection
 - Grade 5 reasoning including reasonableness, conceptual comparison and find-the-mistake questions
+- Session-level learning quality covering near-duplicate structures, recent exposure and accidental low-complexity work
+- Multidimensional arithmetic difficulty metadata including digit size and regrouping demand
 - Direct Number & Algebra addition/subtraction biased toward larger Grade 5-appropriate values rather than repeated low-complexity sums
 - Equal-groups questions ask for the numerical total instead of only asking the learner to name the operation
 - Worksheet history uses Melbourne local time with AEST/AEDT daylight-saving handling
@@ -35,11 +37,19 @@ MathQuest is a local Home Assistant app providing daily adaptive mathematics pra
 - Parent Dashboard reliability safeguards for loading, retry and optional-section failure
 - SQLite persistence and Home Assistant backup support
 
+## Session learning quality
+
+v0.39.0 adds a final worksheet-quality pass after the existing adaptive generators. It checks the completed question set for educationally repetitive structures rather than only exact duplicate prompts.
+
+For direct calculation, MathQuest distinguishes operation, operand digit lengths and regrouping demand. Recently answered Daily Practice and Story Adventure structures are also counted lightly so an overused structure can be replaced when a suitable alternative exists. This does not create a second learning model and does not remove deliberate review, consolidation or spaced retrieval.
+
+After a final replacement, MathQuest refreshes the adaptive learning-purpose and evidence annotation so Parent Learning Intelligence and subsequent adaptive decisions describe the final question Sienna actually received. Parent Tests remain isolated and the existing one-question challenge limit remains intact.
+
 ## Number & Algebra quality corrective release
 
-v0.38.1 reduces low-value direct arithmetic such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` in normal Number & Algebra worksheets. When a small direct addition or subtraction is selected, MathQuest upgrades it to a larger place-value calculation instead of letting a worksheet become dominated by easy fluency items.
+v0.38.1 reduced low-value direct arithmetic such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` in normal Number & Algebra worksheets. When a small direct addition or subtraction is selected, MathQuest upgrades it to a larger place-value calculation instead of letting a worksheet become dominated by easy fluency items.
 
-Equal-groups modelling questions now require an answer to the actual problem. For example, rather than asking which operation would find the total for 5 groups of 8, MathQuest asks how many items there are altogether. The learner still has to recognise multiplication, but that decision is now part of solving the calculation.
+Equal-groups modelling questions require an answer to the actual problem. For example, rather than asking which operation would find the total for 5 groups of 8, MathQuest asks how many items there are altogether. The learner still has to recognise multiplication, but that decision is part of solving the calculation.
 
 Worksheet-history clock times are converted from stored UTC timestamps to `Australia/Melbourne`, including the correct daylight-saving offset for the date.
 
@@ -66,7 +76,7 @@ Internal targets are deliberately left unlabelled where a visible label would re
 
 ## Mathematical reasoning
 
-Learner sessions can include a controlled amount of structured reasoning alongside calculation practice. Question families include choosing a reasonable estimate, identifying true statements about perimeter, area and symmetry, and analysing a plausible regrouping or place-value mistake. Equal-groups modelling now asks for the numerical result rather than an operation label.
+Learner sessions can include a controlled amount of structured reasoning alongside calculation practice. Question families include choosing a reasonable estimate, identifying true statements about perimeter, area and symmetry, and analysing a plausible regrouping or place-value mistake. Equal-groups modelling asks for the numerical result rather than an operation label.
 
 This is not a separate reasoning engine. The questions use the same curriculum mappings, worksheet selection, answer validation and learning-evidence architecture as other MathQuest practice.
 

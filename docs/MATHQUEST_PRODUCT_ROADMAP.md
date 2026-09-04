@@ -6,44 +6,73 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.38.0, iPad Landscape Feedback and Worksheet UX
+## Current release scope, 0.39.0, Session Learning Quality and Adaptive Continuity
 
-This focused learner-experience release optimises the worksheet for Sienna's primary device and workflow: iPad 10th generation in landscape with a physical keyboard.
+MathQuest already has strong per-question generation, adaptive purpose, tutoring, interactive mathematics and duplicate safeguards. Real learner sessions nevertheless showed that a collection of individually valid questions can still form a repetitive or weak worksheet. v0.39.0 therefore treats the final worksheet as a learning product in its own right.
+
+### Session-level learning quality
+
+- Run a final quality policy over normal learner worksheets after existing generators and adaptive composition.
+- Detect meaningful near-duplicate mathematical structures rather than relying only on exact prompts or broad skill identities.
+- For direct arithmetic, use operation, operand digit counts and regrouping demand as lightweight difficulty dimensions.
+- Limit accidental low-complexity work when learner readiness supports richer practice while preserving deliberate review, consolidation and spaced retrieval.
+- Use a bounded sample of recently answered Daily Practice and Story Adventure questions to deprioritise heavily repeated structures when a suitable alternative exists.
+- Keep the mechanism lightweight and derived from existing persisted questions rather than creating a second mastery or exposure database.
+
+### Adaptive continuity
+
+- Preserve the existing Adaptive Daily Learning engine as authoritative for current learning, consolidation, spaced review and limited challenge.
+- When the final quality pass replaces a question, refresh adaptive purpose and evidence annotations so Parent Learning Intelligence and future learning decisions refer to the final mathematics shown to the learner.
+- Retain the established one-question challenge budget.
+- Preserve prerequisite, misconception, support-dependency and retention evidence.
+- Preserve Parent Test isolation.
+
+### Release integrity
+
+- Derive the active backend release module from the Home Assistant runtime startup script rather than pinning validation to the previous version wrapper.
+- Include the frontend package manifest in release-version consistency validation so stale package metadata cannot silently persist across releases.
+- Continue validating package-lock dependency metadata for `npm ci` compatibility.
+
+### Acceptance criteria
+
+- A normal learner worksheet cannot contain repeated structurally equivalent questions merely because the numeric values differ.
+- Similar calculations are distinguished from genuinely different mathematical demand; all three-digit addition is not treated as one family.
+- Purposeful review/consolidation/retrieval questions remain eligible even when easy.
+- Recent exposure influences variety without overriding a genuine adaptive learning need.
+- Final questions contain multidimensional difficulty metadata where it can be derived reliably.
+- Adaptive purpose/evidence metadata still matches the final question after quality replacement.
+- Challenge remains limited to the existing session budget.
+- Parent Tests remain unchanged by session-quality recomposition.
+- Story Adventure continues to use the same adaptive questions and evidence architecture.
+- Full backend, frontend, metadata and real aarch64 startup/health validation passes.
+- Current dependency-audit findings are recorded rather than hidden or force-fixed.
+
+## Recently completed release, 0.38.1, Number & Algebra Quality and Melbourne Time
+
+- Reduced repeated low-complexity direct addition/subtraction by upgrading smaller calculations to larger place-value work.
+- Changed equal-groups operation-label questions into numerical-total questions.
+- Corrected worksheet-history time to `Australia/Melbourne`, including AEST/AEDT handling.
+- Preserved adaptive learning, Story Adventure, Parent Tests and the v0.38 feedback flow.
+
+## Recently completed release, 0.38.0, iPad Landscape Feedback and Worksheet UX
+
+This learner-experience release optimised the worksheet for Sienna's primary device and workflow: iPad 10th generation in landscape with a physical keyboard.
 
 ### Answer → immediate feedback → understand → reflect → continue
 
-- Replace below-question post-answer content with one shared accessible feedback dialog so result and next action are visible without page scrolling.
-- Preserve a fast two-Enter typed-answer flow: Enter submits, feedback appears immediately, and Enter continues after a terminal answer or returns to a clean focused answer field for retry.
-- Keep retry-first answers educational rather than punitive. Do not expose final working while another attempt is expected, and do not require Math Mentor merely because an answer is wrong.
-- Keep concise question-specific explanation in the dialog where useful, while deeper tutoring remains available through Math Mentor.
-- Move the existing optional confidence reflection into the dialog without changing the evidence it records or contaminating Parent Tests.
+- Replaced below-question post-answer content with one shared accessible feedback dialog so result and next action are visible without page scrolling.
+- Preserved a fast two-Enter typed-answer flow: Enter submits, feedback appears immediately, and Enter continues after a terminal answer or returns to a clean focused answer field for retry.
+- Kept retry-first answers educational rather than punitive. Final working remains hidden while another attempt is expected and Math Mentor is not mandatory merely because an answer is wrong.
+- Moved the existing optional confidence reflection into the dialog without changing the evidence it records or contaminating Parent Tests.
+- Preserved typed, choice, interactive mathematics and Story Adventure on one answer/feedback architecture.
 
 ### iPad landscape layout and accessibility
 
-- Treat the typical iPad 10th-generation landscape CSS viewport as a tablet layout rather than a scaled desktop layout.
-- Reduce unnecessary header, card, progress, support and sidebar space while retaining readable question typography and useful working area.
-- Keep result and primary action fixed within the visible dialog. Only genuinely long supporting content should scroll internally.
-- Provide explicit Correct answer and Incorrect answer text and iconography, logical focus movement and containment, visible focus, touch-size controls and screen-reader result announcements.
-- Use restrained, non-blocking correct-answer motion with `prefers-reduced-motion` support and no punitive incorrect-answer animation.
-- Preserve iPad portrait, iPhone/mobile and desktop layouts outside the landscape-specific optimisation.
-
-### One worksheet and learning engine
-
-- Apply the same feedback architecture to typed numeric answers, choices, whole-number number lines, fraction bars, fraction number lines, scaled rulers, grid references, structured reasoning and Story Adventure.
-- Keep answer correctness, attempts, adaptive difficulty, prerequisite routing, spaced retrieval, misconception evidence, confidence evidence, scoring, completion and resume backend-authoritative.
-- Preserve Parent Test isolation from learner mastery and evidence.
-
-### Release acceptance criteria
-
-- Correct/incorrect status is immediately visible after submission without page scrolling on an iPad 10th generation in landscape.
-- A typed answer can be completed with the intended two-Enter keyboard flow.
-- Retry returns to an empty focused input and cannot accidentally duplicate-submit or skip a question through rapid Enter presses.
-- Mathematical feedback remains aligned to the actual question and retryable feedback does not reveal the final answer.
-- Confidence evidence is still recorded from the post-answer experience when the learner chooses to reflect.
-- Touch-first interactive mathematics and Story Adventure use the same feedback architecture.
-- Keyboard focus remains contained in the dialog while it is open and moves to the correct next control on close.
-- Full backend, frontend, production build, metadata and real aarch64 startup/health checks pass before merge.
-- Real-device iPad acceptance remains a manual step and is not claimed by automated CI.
+- Added a tablet-specific landscape band around the typical iPad 10th-generation viewport.
+- Reduced unnecessary header, card, progress, support and sidebar space while retaining readable question typography and useful working area.
+- Kept result and primary action visible inside the dialog, with only long supporting content scrolling internally.
+- Added explicit Correct answer and Incorrect answer semantics, focus movement/containment, touch-size controls, announcements and reduced-motion support.
+- Preserved iPad portrait, iPhone/mobile and desktop behaviour outside the landscape-specific optimisation.
 
 ## Previous release scope, 0.37.1, Duplicate-Safe Reasoning Mix
 
@@ -62,8 +91,8 @@ This release extends MathQuest's first-class interactive answer architecture bey
 
 ### Mathematical reasoning
 
-- Add structured operation-selection, reasonableness, conceptual comparison and age-appropriate error-analysis questions.
-- Prefer assessable structured choices over long free-text explanations that cannot be reliably validated.
+- Add structured reasonableness, conceptual comparison and age-appropriate error-analysis questions.
+- Prefer assessable mathematical work over vocabulary recognition where calculation itself demonstrates the intended understanding.
 - Reuse the existing misconception-evidence architecture for regrouping/place-value error analysis.
 - Keep arithmetic fluency and purposeful foundational retrieval available rather than replacing calculation practice with reasoning-only sessions.
 
@@ -73,18 +102,6 @@ This release extends MathQuest's first-class interactive answer architecture bey
 - Preserve immediate retry after an incorrect answer with tutoring remaining optional.
 - Keep Story Adventure as presentation over the same adaptive worksheet, answer and evidence architecture.
 - Preserve Parent Test isolation from learner mastery and adaptive evidence.
-
-### Release acceptance criteria
-
-- Each new interactive model submits through the normal backend-authoritative answer path.
-- Fraction partitions, number-line intervals, ruler scales and grid references are mathematically consistent and responsive.
-- Requested internal targets are not accidentally labelled.
-- At least one structured reasoning family can appear in an appropriate learner session without imposing a rigid session sequence.
-- Error-analysis questions use plausible distractors and existing misconception evidence where justified.
-- Math Mentor support is aligned with the representation and worked examples use different values.
-- Story Adventure automatically supports compatible interactive questions without a separate story question generator.
-- Parent Tests remain isolated.
-- Full backend, frontend, production build, metadata and aarch64 startup checks pass before merge.
 
 ## Recently completed release, 0.36.0, Interactive Mathematics, Adaptive Difficulty and Seamless Student Access
 
@@ -147,16 +164,16 @@ This release extends MathQuest's first-class interactive answer architecture bey
 
 ## Further learner experience improvements
 
-- Expand adventure themes and context where real usage shows it improves engagement without weakening mathematical clarity.
-- Improve continuity between learner recommendations, Daily Practice and Story Adventure.
-- Continue refining Grade 5 question variety and appropriate difficulty based on evidence from real sessions.
+- Expand Grade 5 curriculum depth only after verifying mappings and identifying genuinely shallow outcomes.
+- Audit Math Mentor and worked-example quality systematically across less-used question families based on real learner evidence.
+- Improve continuity between parent recommendations, Daily Practice and Story Adventure where persisted evidence shows a gap.
+- Expand adventure themes only where real usage shows engagement improves without weakening mathematical clarity.
 - Add further visual models only where they materially improve mathematical understanding.
 
 ## Later opportunities
 
 - Deeper Parent Learning Intelligence and learning-goal planning.
 - Additional verified Victorian Curriculum coverage.
-- Richer Visual Mathematics models and manipulatives after evidence from real learner use.
-- Dependency/security maintenance without unsafe forced upgrades.
-- Performance and Home Assistant operational improvements where real usage demonstrates a need.
-- Consolidation of historical backend version-wrapper architecture as a focused platform release.
+- Focused dependency/security maintenance without unsafe forced upgrades.
+- Performance and Home Assistant operational improvements where measurement identifies a real issue.
+- Consolidation of historical backend version-wrapper architecture as a dedicated platform release with explicit compatibility and migration testing.

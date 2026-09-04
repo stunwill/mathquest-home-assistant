@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.38.1`
+Version `0.39.0`
 
 ## Development Metadata
 
@@ -22,7 +22,7 @@ Repository and release tooling, including DevHub, should use these canonical sou
 - **Runtime health version:** `/api/health`, sourced from the active backend application version
 - **GitHub release/tag format:** `vX.Y.Z`
 
-The release metadata validator derives the expected version from the repository version sources and checks that the root roadmap, project changelog and Home Assistant changelog contain matching release metadata.
+The release metadata validator derives the active backend module from the runtime script and requires the add-on, frontend package/display, backend, README and changelog versions to agree. The committed frontend lockfile is also checked for dependency metadata compatibility with `package.json`.
 
 ## Features
 
@@ -33,6 +33,8 @@ The release metadata validator derives the expected version from the repository 
 - Multiple daily worksheets with save, exact resume, review and skip support
 - First-class interactive mathematics including whole-number number lines, fraction bars, fraction number lines, scaled rulers and selectable grid references
 - Structured mathematical reasoning including reasonableness, conceptual statements and age-appropriate error analysis
+- Session-level learning quality that evaluates the final worksheet for near-duplicate structures, accidental low-complexity work and recent overexposure
+- Multidimensional direct-arithmetic difficulty metadata including operation, operand digit counts and regrouping demand
 - Number & Algebra direct addition/subtraction practice biased toward larger Grade 5-appropriate values instead of repeated low-complexity sums
 - Equal-groups modelling questions require the learner to calculate the total rather than merely name the operation
 - Worksheet history times are displayed in `Australia/Melbourne`, including daylight-saving transitions
@@ -51,11 +53,21 @@ The release metadata validator derives the expected version from the repository 
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
 
+## Session learning quality
+
+MathQuest v0.39.0 adds a final learning-quality pass after the existing generators and adaptive composition have done their work. This is deliberately not another learning engine. It checks whether the resulting worksheet is educationally balanced as a session.
+
+The policy groups questions by meaningful mathematical structure rather than exact wording. For direct arithmetic it considers the operation, operand digit counts and regrouping demand. This means near-duplicates such as similarly structured three-digit-plus-two-digit calculations can be diversified, while a substantially different three-digit regrouping problem is not treated as identical merely because it is also addition.
+
+Recent answered Daily Practice and Story Adventure questions contribute a small recent-exposure signal. Structures that have appeared repeatedly are deprioritised when a suitable alternative is available. Parent Tests are excluded, and deliberate review, consolidation and retrieval are preserved rather than removed for the sake of variety.
+
+If final session-quality work changes a question, MathQuest refreshes that question's adaptive purpose and evidence annotation so later learning decisions and parent-facing information refer to the mathematics Sienna actually received. The established one-question challenge limit remains in force.
+
 ## Number & Algebra question quality
 
-MathQuest v0.38.1 reduces low-value direct arithmetic in Number & Algebra. Straight addition and subtraction questions remain useful for fluency, but examples such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` are no longer allowed to dominate normal learner worksheets. When direct addition or subtraction is selected, smaller examples are upgraded to larger place-value calculations suitable for Grade 5 practice.
+MathQuest v0.38.1 reduced low-value direct arithmetic in Number & Algebra. Straight addition and subtraction questions remain useful for fluency, but examples such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` are no longer allowed to dominate normal learner worksheets. When direct addition or subtraction is selected, smaller examples are upgraded to larger place-value calculations suitable for Grade 5 practice.
 
-Equal-groups modelling also now asks for the mathematical result. Instead of asking which operation would find the total, MathQuest asks how many items there are altogether, so Sienna must choose multiplication as part of actually solving the problem.
+Equal-groups modelling also asks for the mathematical result. Instead of asking which operation would find the total, MathQuest asks how many items there are altogether, so Sienna chooses multiplication as part of actually solving the problem.
 
 Worksheet-history clock times are converted from stored UTC timestamps to `Australia/Melbourne` before display, using the correct AEST/AEDT offset for the date.
 
@@ -106,55 +118,6 @@ These are stable unique-ID contracts for Home Assistant dashboards and automatio
 Daily Practice and Story Adventure can satisfy daily learning only when a legitimate learner worksheet is completed with answered question evidence. Simply opening MathQuest, starting a worksheet, abandoning a worksheet without meaningful work, or completing a Parent Test does not satisfy daily learning.
 
 Where MathQuest has actual elapsed session time, `active_minutes` is exposed. Where a completed timed session has a configured 5, 10 or 15-minute target, `planned_minutes_completed` is exposed separately so planned duration is not misrepresented as exact engagement time.
-
-### Example REST sensor
-
-A standard Home Assistant REST sensor can read the daily state without HACS:
-
-```yaml
-rest:
-  - resource: http://YOUR_MATHQUEST_HOST:8080/api/ha/learning
-    headers:
-      Authorization: "Bearer YOUR_MATHQUEST_SERVICE_TOKEN"
-    scan_interval: 60
-    sensor:
-      - name: MathQuest Daily Learning
-        unique_id: mathquest_daily_learning
-        value_template: "{{ value_json.daily_learning.state }}"
-        json_attributes_path: "$.daily_learning"
-        json_attributes:
-          - completed
-          - questions_attempted
-          - independent_accuracy
-          - eventual_accuracy
-          - active_minutes
-          - planned_minutes_completed
-          - latest_session_type
-          - latest_focus
-```
-
-The same endpoint can provide current focus, review, support and weekly-summary attributes to additional REST sensors if desired. A single REST fetch can therefore populate a small number of useful entities without exposing every internal metric.
-
-### Example reminder automation
-
-MathQuest deliberately does not hard-code a reminder time. Home Assistant can decide when a reminder is appropriate:
-
-```yaml
-automation:
-  - alias: MathQuest learning reminder
-    triggers:
-      - trigger: time
-        at: "18:00:00"
-    conditions:
-      - condition: template
-        value_template: "{{ states('sensor.mathquest_daily_learning') != 'Completed' }}"
-    actions:
-      - action: notify.mobile_app_parent_phone
-        data:
-          message: "MathQuest learning has not been completed today."
-```
-
-Review, support and misconception states are intentionally conservative. One difficult question does not create a persistent-support alert, and isolated incorrect answers do not create misconception alerts.
 
 ## Security and upgrades
 
