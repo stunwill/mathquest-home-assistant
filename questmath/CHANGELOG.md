@@ -1,3 +1,16 @@
+## v0.40.0 - Student Mobile Home, Navigation & Responsive UX
+
+- Reorganised the student mobile Home experience around current action rather than giving current learning, history and detailed progress equal visual priority.
+- Added a dedicated Continue Learning treatment for active worksheets and skipped-question recovery so unfinished learning outranks completed history.
+- Reduced mobile worksheet history to three recent items by default with explicit progressive disclosure for older work.
+- Changed narrow-screen Story Adventure selection to compact horizontal cards while retaining title, purpose, likely learning focus and the existing adaptive session path.
+- Added student-only Home, Adventure, Worksheets and Progress bottom navigation with text labels, accessible selected state, keyboard focus and iPhone safe-area padding.
+- Reduced MathQuest mobile header height when the student navigation is present so Home Assistant ingress plus MathQuest branding consume less of the first viewport.
+- Fixed the mobile weekly calendar navigation so previous/next week and Today remain readable instead of compressing five controls into unusable columns.
+- Changed mobile weekly activity from a forced seven-column strip to a readable one-day-per-row activity list while retaining richer tablet and desktop controls.
+- Added explicit regression coverage for Continue Learning, skipped-question recovery, three-item history disclosure, student-only navigation, Story Adventure continuity and week navigation.
+- Preserved the v0.39 learning-quality engine, adaptive recommendations, Story Adventure question selection, Parent Test isolation and the v0.38 worksheet feedback/keyboard interaction.
+
 ## v0.39.0 - Session Learning Quality and Adaptive Continuity
 
 - Session Learning Quality now checks the final learner worksheet as a whole for repeated mathematical structures, accidental low-complexity work and recently overused question patterns.
