@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.39.0`
+Version `0.40.0`
 
 ## Development Metadata
 
@@ -27,6 +27,11 @@ The release metadata validator derives the active backend module from the runtim
 ## Features
 
 - Student and parent logins, with `sienna` prefilled for the normal student login flow and automatic recovery from expired MathQuest sessions
+- Action-first student mobile Home with unfinished learning promoted ahead of completed history
+- Student-only mobile navigation for Home, Adventure, Worksheets and Progress, with iPhone safe-area support
+- Compact Story Adventure selection on narrow screens while retaining adaptive learning selection and theme purpose
+- Progressive worksheet history with three recent items by default and explicit access to older work
+- Responsive weekly learning navigation that replaces the compressed five-control phone layout with readable week navigation and Today
 - Responsive student dashboard
 - iPad 10th-generation landscape worksheet optimisation with viewport-fixed post-answer feedback and keyboard-first continuation/retry
 - Tablet-optimised worksheet and tutoring flow for portrait and landscape use
@@ -53,9 +58,21 @@ The release metadata validator derives the active backend module from the runtim
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
 
+## Student mobile Home and navigation
+
+MathQuest v0.40.0 changes the student mobile information architecture because the existing Home page had become too long for iPhone portrait. The problem was not missing learning information, it was that current action, unfinished work, Story Adventure, history, technical skill evidence and the weekly calendar were all presented with similar visual weight.
+
+On narrow screens, unfinished worksheets and skipped-question recovery are now surfaced as **Continue Learning** before completed history. Story Adventure becomes a compact horizontal selector, completed worksheet history shows only the three most relevant recent items until expanded, and the student receives persistent Home, Adventure, Worksheets and Progress navigation. The navigation is student-only and does not expose Parent Dashboard or Parent Test functionality.
+
+The MathQuest header is reduced when the student navigation is present so the Home Assistant ingress header and MathQuest identity do not consume most of the initial viewport. Safe-area padding prevents the bottom navigation covering content on iPhone.
+
+The weekly learning calendar no longer tries to squeeze previous week, previous day, a date range, next day and next week into five narrow phone columns. Mobile keeps previous week, date range, next week and Today, then presents the week as a readable vertical activity list. Tablet and desktop retain the richer controls and seven-day presentation.
+
+This is a presentation release. MathQuest continues to use the v0.39 learning-quality policy, adaptive purposes, prerequisite graph, spaced retrieval, misconception evidence, confidence evidence and Story Adventure question selection without introducing a second mastery or recommendation model.
+
 ## Session learning quality
 
-MathQuest v0.39.0 adds a final learning-quality pass after the existing generators and adaptive composition have done their work. This is deliberately not another learning engine. It checks whether the resulting worksheet is educationally balanced as a session.
+MathQuest v0.39.0 added a final learning-quality pass after the existing generators and adaptive composition have done their work. This is deliberately not another learning engine. It checks whether the resulting worksheet is educationally balanced as a session.
 
 The policy groups questions by meaningful mathematical structure rather than exact wording. For direct arithmetic it considers the operation, operand digit counts and regrouping demand. This means near-duplicates such as similarly structured three-digit-plus-two-digit calculations can be diversified, while a substantially different three-digit regrouping problem is not treated as identical merely because it is also addition.
 
