@@ -33,11 +33,9 @@ def version_locations() -> dict[str, str]:
     config = yaml.safe_load((ROOT / 'questmath/config.yaml').read_text(encoding='utf-8'))
     backend_path = _active_backend_path()
     package = json.loads((ROOT / 'questmath/app/frontend/package.json').read_text(encoding='utf-8'))
-    lock = json.loads((ROOT / 'questmath/app/frontend/package-lock.json').read_text(encoding='utf-8'))
     return {
         'questmath/config.yaml': str(config['version']),
         'frontend/package.json': str(package['version']),
-        'frontend/package-lock.json': str(lock['version']),
         'frontend/src/version.ts': _match(ROOT / 'questmath/app/frontend/src/version.ts', r"APP_VERSION\s*=\s*['\"]([^'\"]+)"),
         f'{backend_path.relative_to(ROOT)} app.version': _match(backend_path, r"app\.version\s*=\s*['\"]([^'\"]+)"),
         f'{backend_path.relative_to(ROOT)} health version': _match(backend_path, r"legacy\.APP_VERSION\s*=\s*['\"]([^'\"]+)"),
@@ -54,6 +52,12 @@ def validate_frontend_lockfile() -> None:
     package_lock = ROOT / 'questmath/app/frontend/package-lock.json'
     if not package_json.exists() or not package_lock.exists():
         raise SystemExit('Frontend package.json and package-lock.json must both be committed for npm ci validation')
+    package = json.loads(package_json.read_text(encoding='utf-8'))
+    lock = json.loads(package_lock.read_text(encoding='utf-8'))
+    root = (lock.get('packages') or {}).get('') or {}
+    for field in ('dependencies', 'devDependencies'):
+        if package.get(field, {}) != root.get(field, {}):
+            raise SystemExit(f'Frontend package-lock root {field} does not match package.json')
 
 
 def validate_metadata_files(expected_version: str) -> None:
@@ -82,7 +86,7 @@ def main() -> None:
     validate_frontend_lockfile()
     validate_metadata_files(expected_version)
     print(f'MathQuest version {expected_version} is consistent across {len(versions)} release-authoritative locations.')
-    print('Frontend lockfile, DevHub metadata files and roadmap phase markers are present.')
+    print('Frontend lockfile dependency metadata, DevHub metadata files and roadmap phase markers are present.')
 
 
 if __name__ == '__main__':
