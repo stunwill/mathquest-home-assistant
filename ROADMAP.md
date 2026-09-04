@@ -1,6 +1,38 @@
-## v0.39.0 - Session Learning Quality and Adaptive Continuity
+## v0.40.0 - Student Mobile Home, Navigation & Responsive UX
 
 Status: In release validation
+
+### Student mobile experience
+- [x] Reorganise mobile Home around current learning action rather than equal-weight dashboard sections.
+- [x] Promote active worksheets and skipped-question recovery through Continue Learning.
+- [x] Limit recent worksheet history to three items by default with progressive disclosure.
+- [x] Make Story Adventure selection compact and horizontally swipeable on narrow screens while preserving adaptive question selection.
+- [x] Add student-only Home, Adventure, Worksheets and Progress navigation with safe-area support.
+- [x] Reduce MathQuest mobile header height beneath Home Assistant ingress while preserving sign-out.
+- [x] Flatten mobile history presentation and reduce unnecessary nested-card density.
+
+### Calendar and responsive UX
+- [x] Replace the broken five-column phone calendar controls with readable previous-week, date-range, next-week and Today navigation.
+- [x] Preserve richer one-day navigation on tablet and desktop.
+- [x] Present mobile weekly activity as a one-column activity list instead of a compressed desktop calendar.
+- [x] Prevent horizontal page overflow and reserve bottom-navigation safe-area space through responsive CSS.
+- [x] Respect reduced-motion preferences and preserve visible keyboard focus.
+
+### Learning architecture
+- [x] Preserve v0.39 session learning quality and adaptive continuity without changing generation or mastery behaviour.
+- [x] Preserve prerequisite routing, spaced retrieval, misconception evidence and confidence evidence.
+- [x] Preserve Story Adventure as a presentation layer over the normal adaptive session path.
+- [x] Preserve Parent Learning Intelligence and Parent Test isolation.
+- [x] Preserve the v0.38 Answer → Feedback → Understand → Reflect → Continue worksheet interaction.
+
+### Testing and acceptance
+- [x] Add frontend regression coverage for Continue Learning, skipped recovery, recent-history disclosure, student navigation, Story Adventure continuity and mobile week navigation.
+- [ ] Complete backend, frontend, metadata and real aarch64 startup/health validation.
+- [ ] Complete the real-device checklist in `questmath/MANUAL_ACCEPTANCE_0.40.0.md` on iPhone and iPad hardware.
+
+## v0.39.0 - Session Learning Quality and Adaptive Continuity
+
+Status: Completed
 
 ### Learning quality
 - [x] Add a final session-level quality policy after existing generation and adaptive composition.
@@ -18,8 +50,8 @@ Status: In release validation
 
 ### Testing
 - [x] Add deterministic tests for near-duplicate structure, difficulty dimensions, recent exposure, purposeful retrieval, Parent Test isolation, final annotations and challenge limits.
-- [ ] Complete backend, frontend, metadata and real aarch64 startup/health validation.
-- [ ] Record the current npm dependency audit and remaining findings.
+- [x] Complete backend, frontend, metadata and real aarch64 startup/health validation.
+- [x] Record the current npm dependency audit and remaining findings.
 - [ ] Complete manual real-session acceptance on representative iPad landscape and mobile/desktop views.
 
 ## v0.38.1 - Number & Algebra Quality and Melbourne Time
