@@ -86,7 +86,7 @@ def test_supported_success_becomes_building_confidence_not_failure():
 
 def test_review_due_uses_existing_spaced_retrieval_evidence():
     _, session, student = make_client(); now = datetime.utcnow()
-    for days in (18, 15, 12, 9, 6, 3):
+    for days in (40, 37, 34, 31, 28, 25):
         add_evidence(session, student, when=now - timedelta(days=days), first_correct=True, hints=0, seconds=20)
     item = outcome(session, student)
     assert item['review_due'] is True
@@ -103,6 +103,17 @@ def test_recommendation_explanation_matches_review_and_prerequisite_modes():
     assert snapshot['recommendation']['mode'] == 'guided'
     assert snapshot['recommendation']['prerequisite_for'] == 'VC2M4A01'
     assert 'supports' in snapshot['recommendation_explanation']['text'].lower()
+    close(session)
+
+
+def test_student_adaptive_route_replaces_technical_mastery_reason():
+    client, session, student = make_client(); now = datetime.utcnow()
+    for days in (10, 8, 6):
+        add_evidence(session, student, when=now - timedelta(days=days), code='VC2M4A01', skill='unknown_add_subtract', first_correct=False, final_correct=False, seconds=55)
+    payload = client.get('/api/learning/adaptive-v0230').json()
+    assert 'supports the next maths idea' in payload['recommendation']['reason']
+    assert 'mastery' not in payload['recommendation']['reason'].lower()
+    assert payload['recommendation']['why_label'] == 'WHY THIS?'
     close(session)
 
 
