@@ -21,19 +21,21 @@ def test_timed_session_has_duration_and_bounded_question_count():
     assert data['total'] == 6
 
 
-def test_diagnostic_covers_levels_two_through_six():
+def test_diagnostic_covers_level_five_and_level_six_only():
     with TestClient(v0190.app) as client:
         headers = login(client)
         created = client.post('/api/sessions/new', headers=headers, json={
             'kind': 'diagnostic', 'minutes': 15, 'topic': 'number_algebra'
         })
         result = client.get('/api/diagnostic/latest', headers=headers)
+        capabilities = client.get('/api/v0190/capabilities', headers=headers)
     assert created.status_code == 200
-    assert [question['level'] for question in created.json()['questions']] == [
-        2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6
-    ]
+    assert created.json()['total'] == 6
+    assert [question['level'] for question in created.json()['questions']] == [5, 5, 5, 6, 6, 6]
     assert result.status_code == 200
-    assert [item['level'] for item in result.json()['levels']] == [2, 3, 4, 5, 6]
+    assert [item['level'] for item in result.json()['levels']] == [5, 6]
+    assert capabilities.status_code == 200
+    assert capabilities.json()['diagnostic_levels'] == [5, 6]
 
 
 def test_existing_database_migration_adds_session_columns():
