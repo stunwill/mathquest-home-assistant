@@ -52,10 +52,10 @@ def student_learning_state(session: Session, student_id: int, outcome: dict[str,
         message = 'Keep practising so MathQuest can understand how this skill is going.'
     elif progression == 'ready_to_progress':
         key = 'ready_for_challenge'
-        message = 'You have been solving these independently, so MathQuest can stretch you a little further.'
+        message = 'Your recent answers show repeated independent success, so MathQuest can stretch you a little further.'
     elif progression == 'secure':
         key = 'getting_stronger'
-        message = 'You are solving these independently more often.'
+        message = 'Your recent answers show strong independent work.'
     elif eventual >= 0.72 and (support >= 0.35 or independent < v0330.THRESHOLDS.consolidate_accuracy):
         key = 'building_confidence'
         message = 'You can solve these with some help. We will keep practising them.'
@@ -88,7 +88,7 @@ def student_recommendation_explanation(recommendation: dict[str, Any], outcomes:
     if mode == 'review' or (chosen and chosen.get('review_due')):
         return {'label': 'QUICK REVIEW', 'text': 'You did this before. It is back today to help you remember it.'}
     if chosen and chosen.get('status') in ('secure', 'mastered'):
-        return {'label': 'WHY THIS?', 'text': 'You have strong recent evidence here, so MathQuest can keep moving you forward carefully.'}
+        return {'label': 'WHY THIS?', 'text': 'Your recent work shows strong evidence here, so MathQuest can keep moving you forward carefully.'}
     return {'label': 'WHY THIS?', 'text': 'This is one of the most useful skills for you to practise next based on your recent work.'}
 
 
@@ -116,19 +116,41 @@ def student_progress_snapshot(session: Session, student_id: int) -> dict[str, An
         'not_enough_evidence': 5,
     }
     rows.sort(key=lambda item: (priority[item['state']['key']], item['title']))
-    this_week = [item for item in rows if item['state']['key'] != 'not_enough_evidence'][:3]
     return {
         'generated_at': datetime.utcnow().isoformat(),
         'recommendation': recommendation,
         'recommendation_explanation': student_recommendation_explanation(recommendation, outcomes),
         'learning_now': rows,
-        'this_week': this_week,
         'summary': {
             'getting_stronger': sum(item['state']['key'] in ('getting_stronger', 'ready_for_challenge') for item in rows),
             'building_confidence': sum(item['state']['key'] == 'building_confidence' for item in rows),
             'review_due': sum(item['state']['key'] == 'review_due' for item in rows),
         },
     }
+
+
+def _remove_route(path: str, method: str) -> None:
+    for route in list(app.router.routes):
+        methods = getattr(route, 'methods', set()) or set()
+        if getattr(route, 'path', None) == path and method in methods:
+            app.router.routes.remove(route)
+
+
+_remove_route('/api/learning/adaptive-v0230', 'GET')
+
+
+@app.get('/api/learning/adaptive-v0230')
+def adaptive_learning(user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
+    student_id = user.id if user.role == 'student' else v0120.resolve_learner(session).id
+    snapshot = v0230.adaptive_snapshot(session, student_id)
+    if user.role == 'student':
+        explanation = student_recommendation_explanation(snapshot['recommendation'], snapshot['outcomes'])
+        snapshot['recommendation'] = {
+            **snapshot['recommendation'],
+            'reason': explanation['text'],
+            'why_label': explanation['label'],
+        }
+    return snapshot
 
 
 @app.get('/api/learning/student-progress-v0410')
