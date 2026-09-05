@@ -119,7 +119,7 @@ function Student({user,logout}:{user:User;logout:()=>void}){
   const answered=worksheet ? worksheet.counts.correct+worksheet.counts.incorrect : 0;
   const untouched=hasProgress&&answered===0;
   return <><Header user={user} logout={logout}/><main className="page student-destination-page">
-    {error&&<ErrorNotice message={error} retry={load} dismiss={()=>setError('')}/>} 
+    {error&&<ErrorNotice message={error} retry={load} dismiss={()=>setError('')}/>}
     {section==='home'&&<>
       <section className="hero"><div><p className="eyebrow">{untouched?'READY TO START':'TODAY’S LEARNING'}</p><h1>{hasProgress?(untouched?'Your worksheet is ready':'Your quest is waiting'):'Ready for your next maths step?'}</h1>
         <p>{hasProgress?(untouched?'Start when you are ready.':`${answered} of ${worksheet.total} questions completed. Your progress is saved.`):'MathQuest will choose useful practice from your current learning plan.'}</p>
