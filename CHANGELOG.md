@@ -1,3 +1,16 @@
+## v0.42.0 - Student UX, Navigation & Learning Guidance Refinement
+
+- Replaced the student mobile scroll-to-anchor navigation model with real Home, Adventure, Worksheets and Progress destinations.
+- Simplified Home so current learning, Best Next Step, learner-safe extra practice and compact destination previews no longer compete with the complete Adventure, worksheet-history and Progress experiences.
+- Distinguished untouched worksheets as Ready to Start from genuinely resumed Continue Learning work.
+- Removed student-facing intervention terminology, raw independent/support percentages, adaptive mode labels and curriculum outcome codes while preserving the underlying learning evidence and session services.
+- Changed learner-facing Review due wording to Ready to review and hid zero-value Progress summaries.
+- Grouped Progress skills under one concise learner-state explanation and removed raw success/support percentages from the student Progress surface.
+- Moved full Story Adventure ownership to Adventure, full worksheet history to Worksheets, and Weekly Activity to Progress while preserving Story Adventure's existing adaptive session contract.
+- Replaced the old student Home streak/accuracy/question-count/highest-level and Skill Map emphasis with concise learning guidance and destination previews.
+- Kept the existing v0.41 learning-state derivation, adaptive thresholds, recommendation logic, review scheduling, prerequisites, Math Mentor, hints, worked examples and Parent Learning Intelligence unchanged.
+- Added regression coverage for destination navigation, Ready to Start semantics, learner-safe extra-practice wording, Ready to review language, grouped Progress and learner-friendly weekly activity.
+
 ## v0.41.0 - Student Learning Progress & Guidance
 
 - Added a student-facing learning-state layer derived from existing outcome mastery, adaptive progression, support and spaced-retrieval evidence rather than creating a second mastery score.

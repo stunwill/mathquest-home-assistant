@@ -1,3 +1,15 @@
+## v0.42.0 - Student UX, Navigation & Learning Guidance Refinement
+
+- Home, Adventure, Worksheets and Progress now behave as distinct student destinations instead of scroll targets within one long page.
+- Home is shorter and focused on what to do next, while Adventure owns Story Adventure, Worksheets owns history and Progress owns learning states plus Weekly Activity.
+- Untouched worksheets are labelled Ready to Start; Continue Learning is reserved for genuinely started work.
+- Student-facing intervention terminology and raw independent/support percentages have been replaced by learner-safe Extra Practice language without changing the underlying learning service.
+- Review due is presented to the learner as Ready to review, zero-value state summaries are hidden, and repeated Progress explanations are grouped for faster scanning.
+- Student Best Next Step no longer exposes adaptive mode labels or curriculum outcome codes.
+- The old student Home streak/accuracy/question-count/highest-level cards and technical Skill Map no longer dominate the learner experience.
+- Story Adventure keeps the existing adaptive session and evidence path, and Parent Learning Intelligence remains the detailed technical evidence surface.
+- Preserved Math Mentor, hints, worked examples, adaptive learning, review scheduling, prerequisite routing, worksheet scoring/completion, Parent Tests and Home Assistant integration.
+
 ## v0.41.0 - Student Learning Progress & Guidance
 
 - Student Progress now translates existing learning evidence into understandable states: Not enough evidence yet, Practising, Building confidence, Getting stronger, Ready for a challenge and Review due.

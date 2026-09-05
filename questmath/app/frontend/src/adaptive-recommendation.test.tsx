@@ -7,7 +7,7 @@ import {AdaptiveRecommendation} from './adaptive-recommendation';
 afterEach(cleanup);
 
 describe('adaptive next-session recommendation', () => {
-  it('explains a prerequisite recommendation and starts it', () => {
+  it('explains a prerequisite recommendation without exposing technical codes or modes', () => {
     const start = vi.fn();
     render(<AdaptiveRecommendation busy={false} onStart={start} data={{
       summary: {review_due: 3},
@@ -19,12 +19,14 @@ describe('adaptive next-session recommendation', () => {
       },
     }}/>);
     expect(screen.getByText(/supports unknown values/i)).toBeTruthy();
-    expect(screen.getByText('3 review due')).toBeTruthy();
+    expect(screen.getByText('3 ready to review')).toBeTruthy();
+    expect(screen.queryByText('VC2M4N06')).toBeNull();
+    expect(screen.queryByText('guided')).toBeNull();
     fireEvent.click(screen.getByRole('button', {name: 'Start 15-minute session'}));
     expect(start).toHaveBeenCalledOnce();
   });
 
-  it('shows diagnostic as the first recommendation when a baseline is missing', () => {
+  it('shows diagnostic recommendation without an implementation label', () => {
     render(<AdaptiveRecommendation busy={false} onStart={vi.fn()} data={{
       summary: {review_due: 0},
       recommendation: {
@@ -33,6 +35,6 @@ describe('adaptive next-session recommendation', () => {
       },
     }}/>);
     expect(screen.getByText('Find the best starting point')).toBeTruthy();
-    expect(screen.getByText('diagnostic')).toBeTruthy();
+    expect(screen.queryByText('diagnostic')).toBeNull();
   });
 });

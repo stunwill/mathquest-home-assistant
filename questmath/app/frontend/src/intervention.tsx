@@ -11,6 +11,14 @@ type Focus = {
   status: string;
 };
 
+function learnerStatus(status?: string) {
+  if (!status) return 'Starting point';
+  if (status === 'needs_support') return 'A little extra practice will help';
+  if (status === 'developing') return 'Building confidence';
+  if (status === 'secure') return 'Getting stronger';
+  return 'Practice focus';
+}
+
 export function InterventionCard({onOpen}: {onOpen: (worksheet: any) => void}) {
   const [data, setData] = useState<any>(null);
   const [minutes, setMinutes] = useState<5 | 10 | 15>(10);
@@ -27,11 +35,12 @@ export function InterventionCard({onOpen}: {onOpen: (worksheet: any) => void}) {
     catch (reason: any) { setError(reason.message); }
     finally { setBusy(false); }
   }
-  return <section className="panel intervention-card" aria-label="Number and Algebra intervention">
-    <div className="intervention-copy"><p className="eyebrow">NUMBER &amp; ALGEBRA INTERVENTION</p><h2><Brain size={22}/> Build {String(data?.recommended_focus || 'efficient facts').replaceAll('_', ' ')}</h2><p>{data?.reason}</p>
-      <div className="adaptive-signals"><span><Route size={16}/>{focus?.status?.replaceAll('_', ' ') || 'starting point'}</span>{focus?.independent_accuracy != null && <span>Independent {focus.independent_accuracy}%</span>}{focus?.supported_accuracy != null && <span>With support {focus.supported_accuracy}%</span>}</div>
+  const focusName = String(data?.recommended_focus || 'efficient facts').replaceAll('_', ' ');
+  return <section className="panel intervention-card" aria-label="Extra practice">
+    <div className="intervention-copy"><p className="eyebrow">EXTRA PRACTICE</p><h2><Brain size={22}/> Build your {focusName} confidence</h2><p>A little extra practice here can help you solve these more confidently on your own.</p>
+      <div className="adaptive-signals"><span><Route size={16}/>{learnerStatus(focus?.status)}</span></div>
     </div>
-    <div className="intervention-start"><div role="group" aria-label="Intervention length">{([5, 10, 15] as const).map(value => <button type="button" className={minutes === value ? 'selected' : ''} onClick={() => setMinutes(value)} key={value}><Clock3 size={15}/>{value} min</button>)}</div><button type="button" className="primary" disabled={busy} onClick={start}><Play size={18}/>{busy ? 'Building intervention…' : `Start ${minutes}-minute intervention`}</button></div>
+    <div className="intervention-start"><div role="group" aria-label="Practice length">{([5, 10, 15] as const).map(value => <button type="button" className={minutes === value ? 'selected' : ''} onClick={() => setMinutes(value)} key={value}><Clock3 size={15}/>{value} min</button>)}</div><button type="button" className="primary" disabled={busy} onClick={start}><Play size={18}/>{busy ? 'Building your practice…' : `Start ${minutes}-minute practice`}</button></div>
     {error && <p className="intervention-error" role="alert">{error}</p>}
   </section>;
 }
@@ -39,5 +48,5 @@ export function InterventionCard({onOpen}: {onOpen: (worksheet: any) => void}) {
 export function InterventionGoal({question}: {question: any}) {
   const intervention = question?.payload?.intervention;
   if (!intervention) return null;
-  return <div className="intervention-goal"><small>{String(intervention.phase).toUpperCase()} PHASE</small><b>{intervention.learning_goal}</b><span>Your independent result is recorded separately from work completed with support.</span></div>;
+  return <div className="intervention-goal"><small>{String(intervention.phase).toUpperCase()} PHASE</small><b>{intervention.learning_goal}</b><span>MathQuest keeps track of when you solve a question on your own and when support helps.</span></div>;
 }

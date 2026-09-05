@@ -12,7 +12,7 @@ type WorksheetSummary = {
   answered: number; total: number; score: number; skipped: number; hints: number; xp_earned: number;
   elapsed_seconds: number; progress: number; restartable_skipped: boolean;
 };
-type StudentSection = 'home' | 'adventure' | 'worksheets' | 'progress';
+export type StudentSection = 'home' | 'adventure' | 'worksheets' | 'progress';
 
 export function ErrorNotice({message, retry, dismiss}: ErrorNoticeProps) {
   return <div className="mq-error-notice" role="alert">
@@ -34,26 +34,19 @@ function monday(date = new Date()) { const value = new Date(date); value.setDate
 function dateLabel(value: string) { return fromISO(value).toLocaleDateString('en-AU', {weekday: 'short', day: 'numeric', month: 'short'}); }
 function minutes(seconds: number) { const value = Math.round((seconds || 0) / 60); return value ? `${value} min` : '<1 min'; }
 
-function StudentMobileNavigation() {
-  const [selected, setSelected] = useState<StudentSection>('home');
-  const move = (section: StudentSection, target?: string) => {
-    setSelected(section);
-    if (!target) { window.scrollTo({top: 0, behavior: 'auto'}); return; }
-    document.getElementById(target)?.scrollIntoView({block: 'start', behavior: 'auto'});
-  };
+export function StudentMobileNavigation({selected, onSelect}:{selected:StudentSection; onSelect:(section:StudentSection)=>void}) {
   return <nav className="student-mobile-nav" aria-label="Student navigation">
-    <button type="button" aria-current={selected === 'home' ? 'page' : undefined} onClick={() => move('home')}><Home size={20}/><span>Home</span></button>
-    <button type="button" aria-current={selected === 'adventure' ? 'page' : undefined} onClick={() => move('adventure', 'mq-story-adventures')}><BookOpen size={20}/><span>Adventure</span></button>
-    <button type="button" aria-current={selected === 'worksheets' ? 'page' : undefined} onClick={() => move('worksheets', 'mq-worksheet-history-secondary')}><List size={20}/><span>Worksheets</span></button>
-    <button type="button" aria-current={selected === 'progress' ? 'page' : undefined} onClick={() => move('progress', 'mq-student-progress')}><BarChart3 size={20}/><span>Progress</span></button>
+    <button type="button" aria-current={selected === 'home' ? 'page' : undefined} onClick={() => onSelect('home')}><Home size={20}/><span>Home</span></button>
+    <button type="button" aria-current={selected === 'adventure' ? 'page' : undefined} onClick={() => onSelect('adventure')}><BookOpen size={20}/><span>Adventure</span></button>
+    <button type="button" aria-current={selected === 'worksheets' ? 'page' : undefined} onClick={() => onSelect('worksheets')}><List size={20}/><span>Worksheets</span></button>
+    <button type="button" aria-current={selected === 'progress' ? 'page' : undefined} onClick={() => onSelect('progress')}><BarChart3 size={20}/><span>Progress</span></button>
   </nav>;
 }
 
-export function WorksheetHistory({onCreate, onOpen, homeLimit = 3}:{onCreate: () => void; onOpen: (worksheet: any) => void; homeLimit?: number}) {
+export function WorksheetHistory({onCreate, onOpen, compact = false}:{onCreate: () => void; onOpen: (worksheet: any) => void; compact?: boolean}) {
   const [rows, setRows] = useState<WorksheetSummary[] | null>(null);
   const [error, setError] = useState('');
   const [review, setReview] = useState<any>(null);
-  const [showAll, setShowAll] = useState(false);
   const reviewOpener = useRef<HTMLElement|null>(null);
   const load = () => { setError(''); apiRequest<WorksheetSummary[]>('/worksheets/history-v0160').then(setRows).catch((e: Error) => setError(e.message)); };
   useEffect(load, []);
@@ -88,30 +81,21 @@ export function WorksheetHistory({onCreate, onOpen, homeLimit = 3}:{onCreate: ()
     return () => window.removeEventListener('keydown', keydown);
   }, [review]);
 
-  const today = (rows || []).filter(row => row.date === localDate());
-  const totals = useMemo(() => ({
-    answered: today.reduce((sum, row) => sum + row.answered, 0),
-    score: today.reduce((sum, row) => sum + row.score, 0),
-    hints: today.reduce((sum, row) => sum + row.hints, 0),
-    xp: today.reduce((sum, row) => sum + row.xp_earned, 0),
-  }), [rows]);
   const orderedRows = useMemo(() => [...(rows || [])].sort((a,b) => Number(Boolean(a.completed_at)) - Number(Boolean(b.completed_at))), [rows]);
   const incomplete = orderedRows.find(row => !row.completed_at);
   const skippedRecovery = !incomplete ? orderedRows.find(row => row.restartable_skipped && row.skipped > 0) : undefined;
   const continuation = incomplete || skippedRecovery;
   const historyRows = continuation ? orderedRows.filter(row => row.id !== continuation.id) : orderedRows;
-  const visibleRows = showAll ? historyRows.slice(0, 20) : historyRows.slice(0, homeLimit);
+  const visibleRows = compact ? historyRows.slice(0, 1) : historyRows.slice(0, 20);
+  const isUntouched = !!incomplete && incomplete.answered === 0 && incomplete.progress <= 0;
 
-  return <section id="mq-worksheet-history" className={`panel mq-v0160-history${continuation ? ' mq-has-continue' : ''}`} aria-label="Worksheet history">
-    {continuation && <article className="mq-continue-learning" aria-label="Continue learning"><div><p className="eyebrow">CONTINUE LEARNING</p><h2>{incomplete ? continuation.display_title : `${continuation.skipped} questions need another try`}</h2><p>{incomplete ? `${continuation.answered} of ${continuation.total} answered. Your progress is saved.` : 'Finish the skipped questions when you are ready.'}</p></div><button type="button" className="primary" onClick={() => incomplete ? open(continuation.id) : restart(continuation.id)}><Play size={18}/>{incomplete ? 'Continue' : 'Finish worksheet'}</button></article>}
-    <div id="mq-worksheet-history-secondary" className="mq-history-secondary">
-      <div className="mq-v0160-head"><div><p className="eyebrow">WORKSHEETS</p><h2>Recent worksheets</h2><p>Completed work stays available without outranking what you should do next.</p></div><button className="primary" type="button" onClick={onCreate}>+ New worksheet</button></div>
-      {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>} {rows === null && !error ? <p>Loading worksheet history…</p> : <>
-        {!homeLimit&&<div className="mq-v0160-summary"><article><small>Worksheets today</small><strong>{today.length}</strong></article><article><small>Questions</small><strong>{totals.answered}</strong></article><article><small>Accuracy</small><strong>{totals.answered ? `${Math.round(totals.score / totals.answered * 100)}%` : '—'}</strong></article><article><small>Hints</small><strong>{totals.hints}</strong></article><article><small>XP</small><strong>{totals.xp}</strong></article></div>}
-        <div className="mq-v0160-list">{visibleRows.map(row => <article className="mq-v0160-row" key={row.id}><div className="meta"><b>{row.display_title}{row.display_time ? ` · ${row.display_time}` : ''}</b><small>{dateLabel(row.date)} · {row.answered}/{row.total} answered · {row.skipped || 0} skipped · {row.hints} hints · {minutes(row.elapsed_seconds)}</small></div><span className="status">{row.completed_at ? `Completed · ${row.score}/${row.total}` : `In progress · ${Math.round(row.progress)}%`}</span><div className="mq-v0160-row-actions"><button type="button" onClick={() => row.completed_at ? view(row.id) : open(row.id)}>{row.completed_at ? 'Review' : 'Continue'}</button>{row.restartable_skipped && <button type="button" onClick={() => restart(row.id)}>Finish {row.skipped} skipped</button>}</div></article>)}</div>
-        {historyRows.length>homeLimit&&<button className="student-compact-link" type="button" aria-expanded={showAll} onClick={()=>setShowAll(!showAll)}>{showAll?'Show recent only':'View all worksheets →'}</button>}
-      </>}
-    </div>
+  return <section id="mq-worksheet-history" className={`panel mq-v0160-history${continuation ? ' mq-has-continue' : ''}${compact ? ' mq-history-compact' : ''}`} aria-label="Worksheet history">
+    {continuation && <article className="mq-continue-learning" aria-label={isUntouched ? 'Ready to start' : 'Continue learning'}><div><p className="eyebrow">{isUntouched ? 'READY TO START' : 'CONTINUE LEARNING'}</p><h2>{incomplete ? continuation.display_title : `${continuation.skipped} questions need another try`}</h2><p>{incomplete ? (isUntouched ? 'Your worksheet is ready when you are.' : `${continuation.answered} of ${continuation.total} answered. Your progress is saved.`) : 'Finish the skipped questions when you are ready.'}</p></div><button type="button" className="primary" onClick={() => incomplete ? open(continuation.id) : restart(continuation.id)}><Play size={18}/>{incomplete ? (isUntouched ? 'Start' : 'Continue') : 'Finish worksheet'}</button></article>}
+    {!compact && <div id="mq-worksheet-history-secondary" className="mq-history-secondary">
+      <div className="mq-v0160-head"><div><p className="eyebrow">WORKSHEETS</p><h2>Your worksheets</h2><p>Resume recent work or revisit completed practice.</p></div><button className="primary" type="button" onClick={onCreate}>+ New worksheet</button></div>
+      {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>} {rows === null && !error ? <p>Loading worksheet history…</p> : <div className="mq-v0160-list">{visibleRows.map(row => <article className="mq-v0160-row" key={row.id}><div className="meta"><b>{row.display_title}{row.display_time ? ` · ${row.display_time}` : ''}</b><small>{dateLabel(row.date)} · {row.answered}/{row.total} answered · {row.skipped || 0} skipped · {minutes(row.elapsed_seconds)}</small></div><span className="status">{row.completed_at ? `Completed · ${row.score}/${row.total}` : row.answered === 0 ? 'Ready to start' : `In progress · ${Math.round(row.progress)}%`}</span><div className="mq-v0160-row-actions"><button type="button" onClick={() => row.completed_at ? view(row.id) : open(row.id)}>{row.completed_at ? 'Review' : row.answered === 0 ? 'Start' : 'Continue'}</button>{row.restartable_skipped && <button type="button" onClick={() => restart(row.id)}>Finish {row.skipped} skipped</button>}</div></article>)}</div>}
+    </div>}
+    {compact && !continuation && visibleRows.length > 0 && <div className="mq-home-recent"><p className="eyebrow">RECENT LEARNING</p><b>{visibleRows[0].display_title}</b><span>{visibleRows[0].completed_at ? 'Completed' : 'In progress'}</span></div>}
     {review && <div className="mq-v0160-review" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) closeReview(); }}><section role="dialog" aria-modal="true" aria-labelledby="worksheet-review-title"><button className="close" type="button" aria-label="Close review" onClick={closeReview}>×</button><p className="eyebrow">WORKSHEET REVIEW</p><h2 id="worksheet-review-title">{review.selected_topic?.replaceAll('_', ' ')} · {dateLabel(review.date)}</h2><p><strong>{review.score}/{review.total}</strong> · {review.counts?.hints || 0} hints</p>{review.questions?.map((question: any) => <details key={question.id}><summary>{question.position + 1}. {question.prompt}</summary><div className="question-card review-question-visual"><QuestionVisual question={question}/></div><p>Your answer: <strong>{question.student_answers?.map((answer: any) => answer.answer).join(' → ') || 'No answer'}</strong></p><p>Correct answer: <strong>{question.correct_answer}</strong></p><p>{question.working}</p></details>)}</section></div>}
   </section>;
 }
@@ -129,11 +113,11 @@ export function LearningCalendar({onOpen}:{onOpen: (worksheet: any) => void}) {
   const open = async (id: number) => { try { const worksheet = await apiRequest(`/worksheets/${id}/view`); rememberActiveWorksheet(id); onOpen(worksheet); } catch (e: any) { setError(e.message); } };
 
   return <section id="mq-learning-calendar" className="panel completion-calendar mq-v0160-calendar"><div className="mq-cal-head"><button type="button" aria-label="Previous week" onClick={() => shift(-7)}>‹ Week</button><button className="day-shift" type="button" onClick={() => shift(-1)}>‹ 1 day</button><h2>{data ? `${dateLabel(data.start)} – ${dateLabel(data.end)}` : 'This week'}</h2><button className="day-shift" type="button" disabled={rangeStart >= currentMonday} onClick={() => shift(1)}>1 day ›</button><button type="button" aria-label="Next week" disabled={rangeStart >= currentMonday} onClick={() => shift(7)}>Week ›</button><button className="mq-cal-today" type="button" disabled={rangeStart >= currentMonday} onClick={goToday}>Today</button></div>
-    {error && <ErrorNotice message={error} retry={load}/>} {!data && !error ? <p>Loading learning activity…</p> : <div className="mq-cal-days">{data?.days.map((day: any) => { const any = day.worksheets.length > 0; const complete = any && day.worksheets.every((worksheet: any) => worksheet.completed_at); return <article key={day.date} className={`mq-cal-day${day.is_today ? ' today' : ''}${complete ? ' complete' : ''}${any && !complete ? ' in-progress' : ''}${day.is_future ? ' future' : ''}`}><h3>{dateLabel(day.date)}</h3><div className="mq-cal-stats">{day.questions ? <><span>{day.questions} questions · {day.accuracy ?? 0}%</span><span>{day.correct} correct · {day.incorrect} incorrect</span><span>💡 {day.hints} · ⭐ {day.xp} · {minutes(day.elapsed_seconds)}</span></> : <span>No learning activity</span>}</div><div className="mq-cal-ws">{day.worksheets.map((worksheet: any) => <button type="button" key={worksheet.id} onClick={() => open(worksheet.id)}>{worksheet.display_title} · {worksheet.answered}/{worksheet.total} {worksheet.completed_at ? '✓' : '→'}</button>)}</div></article>; })}</div>}
+    {error && <ErrorNotice message={error} retry={load}/>} {!data && !error ? <p>Loading learning activity…</p> : <div className="mq-cal-days">{data?.days.map((day: any) => { const any = day.worksheets.length > 0; const complete = any && day.worksheets.every((worksheet: any) => worksheet.completed_at); return <article key={day.date} className={`mq-cal-day${day.is_today ? ' today' : ''}${complete ? ' complete' : ''}${any && !complete ? ' in-progress' : ''}${day.is_future ? ' future' : ''}`}><h3>{dateLabel(day.date)}</h3><div className="mq-cal-stats">{day.questions ? <><span>{day.questions} questions practised</span><span>{day.correct} correct · {day.incorrect} to revisit</span><span>💡 {day.hints} hints · {minutes(day.elapsed_seconds)}</span></> : <span>No learning activity</span>}</div><div className="mq-cal-ws">{day.worksheets.map((worksheet: any) => <button type="button" key={worksheet.id} onClick={() => open(worksheet.id)} aria-label={`${worksheet.display_title}, ${worksheet.completed_at ? 'completed' : 'in progress'}`}>{worksheet.display_title} · {worksheet.answered}/{worksheet.total} {worksheet.completed_at ? '✓' : '→'}</button>)}</div></article>; })}</div>}
   </section>;
 }
 
-export function StoryAdventures({onOpen}:{onOpen: (worksheet: any) => void}) {
+export function StoryAdventures({onOpen, compact = false, onExplore}:{onOpen: (worksheet: any) => void; compact?: boolean; onExplore?:()=>void}) {
   const [items, setItems] = useState<any[] | null>(null);
   const [busy, setBusy] = useState('');
   const [minutes, setMinutes] = useState<5|10|15>(10);
@@ -152,8 +136,20 @@ export function StoryAdventures({onOpen}:{onOpen: (worksheet: any) => void}) {
     finally { setBusy(''); }
   }
 
-  return <><section id="mq-story-adventures" className="panel mq-v090-adventures mq-v0340-adventures">
+  if (compact) {
+    const item = items?.[0];
+    return <section className="panel mq-adventure-preview" aria-label="Adventure preview"><p className="eyebrow">ADVENTURE</p><h2><BookOpen size={22}/> Learn through a mission</h2><p>{item ? `${item.icon} ${item.title} is ready, with maths chosen by your adaptive learning plan.` : 'Choose a Story Adventure when you want your maths practice to feel like a mission.'}</p>{onExplore && <button type="button" onClick={onExplore}>Explore adventures →</button>}</section>;
+  }
+
+  return <section id="mq-story-adventures" className="panel mq-v090-adventures mq-v0340-adventures">
     <div className="mq-adventure-heading"><div><p className="eyebrow">STORY ADVENTURE</p><h2><BookOpen size={22}/> Learn through a mission</h2><p>The same adaptive learning engine chooses the maths. Story Adventure changes how the session feels, not what MathQuest decides you should learn.</p></div><div className="mq-adventure-duration" role="group" aria-label="Story Adventure session length">{([5,10,15] as const).map(value=><button type="button" key={value} aria-pressed={minutes===value} className={minutes===value?'selected':''} onClick={()=>setMinutes(value)}>{value} min</button>)}</div></div>
-    {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>}<div className="mq-adventure-grid">{items === null && !error ? <p>Loading adventures…</p> : items?.length === 0 ? <p>No Story Adventures are available right now.</p> : items?.map(item => <button type="button" data-theme={item.id} key={item.id} disabled={!!busy} onClick={() => start(item.id)}><span>{item.icon}</span><b>{item.title}</b><small>{busy === item.id ? 'Building your adaptive mission…' : item.intro}</small><em>{item.objective}</em><i>Likely focus: {(item.recommended_goals || item.topics || []).slice(0, 2).join(' + ')}</i>{busy === item.id && <Play size={16}/>}</button>)}</div>
-  </section><StudentProgress/><StudentMobileNavigation/></>;
+    {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>}<div className="mq-adventure-grid">{items === null && !error ? <p>Loading adventures…</p> : items?.length === 0 ? <p>No Story Adventures are available right now.</p> : items?.map(item => <button type="button" data-theme={item.id} key={item.id} disabled={!!busy} onClick={() => start(item.id)}><span>{item.icon}</span><b>{item.title}</b><small>{busy === item.id ? 'Building your adaptive mission…' : item.intro}</small><em>{item.objective}</em><i>Practises: {(item.recommended_goals || item.topics || []).slice(0, 2).join(' + ')}</i>{busy === item.id && <Play size={16}/>}</button>)}</div>
+  </section>;
+}
+
+export function StudentDestination({section,onOpen,onCreate,onSelect}:{section:StudentSection;onOpen:(worksheet:any)=>void;onCreate:()=>void;onSelect:(section:StudentSection)=>void}) {
+  if (section === 'adventure') return <StoryAdventures onOpen={onOpen}/>;
+  if (section === 'worksheets') return <WorksheetHistory onCreate={onCreate} onOpen={onOpen}/>;
+  if (section === 'progress') return <><StudentProgress/><LearningCalendar onOpen={onOpen}/></>;
+  return <StoryAdventures compact onOpen={onOpen} onExplore={()=>onSelect('adventure')}/>;
 }

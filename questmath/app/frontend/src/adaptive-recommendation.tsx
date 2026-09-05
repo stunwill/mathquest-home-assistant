@@ -1,5 +1,5 @@
 import React from 'react';
-import {Clock3, RefreshCw, Route} from 'lucide-react';
+import {Clock3, RefreshCw} from 'lucide-react';
 
 type Recommendation = {
   mode: 'diagnostic' | 'guided' | 'review' | 'practice';
@@ -14,6 +14,7 @@ type Recommendation = {
 export function AdaptiveRecommendation({data, busy, onStart}: {data: any; busy: boolean; onStart: () => void}) {
   const recommendation: Recommendation | undefined = data?.recommendation;
   if (!recommendation) return null;
+  const reviewCount = Number(data?.summary?.review_due || 0);
   return <section className="panel adaptive-recommendation" aria-label="Recommended next session">
     <div className="adaptive-recommendation-copy">
       <p className="eyebrow">YOUR BEST NEXT STEP</p>
@@ -21,9 +22,7 @@ export function AdaptiveRecommendation({data, busy, onStart}: {data: any; busy: 
       <p>{recommendation.reason}</p>
       <div className="adaptive-signals">
         <span><Clock3 size={16}/>{recommendation.minutes} minutes</span>
-        <span><Route size={16}/>{recommendation.mode.replace('_', ' ')}</span>
-        {recommendation.outcome_code && <span>{recommendation.outcome_code}</span>}
-        {!!data.summary?.review_due && <span><RefreshCw size={16}/>{data.summary.review_due} review due</span>}
+        {reviewCount > 0 && <span><RefreshCw size={16}/>{reviewCount} ready to review</span>}
       </div>
     </div>
     <button type="button" className="primary" disabled={busy} onClick={onStart}>

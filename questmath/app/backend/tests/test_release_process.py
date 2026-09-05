@@ -22,10 +22,10 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     lowered = notes.lower()
-    assert 'student progress' in lowered
-    assert 'building confidence' in lowered
-    assert 'review due' in lowered
-    assert 'student mobile home' not in lowered
+    assert 'distinct student destinations' in lowered
+    assert 'ready to start' in lowered
+    assert 'ready to review' in lowered
+    assert 'student learning progress & guidance' not in lowered
     assert 'session learning quality' not in lowered
 
 
