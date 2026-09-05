@@ -22,20 +22,14 @@ class SessionCreateIn(BaseModel):
 
 def _diagnostic_question(level, rng):
     requested = level
-    if requested == 2:
-        a, b = rng.randint(2, 20), rng.randint(1, 10)
-        return legacy.q('VC2M2N04', 'diagnostic_add_subtract', f'Calculate {a} + {b}.', 'number', {'curriculum_level': 2}, a + b, 'Count on or partition the numbers, then check the total.')
-    if requested == 3:
-        a, b = rng.randint(2, 10), rng.randint(2, 5)
-        return legacy.q('VC2M3N04', 'diagnostic_multiplication', f'Calculate {a} × {b}.', 'number', {'curriculum_level': 3}, a * b, 'Use equal groups or a known multiplication fact.')
-    if requested == 4:
-        return legacy.make_question(rng.choice(['number', 'algebra']), 4, rng)
     if requested == 5:
         a, b = rng.randint(12, 99), rng.randint(2, 9)
         return legacy.q('VC2M5N06', 'diagnostic_operations', f'Calculate {a} × {b}.', 'number', {'curriculum_level': 5}, a * b, 'Partition the two-digit number and combine the partial products.')
-    numerator, denominator = rng.randint(2, 8), rng.choice([10, 100])
-    answer = numerator / denominator
-    return legacy.q('VC2M6N03', 'diagnostic_fraction_decimal', f'Write {numerator}/{denominator} as a decimal.', 'number', {'curriculum_level': 6}, answer, 'Use place value to convert tenths or hundredths to a decimal.')
+    if requested == 6:
+        numerator, denominator = rng.randint(2, 8), rng.choice([10, 100])
+        answer = numerator / denominator
+        return legacy.q('VC2M6N03', 'diagnostic_fraction_decimal', f'Write {numerator}/{denominator} as a decimal.', 'number', {'curriculum_level': 6}, answer, 'Use place value to convert tenths or hundredths to a decimal.')
+    raise ValueError(f'Unsupported diagnostic level: {requested}')
 
 
 @app.post('/api/sessions/new')
@@ -44,12 +38,12 @@ def new_session(payload: SessionCreateIn, user: legacy.User = Depends(legacy.cur
         raise HTTPException(403, 'Student access required')
     count = {5: 6, 10: 12, 15: 18}[payload.minutes]
     if payload.kind == 'diagnostic':
-        count = 15
+        count = 6
         worksheet = legacy.create_worksheet(session, user.id, 'number_algebra', question_count=count,
                                             session_kind='diagnostic', target_minutes=15)
-        # Regenerate the authoritative worksheet's items into three checks at each level.
+        # Regenerate the authoritative worksheet into three Level 5 and three Level 6 checks.
         for index, question in enumerate(sorted(worksheet.questions, key=lambda item: item.position)):
-            level = 2 + min(4, index // 3)
+            level = 5 if index < 3 else 6
             question.level = level
             skill, prompt, answer_type, data, answer, working = _diagnostic_question(level, random.Random(f'{worksheet.id}:{index}'))
             question.skill, question.prompt, question.answer_type = skill, prompt, answer_type
@@ -68,7 +62,7 @@ def diagnostic_summary(session: Session, sid: int):
     if not worksheet:
         return {'status': 'not_started', 'levels': []}
     levels = []
-    for level in range(2, 7):
+    for level in (5, 6):
         questions = [question for question in worksheet.questions if question.level == level]
         answered = [question for question in questions if question.attempts]
         correct = sum(any(attempt.correct for attempt in question.attempts) for question in answered)
@@ -88,7 +82,7 @@ def latest_diagnostic(user: legacy.User = Depends(legacy.current_user), session:
 
 @app.get('/api/v0190/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
-    return {'version': legacy.APP_VERSION, 'diagnostic_levels': [2, 3, 4, 5, 6],
+    return {'version': legacy.APP_VERSION, 'diagnostic_levels': [5, 6],
             'target_level': 5, 'timed_sessions': [5, 10, 15]}
 
 
