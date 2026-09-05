@@ -125,12 +125,12 @@ function Student({user,logout}:{user:User;logout:()=>void}){
         <p>{hasProgress?(untouched?'Start when you are ready.':`${answered} of ${worksheet.total} questions completed. Your progress is saved.`):'MathQuest will choose useful practice from your current learning plan.'}</p>
         <button className="primary" disabled={!!worksheet?.completed_at} onClick={()=>{if(worksheet){setWorking(true)}else{setChoosing(true)}}><Play size={20}/>{worksheet?.completed_at?'Today complete':hasProgress?(untouched?'Start worksheet':'Continue worksheet'):'Choose a worksheet'}</button>
       </div><div className="level-orb"><small>LEVEL</small><strong>{dashboard.user.level}</strong><span>{dashboard.user.xp%250}/250 XP</span></div></section>
-      {!hasProgress&&<AdaptiveRecommendation data={adaptive} busy={recommendationBusy} onStart={startRecommended}/>} 
-      {!hasProgress&&<InterventionCard onOpen={openWorksheet}/>} 
+      {!hasProgress&&<AdaptiveRecommendation data={adaptive} busy={recommendationBusy} onStart={startRecommended}/>}
+      {!hasProgress&&<InterventionCard onOpen={openWorksheet}/>}
       <StudentDestination section="home" onOpen={openWorksheet} onCreate={()=>setChoosing(true)} onSelect={selectSection}/>
       <section className="panel mq-home-progress-preview"><p className="eyebrow">YOUR PROGRESS</p><h2>See what MathQuest is noticing</h2><p>Find skills that are getting stronger, ready for a challenge or ready to review.</p><button type="button" onClick={()=>selectSection('progress')}>View progress →</button></section>
     </>}
-    {section!=='home'&&<StudentDestination section={section} onOpen={openWorksheet} onCreate={()=>setChoosing(true)} onSelect={selectSection}/>} 
+    {section!=='home'&&<StudentDestination section={section} onOpen={openWorksheet} onCreate={()=>setChoosing(true)} onSelect={selectSection}/>}
   </main><StudentMobileNavigation selected={section} onSelect={selectSection}/></>;
 }
 
