@@ -1,3 +1,15 @@
+## v0.41.0 - Student Learning Progress & Guidance
+
+- Added a student-facing learning-state layer derived from existing outcome mastery, adaptive progression, support and spaced-retrieval evidence rather than creating a second mastery score.
+- Added learner-readable states for Not enough evidence yet, Practising, Building confidence, Getting stronger, Ready for a challenge and Review due.
+- Kept Ready for a challenge tied to the existing Adaptive Daily Learning `ready_to_progress` decision, including its repeated independent-success and support-dependency thresholds.
+- Added a persistent Student Progress destination that groups learning by learner meaning instead of exposing raw levels and accuracy as the primary student experience.
+- Replaced technical student Best Next Step reasons with backend-derived "Why this?" explanations for diagnostics, prerequisite routing, spaced review and current practice.
+- Explained spaced retrieval as purposeful review rather than failure and recognised support-heavy eventual success without treating it as independent mastery.
+- Kept detailed evidence optional for the student while preserving full Parent Learning Intelligence, misconception evidence and Parent Test isolation.
+- Added deterministic backend and frontend regression coverage for insufficient evidence, supported success, progression readiness, review due, recommendation explanations and no parallel mastery score.
+- Preserved worksheet generation, adaptive composition, mastery thresholds, Math Mentor, hints, worked examples, Story Adventure selection and the v0.38 keyboard-first feedback flow.
+
 ## v0.40.0 - Student Mobile Home, Navigation & Responsive UX
 
 - Reorganised the student mobile experience around current learning action so unfinished work and recommended learning no longer compete equally with history and detailed progress.

@@ -6,9 +6,66 @@ MathQuest should help Sienna, a Grade 5 learner currently needing targeted Numbe
 
 The target experience is not a digital worksheet. Each session should diagnose, explain, let Sienna manipulate a mathematical model, ask her to reason, provide progressively stronger help only when needed, and revisit the skill later to confirm retention.
 
-## Current release scope, 0.40.0, Student Mobile Home, Navigation & Responsive UX
+## Current release scope, 0.41.0, Student Learning Progress & Guidance
 
-MathQuest's learning intelligence has become stronger, but real iPhone use showed that the student Home page had accumulated too many equal-weight dashboard sections. The current learning action, Story Adventure, completed worksheets, technical skill evidence and the weekly calendar all competed for vertical space. v0.40.0 changes the information architecture so the phone experience answers three questions sooner: what should I do, why am I doing it, and how am I progressing?
+MathQuest already holds useful evidence about independent success, support use, retention, adaptive progression, prerequisites and spaced review. v0.41.0 translates appropriate parts of that existing intelligence into language the learner can understand without creating another mastery score.
+
+### Student learning state
+
+- Derive learner-facing states centrally in the backend from existing v0.23 outcome mastery and v0.33 Adaptive Daily Learning evidence.
+- Treat limited evidence as limited evidence rather than poor performance.
+- Distinguish supported eventual success from repeated independent success.
+- Reuse the existing `ready_to_progress` decision for Ready for a challenge rather than adding a new threshold.
+- Reuse the existing spaced-retrieval schedule for Review due.
+- Keep state derivation deterministic and documented.
+
+### Student Progress experience
+
+- Provide a persistent Progress destination that groups learning by learner meaning: challenge-ready/strong evidence, building confidence, current practice, review and insufficient evidence.
+- Prefer concise explanations to raw Level and accuracy rows.
+- Keep technical evidence behind optional disclosure instead of making the student page an analytics dashboard.
+- Keep Parent Learning Intelligence as the detailed evidence surface.
+- Keep Parent Tests outside student navigation.
+
+### Why this?
+
+- Keep the existing adaptive recommendation authoritative.
+- Translate diagnostic, prerequisite, review and normal-practice recommendation reasons into age-appropriate student explanations in the backend.
+- Do not expose raw mastery percentages in the student's Best Next Step explanation.
+- Explain spaced retrieval as purposeful review so previously successful material does not look like failure.
+
+### Conservative evidence language
+
+- Do not claim a before/after improvement trend unless the current evidence actually provides one.
+- Do not infer readiness from one successful worksheet.
+- Do not equate support-heavy eventual success with repeated independent success.
+- Do not expose internal misconception codes or tell the learner they "have a misconception".
+- Defer dedicated learner-facing misconception explanations until the recommendation contract can identify a specific misconception cause safely.
+
+### Learning continuity
+
+- Preserve worksheet generation, adaptive composition, mastery thresholds, prerequisite routing, recent exposure and difficulty adaptation.
+- Preserve Math Mentor, hints, worked examples, confidence evidence, Interactive Mathematics and Visual Mathematics.
+- Preserve Story Adventure as presentation over the same adaptive worksheet path.
+- Preserve Parent Learning Intelligence and Parent Test isolation.
+- Preserve the v0.38 worksheet interaction: Answer → Immediate feedback → Understand → Reflect → Continue.
+- Preserve the v0.40 action-first mobile Home, Continue Learning priority, compact Story Adventure selector, progressive history, safe-area navigation and responsive calendar.
+
+### Acceptance criteria
+
+- Student learning states are derived from existing evidence and no parallel mastery score is persisted.
+- Fewer than the existing minimum skill-evidence questions cannot be labelled as failure.
+- Supported eventual success can produce Building confidence without becoming Ready for a challenge.
+- Ready for a challenge only follows the existing adaptive `ready_to_progress` state.
+- Review due follows the existing spaced-retrieval evidence.
+- Best Next Step reasons shown to students contain learner-safe explanations rather than raw mastery percentages.
+- Progress is accessible from mobile navigation even when unfinished work exists, without competing with Continue Learning for the main action.
+- Full backend, frontend, version metadata and real aarch64 startup/health validation passes before merge.
+- Physical iPhone and iPad checks remain explicitly unverified until performed on hardware.
+
+## Recently completed release, 0.40.0, Student Mobile Home, Navigation & Responsive UX
+
+MathQuest's learning intelligence had become stronger, but real iPhone use showed that the student Home page had accumulated too many equal-weight dashboard sections. The current learning action, Story Adventure, completed worksheets, technical skill evidence and the weekly calendar all competed for vertical space. v0.40.0 changed the information architecture so the phone experience answers three questions sooner: what should I do, why am I doing it, and how am I progressing?
 
 ### Action-first mobile Home
 
@@ -61,7 +118,7 @@ MathQuest's learning intelligence has become stronger, but real iPhone use showe
 - The mobile calendar date range remains readable and no five-column compressed navigation is used below the mobile breakpoint.
 - Phone weekly activity is readable without horizontal page overflow.
 - Existing iPad landscape worksheet keyboard and feedback behaviour remains covered by regression tests.
-- Full backend, frontend, version metadata and real aarch64 startup/health validation passes before merge.
+- Full backend, frontend, version metadata and real aarch64 startup/health validation passed before merge.
 - Physical iPhone and iPad checks remain explicitly unverified until performed on hardware.
 
 ## Recently completed release, 0.39.0, Session Learning Quality and Adaptive Continuity
@@ -74,7 +131,7 @@ MathQuest already had strong per-question generation, adaptive purpose, tutoring
 - Detect meaningful near-duplicate mathematical structures rather than relying only on exact prompts or broad skill identities.
 - For direct arithmetic, use operation, operand digit counts and regrouping demand as lightweight difficulty dimensions.
 - Limit accidental low-complexity work when learner readiness supports richer practice while preserving deliberate review, consolidation and spaced retrieval.
-- Use a bounded sample of recently answered Daily Practice and Story Adventure questions to deprioritise heavily repeated structures when a suitable alternative exists.
+- Use a bounded sample of recently answered Daily Practice and Story Adventure questions to deprioritise heavily repeated structures when a suitable alternative is available.
 - Keep the mechanism lightweight and derived from existing persisted questions rather than creating a second mastery or exposure database.
 
 ### Adaptive continuity
@@ -202,6 +259,8 @@ This release extends MathQuest's first-class interactive answer architecture bey
 
 ## Further learner experience improvements
 
+- Add learner-facing misconception guidance only when the recommendation/evidence contract can prove the specific reason safely.
+- Add genuine progress-over-time language only where a trustworthy comparison exists, rather than deriving trends from one rolling evidence window.
 - Expand Grade 5 curriculum depth only after verifying mappings and identifying genuinely shallow outcomes.
 - Audit Math Mentor and worked-example quality systematically across less-used question families based on real learner evidence.
 - Improve continuity between parent recommendations, Daily Practice and Story Adventure where persisted evidence shows a gap.

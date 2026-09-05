@@ -1,6 +1,39 @@
-## v0.40.0 - Student Mobile Home, Navigation & Responsive UX
+## v0.41.0 - Student Learning Progress & Guidance
 
 Status: In release validation
+
+### Student learning guidance
+- [x] Derive learner-facing states from existing outcome mastery and Adaptive Daily Learning evidence without creating a parallel mastery score.
+- [x] Distinguish insufficient evidence from poor performance.
+- [x] Distinguish supported eventual success from repeated independent success.
+- [x] Reuse existing ready-to-progress thresholds for Ready for a challenge.
+- [x] Reuse the existing spaced-retrieval schedule for Review due.
+- [x] Replace technical student Best Next Step reasons with evidence-grounded learner explanations.
+- [x] Keep historical-improvement claims conservative unless trustworthy trend evidence exists.
+- [x] Keep internal misconception codes out of student language.
+
+### Student Progress UX
+- [x] Add a persistent Student Progress destination organised by learner meaning rather than raw level/accuracy rows.
+- [x] Keep detailed evidence behind optional disclosure.
+- [x] Point mobile Progress navigation to the learner-guidance section.
+- [x] Preserve Continue Learning priority and avoid a competing recommended-session action inside Progress.
+- [x] Keep Parent Learning Intelligence and Parent Tests separate from student navigation.
+
+### Learning architecture
+- [x] Preserve worksheet generation, mastery thresholds, adaptive composition, prerequisites, recent exposure and difficulty adaptation.
+- [x] Preserve Math Mentor, hints, worked examples, confidence evidence and retry-first behaviour.
+- [x] Preserve Story Adventure as a presentation layer over the normal adaptive session path.
+- [x] Preserve the v0.38 Answer → Feedback → Understand → Reflect → Continue worksheet interaction.
+
+### Testing and acceptance
+- [x] Add backend regression coverage for insufficient evidence, supported success, challenge readiness, review due and recommendation explanations.
+- [x] Add frontend regression coverage for learner-state rendering, optional evidence disclosure and Progress action hierarchy.
+- [ ] Complete backend, frontend, metadata and real aarch64 startup/health validation.
+- [ ] Complete the real-device checklist in `questmath/MANUAL_ACCEPTANCE_0.41.0.md` on iPhone and iPad hardware.
+
+## v0.40.0 - Student Mobile Home, Navigation & Responsive UX
+
+Status: Completed
 
 ### Student mobile experience
 - [x] Reorganise mobile Home around current learning action rather than equal-weight dashboard sections.
@@ -27,7 +60,7 @@ Status: In release validation
 
 ### Testing and acceptance
 - [x] Add frontend regression coverage for Continue Learning, skipped recovery, recent-history disclosure, student navigation, Story Adventure continuity and mobile week navigation.
-- [ ] Complete backend, frontend, metadata and real aarch64 startup/health validation.
+- [x] Complete backend, frontend, metadata and real aarch64 startup/health validation.
 - [ ] Complete the real-device checklist in `questmath/MANUAL_ACCEPTANCE_0.40.0.md` on iPhone and iPad hardware.
 
 ## v0.39.0 - Session Learning Quality and Adaptive Continuity
@@ -147,7 +180,7 @@ Status: Completed
 Status: Completed
 
 ### Learning
-- [x] Make number-line location questions first-class interactive answers selected directly on the number line.
+- [x] Make number-line location questions first-class interactive answers selected directly on the line.
 - [x] Keep number-line scoring and evidence inside the existing backend-authoritative worksheet and attempt architecture.
 - [x] Extend worksheet-quality safeguards so straightforward two-digit additions such as `20 + 28` are recognised as low-complexity practice when learner evidence supports progression.
 - [x] Preserve purposeful foundational review, consolidation and spaced retrieval rather than globally removing easy arithmetic.
@@ -318,9 +351,7 @@ Status: Planned
 
 ### UX
 - [ ] Expand Story Adventure themes and context where engagement improves without weakening mathematical clarity.
-- [ ] Continue improving parent progress visibility and learning-goal planning.
+- [ ] Continue improving parent and student reporting from real evidence rather than adding generic game mechanics.
 
 ### Platform
-- [ ] Review dependency/security maintenance without unsafe forced upgrades.
-- [ ] Continue performance and Home Assistant operational improvements where real usage demonstrates a need.
-- [ ] Consolidate historical backend version-wrapper architecture only as a dedicated platform release with explicit migration tests.
+- [ ] Consolidate historical backend version wrappers in a dedicated compatibility release when justified by maintenance cost and regression coverage.
