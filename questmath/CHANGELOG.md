@@ -1,3 +1,14 @@
+## v0.41.0 - Student Learning Progress & Guidance
+
+- Student Progress now translates existing learning evidence into understandable states: Not enough evidence yet, Practising, Building confidence, Getting stronger, Ready for a challenge and Review due.
+- Best Next Step now explains why the adaptive engine selected the recommendation without exposing raw mastery percentages to the student.
+- Review due is explained as purposeful retrieval practice so previously successful material does not look like a failure.
+- Supported success is recognised as Building confidence while remaining distinct from repeated independent success.
+- Ready for a challenge reuses the existing adaptive progression rules rather than adding a new mastery threshold.
+- Student mobile Progress navigation opens the new learner-guidance section directly.
+- Technical learning evidence remains available through optional detail while full Parent Learning Intelligence remains unchanged in purpose.
+- Preserved worksheet generation, adaptive daily learning, Story Adventure selection, Math Mentor, Parent Test isolation and the v0.38 keyboard-first worksheet feedback flow.
+
 ## v0.40.0 - Student Mobile Home, Navigation & Responsive UX
 
 - Reorganised the student mobile Home experience around current action rather than giving current learning, history and detailed progress equal visual priority.
@@ -71,3 +82,15 @@ Concise user-facing release notes for the Home Assistant add-on. The detailed pr
 ## v0.35.1 - Parent Dashboard Reliability Corrective Release
 
 - Fixed a Parent Learning Intelligence frontend crash that could stop the Parent Dashboard rendering even though its API calls succeeded.
+- Added explicit loading and error states to the Parent Dashboard bootstrap instead of leaving the screen on an indefinite spinner.
+- Made backups and Parent Learning Intelligence optional sections fail independently so their API failures do not hide core parent controls, settings or learning summaries.
+- Kept Parent Tests and Home Assistant ingress behaviour unchanged.
+
+## v0.35.0 - Home Assistant Parent Integration and Actionable Learning Insights
+
+- Added compact Home Assistant learning endpoints built from the same Parent Learning Intelligence, retention, support and misconception evidence used inside MathQuest.
+- Added stable learning entities for daily learning state, current focus, review status, support status and weekly summary.
+- Added notification-ready learning signals for persistent support needs, repeated misconceptions, meaningful progress and review due.
+- Separated actual active minutes from configured timed-session target minutes.
+- Kept Daily Practice and Story Adventure on the same learner evidence model and kept Parent Tests excluded.
+- Added example Home Assistant REST sensors and reminder automations without adding any cloud dependency.
