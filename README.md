@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.40.0`
+Version `0.41.0`
 
 ## Development Metadata
 
@@ -27,6 +27,8 @@ The release metadata validator derives the active backend module from the runtim
 ## Features
 
 - Student and parent logins, with `sienna` prefilled for the normal student login flow and automatic recovery from expired MathQuest sessions
+- Student Learning Progress that translates existing mastery, adaptive progression, support and spaced-retrieval evidence into age-appropriate learner guidance
+- Evidence-grounded Best Next Step explanations that tell the learner why MathQuest selected the recommendation without exposing mastery percentages
 - Action-first student mobile Home with unfinished learning promoted ahead of completed history
 - Student-only mobile navigation for Home, Adventure, Worksheets and Progress, with iPhone safe-area support
 - Compact Story Adventure selection on narrow screens while retaining adaptive learning selection and theme purpose
@@ -58,17 +60,29 @@ The release metadata validator derives the active backend module from the runtim
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
 
+## Student Learning Progress and Guidance
+
+MathQuest v0.41.0 adds a learner-facing interpretation layer over the existing Learning Intelligence system. It does not create another mastery score and does not change adaptive thresholds.
+
+Student Progress can present **Not enough evidence yet**, **Practising**, **Building confidence**, **Getting stronger**, **Ready for a challenge** and **Review due**. These states reuse the existing outcome mastery and Adaptive Daily Learning evidence, including repeated question evidence, independent versus supported success and spaced-retrieval scheduling.
+
+**Ready for a challenge** is only shown when the existing adaptive progression state is already `ready_to_progress`. **Review due** comes from the existing spaced-retrieval schedule. **Building confidence** recognises successful work with support without treating it as equivalent to repeated independent success. Limited evidence is explicitly treated as limited evidence rather than failure.
+
+The student's Best Next Step also receives an evidence-grounded explanation. Diagnostic, prerequisite and spaced-review recommendations are explained according to the reason the adaptive engine actually selected them. Student-facing recommendation text no longer needs to expose technical mastery percentages.
+
+Progress deliberately avoids unsupported historical claims. v0.41.0 does not say that a skill "improved by X" because the current learner evidence does not provide a trustworthy before/after comparison for every skill. It also does not expose internal misconception codes. The complete mapping and conservative omissions are documented in `questmath/STUDENT_LEARNING_STATE_0.41.0.md`.
+
+Detailed technical evidence remains available to parents through Parent Learning Intelligence. Student Progress keeps a smaller optional evidence disclosure so the primary experience stays understandable rather than becoming an analytics dashboard.
+
 ## Student mobile Home and navigation
 
-MathQuest v0.40.0 changes the student mobile information architecture because the existing Home page had become too long for iPhone portrait. The problem was not missing learning information, it was that current action, unfinished work, Story Adventure, history, technical skill evidence and the weekly calendar were all presented with similar visual weight.
+MathQuest v0.40.0 changed the student mobile information architecture because the existing Home page had become too long for iPhone portrait. The problem was not missing learning information, it was that current action, unfinished work, Story Adventure, history, technical skill evidence and the weekly calendar were all presented with similar visual weight.
 
-On narrow screens, unfinished worksheets and skipped-question recovery are now surfaced as **Continue Learning** before completed history. Story Adventure becomes a compact horizontal selector, completed worksheet history shows only the three most relevant recent items until expanded, and the student receives persistent Home, Adventure, Worksheets and Progress navigation. The navigation is student-only and does not expose Parent Dashboard or Parent Test functionality.
+On narrow screens, unfinished worksheets and skipped-question recovery are surfaced as **Continue Learning** before completed history. Story Adventure becomes a compact horizontal selector, completed worksheet history shows only the three most relevant recent items until expanded, and the student receives persistent Home, Adventure, Worksheets and Progress navigation. The Progress destination now leads to the v0.41 learner-guidance section. The navigation is student-only and does not expose Parent Dashboard or Parent Test functionality.
 
 The MathQuest header is reduced when the student navigation is present so the Home Assistant ingress header and MathQuest identity do not consume most of the initial viewport. Safe-area padding prevents the bottom navigation covering content on iPhone.
 
 The weekly learning calendar no longer tries to squeeze previous week, previous day, a date range, next day and next week into five narrow phone columns. Mobile keeps previous week, date range, next week and Today, then presents the week as a readable vertical activity list. Tablet and desktop retain the richer controls and seven-day presentation.
-
-This is a presentation release. MathQuest continues to use the v0.39 learning-quality policy, adaptive purposes, prerequisite graph, spaced retrieval, misconception evidence, confidence evidence and Story Adventure question selection without introducing a second mastery or recommendation model.
 
 ## Session learning quality
 
