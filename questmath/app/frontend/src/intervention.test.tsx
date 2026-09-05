@@ -12,8 +12,8 @@ function response(data: any, ok = true, status = 200) {
 beforeEach(() => { localStorage.clear(); localStorage.setItem('token', 'test-token'); vi.restoreAllMocks(); });
 afterEach(cleanup);
 
-describe('v0.26 Number and Algebra intervention', () => {
-  it('shows independent and supported evidence and starts the selected session length', async () => {
+describe('Number and Algebra extra practice', () => {
+  it('uses learner-safe practice language and starts the selected session length', async () => {
     const onOpen = vi.fn();
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
       if (String(input) === 'api/learning/intervention-v0260') return response({
@@ -23,15 +23,14 @@ describe('v0.26 Number and Algebra intervention', () => {
       return response({id: 91, session_kind: 'intervention', target_minutes: 15});
     });
     render(<InterventionCard onOpen={onOpen}/>);
-    expect(await screen.findByText(/Build subtraction/i)).toBeInTheDocument();
-    expect(screen.getByText('Independent 40%')).toBeInTheDocument();
-    expect(screen.getByText('With support 80%')).toBeInTheDocument();
+    expect(await screen.findByText(/Build your subtraction confidence/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Independent 40%/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/With support 80%/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/intervention/i)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', {name: '15 min'}));
-    fireEvent.click(screen.getByRole('button', {name: /Start 15-minute intervention/i}));
+    fireEvent.click(screen.getByRole('button', {name: /Start 15-minute practice/i}));
     await waitFor(() => expect(onOpen).toHaveBeenCalledWith({id: 91, session_kind: 'intervention', target_minutes: 15}));
     expect(fetchMock.mock.calls[1][0]).toBe('api/interventions/new');
-    expect(fetchMock.mock.calls[1][1]).toMatchObject({method: 'POST', body: JSON.stringify({minutes: 15, focus: 'auto'})});
-    expect(localStorage.getItem('mq_active_worksheet_id')).toBe('91');
   });
 
   it('persists answer drafts by worksheet and question without mixing questions', () => {
@@ -43,16 +42,15 @@ describe('v0.26 Number and Algebra intervention', () => {
     expect(questionDraft(12, 31)).toBe('');
   });
 
-  it('creates an intervention through the dedicated endpoint', async () => {
+  it('creates the practice session through the existing intervention endpoint', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(() => response({id: 44}));
     await createIntervention(5, 'addition');
     expect(fetchMock.mock.calls[0][0]).toBe('api/interventions/new');
-    expect(fetchMock.mock.calls[0][1]).toMatchObject({body: JSON.stringify({minutes: 5, focus: 'addition'})});
   });
 
-  it('shows the intervention phase and explains evidence separation', () => {
+  it('explains support tracking without exposing technical analytics', () => {
     render(<InterventionGoal question={{payload: {intervention: {phase: 'teach', learning_goal: 'Use an efficient strategy.'}}}}/>);
     expect(screen.getByText('TEACH PHASE')).toBeInTheDocument();
-    expect(screen.getByText(/independent result is recorded separately/i)).toBeInTheDocument();
+    expect(screen.getByText(/when support helps/i)).toBeInTheDocument();
   });
 });
