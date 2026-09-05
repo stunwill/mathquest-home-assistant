@@ -151,5 +151,5 @@ export function StudentDestination({section,onOpen,onCreate,onSelect}:{section:S
   if (section === 'adventure') return <StoryAdventures onOpen={onOpen}/>;
   if (section === 'worksheets') return <WorksheetHistory onCreate={onCreate} onOpen={onOpen}/>;
   if (section === 'progress') return <><StudentProgress/><LearningCalendar onOpen={onOpen}/></>;
-  return <><WorksheetHistory compact onCreate={onCreate} onOpen={onOpen}/><StoryAdventures compact onOpen={onOpen} onExplore={()=>onSelect('adventure')}/></>;
+  return <StoryAdventures compact onOpen={onOpen} onExplore={()=>onSelect('adventure')}/>;
 }
