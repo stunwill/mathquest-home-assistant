@@ -1,3 +1,33 @@
+## v0.42.0 - Student UX, Navigation & Learning Guidance Refinement
+
+Status: In release validation
+
+### Student information architecture
+- [x] Turn Home, Adventure, Worksheets and Progress into meaningful student destinations rather than scroll anchors in one long dashboard.
+- [x] Keep Home focused on the next learning action with concise Adventure and Progress previews.
+- [x] Make Adventure own the complete Story Adventure catalogue and duration controls.
+- [x] Make Worksheets own full worksheet history, resume and review actions.
+- [x] Make Progress own learner-state detail and Weekly Activity.
+
+### Learner language and guidance
+- [x] Replace student-facing intervention terminology with Extra Practice-style language while preserving the backend support-session model.
+- [x] Present spaced retrieval as Ready to review rather than overdue work.
+- [x] Group learner states under concise explanations and hide unnecessary zero-value summaries.
+- [x] Remove raw mastery/support percentages and internal analytics from the primary student Progress display.
+- [x] Preserve evidence-grounded recommendation explanations and existing adaptive thresholds.
+
+### Worksheet lifecycle and regression protection
+- [x] Distinguish untouched Ready to Start worksheets from genuinely started Continue Learning worksheets using existing progress evidence.
+- [x] Preserve worksheet history and learning evidence without automatically deleting or archiving older incomplete work.
+- [x] Preserve the established worksheet, Math Mentor, hint, worked-example, visual-mathematics, keyboard and post-answer feedback contracts.
+- [ ] Defer automatic abandonment/archive decisions until the repository has a reliable inactivity signal that cannot corrupt learning evidence.
+- [ ] Defer scroll-collapsing header behaviour until it can be proven stable under Home Assistant ingress, focus and dynamic viewport changes.
+
+### Testing and acceptance
+- [x] Add/update student-observable regression coverage for destination ownership, learner language, Ready to Start semantics and Progress density.
+- [ ] Complete backend, frontend, metadata and aarch64 startup/health validation.
+- [ ] Complete the real-device checklist in `questmath/MANUAL_ACCEPTANCE_0.42.0.md` on iPhone and iPad 10th-generation hardware.
+
 ## v0.41.0 - Student Learning Progress & Guidance
 
 Status: In release validation
@@ -113,7 +143,7 @@ Status: Completed
 - [x] Replace below-question post-answer feedback with a reusable accessible feedback dialog.
 - [x] Keep correct/incorrect status and the primary next action visible independently of worksheet page scroll.
 - [x] Move the existing optional confidence reflection into the feedback dialog without changing its evidence endpoint.
-- [x] Preserve retry-first incorrect-answer behaviour and keep Math Mentor optional unless backend learning logic requires it.
+- [x] Preserve retry-first incorrect-answer behaviour and keep Math Mentor optional unless backend learning logic requires support.
 - [x] Make the normal physical-keyboard flow Answer → Enter → Feedback → Enter → Continue or Retry explicit and predictable.
 - [x] Restore a cleared, focused typed-answer field after retry.
 - [x] Protect against rapid repeated Enter presses causing duplicate submission or question skipping.
