@@ -15,15 +15,16 @@ describe('v0.40 student responsive layout contracts', () => {
     expect(mobileCss).not.toMatch(/iPhone|iPad 10th/i);
   });
 
-  it('prevents known page-width overflow and reserves space for the fixed safe-area navigation', () => {
+  it('prevents known page-width overflow and reserves compact space for the fixed safe-area navigation', () => {
     expect(mobileCss).toContain('overflow-x:hidden');
     expect(mobileCss).toContain('overflow-x:clip');
     expect(mobileCss).toContain('env(safe-area-inset-bottom)');
-    expect(mobileCss).toMatch(/padding:12px 14px calc\(94px \+ env\(safe-area-inset-bottom\)\)/);
+    expect(mobileCss).toContain('padding:12px 14px calc(78px + min(env(safe-area-inset-bottom),16px))');
+    expect(mobileCss).toContain('padding:4px 8px calc(2px + min(env(safe-area-inset-bottom),16px))');
   });
 
   it('keeps navigation touch targets and visible keyboard focus', () => {
-    expect(mobileCss).toContain('min-height:50px');
+    expect(mobileCss).toContain('min-height:48px');
     expect(mobileCss).toContain('.student-mobile-nav button:focus-visible');
     expect(mobileCss).toContain('outline:3px solid');
   });
