@@ -49,7 +49,7 @@ describe('student learning foundation', () => {
     await waitFor(() => expect(onOpen).toHaveBeenCalledWith({id: 9, selected_topic: 'Space Mission', session_kind: 'adventure'}));
     expect(localStorage.getItem('mq_active_worksheet_id')).toBe('9');
     expect(fetchMock.mock.calls.map(call => String(call[0]))).toEqual([
-      'api/adventures-v0340', 'api/sessions/new', 'api/worksheets/9/adventure-v0340', 'api/worksheets/9/view',
+      'api/learning/student-progress-v0410', 'api/adventures-v0340', 'api/sessions/new', 'api/worksheets/9/adventure-v0340', 'api/worksheets/9/view',
     ]);
   });
 
