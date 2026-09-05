@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/vitest';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {cleanup, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {StudentProgress} from './student-progress';
 
 const apiRequest = vi.fn();
@@ -21,6 +21,7 @@ const progress = {
 
 describe('student progress guidance', () => {
   beforeEach(()=>{apiRequest.mockReset();apiRequest.mockResolvedValue(progress)});
+  afterEach(()=>cleanup());
 
   it('renders learner states and the evidence-grounded why-this explanation', async () => {
     render(<StudentProgress/>);
