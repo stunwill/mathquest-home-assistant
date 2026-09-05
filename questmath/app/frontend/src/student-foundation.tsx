@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {AlertCircle, BarChart3, BookOpen, Home, List, Play, RefreshCw, X} from 'lucide-react';
 import {apiRequest, createSession, rememberActiveWorksheet} from './api';
 import {QuestionVisual} from './question-visual';
+import {StudentProgress} from './student-progress';
 import './v0160.css';
 import './v090.css';
 
@@ -154,5 +155,5 @@ export function StoryAdventures({onOpen}:{onOpen: (worksheet: any) => void}) {
   return <><section id="mq-story-adventures" className="panel mq-v090-adventures mq-v0340-adventures">
     <div className="mq-adventure-heading"><div><p className="eyebrow">STORY ADVENTURE</p><h2><BookOpen size={22}/> Learn through a mission</h2><p>The same adaptive learning engine chooses the maths. Story Adventure changes how the session feels, not what MathQuest decides you should learn.</p></div><div className="mq-adventure-duration" role="group" aria-label="Story Adventure session length">{([5,10,15] as const).map(value=><button type="button" key={value} aria-pressed={minutes===value} className={minutes===value?'selected':''} onClick={()=>setMinutes(value)}>{value} min</button>)}</div></div>
     {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>}<div className="mq-v0340-grid">{items?.map((item: any) => <article key={item.theme} className="mq-v0340-card"><span className="mq-v0340-icon" aria-hidden="true">{item.icon}</span><div><small>{item.setting}</small><h3>{item.name}</h3><p>{item.description}</p><b>Likely learning focus: {item.learning_focus}</b></div><button type="button" className="primary" disabled={busy === item.theme} onClick={() => start(item.theme)}><Play size={17}/>{busy === item.theme ? 'Starting…' : 'Start mission'}</button></article>)}</div>
-  </section><StudentMobileNavigation/></>;
+  </section><StudentProgress/><StudentMobileNavigation/></>;
 }
