@@ -1,4 +1,5 @@
 import React from 'react';
+import '@testing-library/jest-dom/vitest';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {StudentProgress} from './student-progress';
@@ -41,7 +42,7 @@ describe('student progress guidance', () => {
 
   it('does not create a competing start action when embedded in Progress', async () => {
     render(<StudentProgress/>);
-    await screen.findByText('Review Fractions');
+    expect((await screen.findAllByText('Review Fractions')).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button',{name:/start best next step/i})).not.toBeInTheDocument();
   });
 
