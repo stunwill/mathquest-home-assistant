@@ -30,7 +30,7 @@ type ProgressPayload = {
 
 const GROUPS: {key:LearningStateKey; title:string; description:string}[] = [
   {key:'ready_for_challenge', title:'Ready for a challenge', description:'You have repeated independent success here.'},
-  {key:'getting_stronger', title:'Getting stronger', description:'Your independent work is becoming more reliable.'},
+  {key:'getting_stronger', title:'Getting stronger', description:'Your recent answers show strong independent work.'},
   {key:'building_confidence', title:'Building confidence', description:'You can solve these with support, so MathQuest will keep consolidating them.'},
   {key:'practising', title:'Practising now', description:'These skills are still part of your current learning.'},
   {key:'review_due', title:'Coming back for review', description:'These are returning because spaced practice helps learning stick.'},
@@ -39,7 +39,7 @@ const GROUPS: {key:LearningStateKey; title:string; description:string}[] = [
 
 function friendlySkill(value:string|null){return value ? value.replaceAll('_',' ') : ''}
 
-export function StudentProgress({onStart}:{onStart:()=>void}){
+export function StudentProgress({onStart}:{onStart?:()=>void}){
   const[data,setData]=useState<ProgressPayload|null>(null);
   const[error,setError]=useState('');
   const[showDetail,setShowDetail]=useState(false);
@@ -48,10 +48,10 @@ export function StudentProgress({onStart}:{onStart:()=>void}){
   const grouped=useMemo(()=>GROUPS.map(group=>({...group,rows:(data?.learning_now||[]).filter(row=>row.state.key===group.key)})).filter(group=>group.rows.length),[data]);
 
   return <section id="mq-student-progress" className="panel student-progress" aria-labelledby="student-progress-title">
-    <div className="student-progress-head"><div><p className="eyebrow">YOUR LEARNING NOW</p><h2 id="student-progress-title"><Brain size={22}/> What MathQuest is noticing</h2><p>Progress explains what you are practising, what is getting stronger and what is coming back for review.</p></div>{data?.recommendation&&<button type="button" className="primary" onClick={onStart}><ArrowUpRight size={18}/>Start best next step</button>}</div>
+    <div className="student-progress-head"><div><p className="eyebrow">YOUR LEARNING NOW</p><h2 id="student-progress-title"><Brain size={22}/> What MathQuest is noticing</h2><p>Progress explains what you are practising, what has strong recent evidence and what is coming back for review.</p></div>{data?.recommendation&&onStart&&<button type="button" className="primary" onClick={onStart}><ArrowUpRight size={18}/>Start best next step</button>}</div>
     {error&&<ErrorNotice message={error} retry={load}/>} {!data&&!error&&<p>Loading your learning progress…</p>}
     {data&&<>
-      <div className="student-progress-summary" aria-label="Learning summary"><article><Sparkles size={18}/><span><b>{data.summary.getting_stronger}</b> getting stronger</span></article><article><Brain size={18}/><span><b>{data.summary.building_confidence}</b> building confidence</span></article><article><RefreshCw size={18}/><span><b>{data.summary.review_due}</b> review due</span></article></div>
+      <div className="student-progress-summary" aria-label="Learning summary"><article><Sparkles size={18}/><span><b>{data.summary.getting_stronger}</b> strong or challenge-ready</span></article><article><Brain size={18}/><span><b>{data.summary.building_confidence}</b> building confidence</span></article><article><RefreshCw size={18}/><span><b>{data.summary.review_due}</b> review due</span></article></div>
       {data.recommendation&&<article className="student-progress-why"><p className="eyebrow">{data.recommendation_explanation.label}</p><h3>{data.recommendation.title}</h3><p>{data.recommendation_explanation.text}</p></article>}
       <div className="student-progress-groups">{grouped.map(group=><section key={group.key} className={`student-progress-group state-${group.key}`}><div><h3>{group.title}</h3><p>{group.description}</p></div><div className="student-progress-list">{group.rows.map(row=><article key={row.code} className="student-progress-row"><div><small>{row.strand}</small><h4>{row.title}</h4>{row.state.target_skill&&<span className="student-progress-skill">{friendlySkill(row.state.target_skill)}</span>}</div><div><strong>{row.state.label}</strong><p>{row.state.message}</p></div></article>)}</div></section>)}</div>
       <button type="button" className="student-progress-detail-toggle" aria-expanded={showDetail} onClick={()=>setShowDetail(!showDetail)}>{showDetail?'Hide learning detail':'Show learning detail'}</button>
