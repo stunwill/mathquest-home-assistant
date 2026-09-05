@@ -138,7 +138,8 @@ def test_missing_diagnostic_is_the_first_recommended_session():
     created = client.post('/api/sessions/recommended')
     assert created.status_code == 200
     assert created.json()['session_kind'] == 'diagnostic'
-    assert created.json()['total'] == 15
+    assert created.json()['total'] == 6
+    assert [question['level'] for question in created.json()['questions']] == [5, 5, 5, 6, 6, 6]
     close(session)
 
 
