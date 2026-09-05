@@ -35,6 +35,16 @@ describe('MathQuest 0.27 learner and parent-test interactions', () => {
     await waitFor(() => expect(start).toHaveBeenCalledWith('number', 15, 'practice'));
   });
 
+  it('presents the diagnostic as Level 5 and Level 6 only', () => {
+    render(<QuestCategoryPicker start={vi.fn().mockResolvedValue(undefined)} cancel={vi.fn()}/>);
+    const diagnostic = screen.getByRole('button', {name: /Level 5 and Level 6 diagnostic/i});
+    expect(screen.queryByText(/Levels 2–6 diagnostic/i)).not.toBeInTheDocument();
+    fireEvent.click(diagnostic);
+    expect(screen.getByText('Six questions')).toBeInTheDocument();
+    expect(screen.getByText(/Three short questions at Level 5 and three at Level 6/i)).toBeInTheDocument();
+    expect(screen.queryByText(/level from 2 to 6/i)).not.toBeInTheDocument();
+  });
+
   it('shows a visual before and after rotation once a symmetry hint is used', () => {
     render(<QuestionVisual question={{id: 9, hint_count: 1, payload: {visual_key: '9', visual: {type: 'rotational_symmetry', sides: 6}}}}/>);
     expect(screen.getByRole('img')).toHaveAccessibleName(/shown before and after a partial rotation/i);
