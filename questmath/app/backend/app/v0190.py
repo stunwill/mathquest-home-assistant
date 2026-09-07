@@ -24,11 +24,11 @@ def _diagnostic_question(level, rng):
     requested = level
     if requested == 5:
         a, b = rng.randint(12, 99), rng.randint(2, 9)
-        return legacy.q('VC2M5N06', 'diagnostic_operations', f'Calculate {a} × {b}.', 'number', {'curriculum_level': 5}, a * b, 'Partition the two-digit number and combine the partial products.')
+        return legacy.q('VC2M5N06', 'diagnostic_operations', f'Calculate {a} × {b}.', 'number', {'curriculum_level': 5, 'diagnostic_evidence': True}, a * b, 'Partition the two-digit number and combine the partial products.')
     if requested == 6:
         numerator, denominator = rng.randint(2, 8), rng.choice([10, 100])
         answer = numerator / denominator
-        return legacy.q('VC2M6N03', 'diagnostic_fraction_decimal', f'Write {numerator}/{denominator} as a decimal.', 'number', {'curriculum_level': 6}, answer, 'Use place value to convert tenths or hundredths to a decimal.')
+        return legacy.q('VC2M6N03', 'diagnostic_fraction_decimal', f'Write {numerator}/{denominator} as a decimal.', 'number', {'curriculum_level': 6, 'diagnostic_evidence': True}, answer, 'Use place value to convert tenths or hundredths to a decimal.')
     raise ValueError(f'Unsupported diagnostic level: {requested}')
 
 
@@ -41,7 +41,6 @@ def new_session(payload: SessionCreateIn, user: legacy.User = Depends(legacy.cur
         count = 6
         worksheet = legacy.create_worksheet(session, user.id, 'number_algebra', question_count=count,
                                             session_kind='diagnostic', target_minutes=15)
-        # Regenerate the authoritative worksheet into three Level 5 and three Level 6 checks.
         for index, question in enumerate(sorted(worksheet.questions, key=lambda item: item.position)):
             level = 5 if index < 3 else 6
             question.level = level
@@ -65,13 +64,23 @@ def diagnostic_summary(session: Session, sid: int):
     for level in (5, 6):
         questions = [question for question in worksheet.questions if question.level == level]
         answered = [question for question in questions if question.attempts]
-        correct = sum(any(attempt.correct for attempt in question.attempts) for question in answered)
-        levels.append({'level': level, 'answered': len(answered), 'correct': correct,
-                       'accuracy': round(correct / len(answered) * 100) if answered else None})
+        independent = 0
+        eventual = 0
+        support_used = 0
+        for question in answered:
+            attempts = sorted(question.attempts, key=lambda item: item.attempt_number)
+            first = attempts[0] if attempts else None
+            help_used = bool((question.hint_count or 0) or question.mentor_started or question.mentor_example_seen)
+            independent += int(bool(first and first.correct and not help_used))
+            eventual += int(any(attempt.correct for attempt in attempts))
+            support_used += int(help_used)
+        levels.append({'level': level, 'answered': len(answered), 'independent_correct': independent,
+                       'eventual_correct': eventual, 'support_used': support_used})
     completed = bool(worksheet.completed_at)
-    secure = [item['level'] for item in levels if item['answered'] == 3 and item['accuracy'] is not None and item['accuracy'] >= 67]
     return {'status': 'complete' if completed else 'in_progress', 'worksheet_id': worksheet.id,
-            'estimated_level': max(secure) if completed and secure else None, 'target_level': 5, 'levels': levels}
+            'target_level': 5, 'levels': levels,
+            'interpretation': 'placement_evidence' if completed else None,
+            'limitations': 'This short diagnostic does not classify the student into an overall curriculum level.' if completed else None}
 
 
 @app.get('/api/diagnostic/latest')
@@ -83,7 +92,8 @@ def latest_diagnostic(user: legacy.User = Depends(legacy.current_user), session:
 @app.get('/api/v0190/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
     return {'version': legacy.APP_VERSION, 'diagnostic_levels': [5, 6],
-            'target_level': 5, 'timed_sessions': [5, 10, 15]}
+            'target_level': 5, 'timed_sessions': [5, 10, 15],
+            'diagnostic_is_placement_evidence': True}
 
 
 v0120._move_spa_fallback_to_end()
