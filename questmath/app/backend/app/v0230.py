@@ -124,6 +124,12 @@ def outcome_mastery(session: Session, student_id: int, now: datetime | None = No
 
         retention_checks: list[bool] = []
         for previous, question in zip(questions, questions[1:]):
+            previous_ws = session.get(legacy.Worksheet, previous.worksheet_id)
+            question_ws = session.get(legacy.Worksheet, question.worksheet_id)
+            if previous_ws and previous_ws.session_kind == 'diagnostic':
+                continue
+            if question_ws and question_ws.session_kind == 'diagnostic':
+                continue
             if not previous.answered_at or not question.answered_at:
                 continue
             if question.answered_at - previous.answered_at < timedelta(days=2):
@@ -226,13 +232,13 @@ def next_session_recommendation(session: Session, student_id: int,
         reason = f"Build {chosen['title'].lower()} first because it supports {target['title'].lower()}."
     elif chosen['review_due']:
         mode = 'review'
-        reason = f"This skill is due for retrieval practice."
+        reason = "This skill is due for retrieval practice."
     elif chosen['questions'] < 6:
         mode = 'practice'
         reason = f"MathQuest needs a little more evidence about {chosen['title'].lower()} before increasing difficulty."
     else:
         mode = 'practice'
-        reason = f"This is the most useful current growth area based on recent evidence."
+        reason = "This is the most useful current growth area based on recent evidence."
     minutes = 15 if prerequisite_for or chosen['mastery'] < 55 or len(due) >= 3 else 10 if chosen['mastery'] < 75 or len(due) > 1 else 5
     return {
         'mode': mode, 'minutes': minutes, 'topic': chosen['topic'],
