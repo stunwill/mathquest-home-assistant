@@ -13,6 +13,7 @@ import {ErrorNotice, StudentDestination, StudentMobileNavigation, StudentSection
 import {MathsLab} from './maths-lab';
 import {MissionOutcome, StoryMissionProgress} from './story-adventure';
 import {AdaptiveRecommendation} from './adaptive-recommendation';
+import {DiagnosticCompletion} from './diagnostic-placement';
 import {HomeAssistantConnection, ParentLearningInsight} from './parent-insight';
 import {ParentLearningIntelligence} from './parent-intelligence';
 import {ParentDiagnosticInsight} from './parent-diagnostic';
@@ -113,8 +114,8 @@ function Student({user,logout}:{user:User;logout:()=>void}){
   const selectSection=(next:StudentSection)=>{setSection(next);window.scrollTo({top:0,behavior:'auto'})};
   if(!dashboard&&error)return <><Header user={user} logout={logout}/><main className="page"><ErrorNotice message={error} retry={load}/></main></>;
   if(!dashboard)return <div className="splash"><Brand/></div>;
-  if(working&&worksheet&&!worksheet.completed_at&&!summary)return <Worksheet ws={worksheet} onUpdate={setWorksheet} onExit={()=>{setWorking(false);load()}} onDone={x=>{setSummary(x);setWorking(false);load()}}/>;
-  if(summary)return <Result data={summary} back={()=>{setSummary(null);load()}}/>;
+  if(working&&worksheet&&!worksheet.completed_at&&!summary)return <Worksheet ws={worksheet} onUpdate={setWorksheet} onExit={()=>{setWorking(false);load()}} onDone={x=>{setSummary({...x,session_kind:worksheet.session_kind});setWorking(false);load()}}/>;
+  if(summary)return summary.session_kind==='diagnostic'?<DiagnosticCompletion back={()=>{setSummary(null);load()}}/>:<Result data={summary} back={()=>{setSummary(null);load()}}/>;
   if(choosing)return <QuestCategoryPicker cancel={()=>setChoosing(false)} start={startWorksheet}/>;
   const hasProgress=!!worksheet&&!worksheet.completed_at;
   const answered=worksheet ? worksheet.counts.correct+worksheet.counts.incorrect : 0;
