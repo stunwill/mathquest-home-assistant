@@ -51,8 +51,16 @@ def _normalise_skill(skill: str) -> str:
     return (skill or '').split(':', 1)[-1]
 
 
+def _latest_diagnostic_id(session: Session, student_id: int) -> int | None:
+    return session.scalar(select(legacy.Worksheet.id).where(
+        legacy.Worksheet.student_id == student_id,
+        legacy.Worksheet.session_kind == 'diagnostic',
+    ).order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc()))
+
+
 def _question_evidence(session: Session, student_id: int, skill: str) -> dict[str, Any]:
-    questions = list(session.scalars(
+    latest_diagnostic_id = _latest_diagnostic_id(session, student_id)
+    candidates = list(session.scalars(
         select(legacy.Question)
         .join(legacy.Worksheet)
         .where(
@@ -62,8 +70,16 @@ def _question_evidence(session: Session, student_id: int, skill: str) -> dict[st
             legacy.Question.answered_at.is_not(None),
         )
         .order_by(legacy.Question.answered_at.desc(), legacy.Question.id.desc())
-        .limit(20)
+        .limit(60)
     ).all())
+    questions = []
+    for question in candidates:
+        worksheet = session.get(legacy.Worksheet, question.worksheet_id)
+        if worksheet and worksheet.session_kind == 'diagnostic' and worksheet.id != latest_diagnostic_id:
+            continue
+        questions.append(question)
+        if len(questions) >= 20:
+            break
     if not questions:
         return {'questions': 0, 'independent': 0.0, 'eventual': 0.0, 'support': 0.0, 'recent_failures': 0}
     independent = eventual = supported = recent_failures = 0
