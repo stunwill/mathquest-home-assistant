@@ -3,6 +3,7 @@ import {AlertCircle, BarChart3, BookOpen, Home, List, Play, RefreshCw, X} from '
 import {apiRequest, createSession, rememberActiveWorksheet} from './api';
 import {QuestionVisual} from './question-visual';
 import {StudentProgress} from './student-progress';
+import {DiagnosticPlacementSummary} from './diagnostic-placement';
 import './v0160.css';
 import './v090.css';
 
@@ -150,6 +151,6 @@ export function StoryAdventures({onOpen, compact = false, onExplore}:{onOpen: (w
 export function StudentDestination({section,onOpen,onCreate,onSelect}:{section:StudentSection;onOpen:(worksheet:any)=>void;onCreate:()=>void;onSelect:(section:StudentSection)=>void}) {
   if (section === 'adventure') return <StoryAdventures onOpen={onOpen}/>;
   if (section === 'worksheets') return <WorksheetHistory onCreate={onCreate} onOpen={onOpen}/>;
-  if (section === 'progress') return <><StudentProgress/><LearningCalendar onOpen={onOpen}/></>;
+  if (section === 'progress') return <><DiagnosticPlacementSummary/><StudentProgress/><LearningCalendar onOpen={onOpen}/></>;
   return <StoryAdventures compact onOpen={onOpen} onExplore={()=>onSelect('adventure')}/>;
 }
