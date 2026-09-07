@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.43.0`
+Version `0.44.0`
 
 ## Development Metadata
 
@@ -33,6 +33,8 @@ The release metadata validator derives the active backend module from the runtim
 - Learner-safe Extra Practice and Ready to review language backed by the existing adaptive evidence
 - Student Learning Progress that translates existing mastery, adaptive progression, support and spaced-retrieval evidence into age-appropriate learner guidance
 - Evidence-grounded Best Next Step explanations that tell the learner why MathQuest selected the recommendation without exposing mastery percentages, curriculum codes or adaptive mode labels
+- Explicit targeted-learning plans that turn Best Next Step into a purposefully composed session around the recommended skill or prerequisite
+- Targeted session stages for reconnecting prior knowledge, supported practice, core practice, transfer and independent checking without introducing a second mastery system
 - Focused Level 5/6 diagnostic placement using three Level 5 and three Level 6 questions as a starting signal rather than a pass/fail or overall grade classification
 - Diagnostic evidence integrated into the existing outcome-mastery and adaptive learning model, with older retakes retained in history but prevented from inflating current readiness evidence
 - Learner-safe diagnostic completion and Progress summaries explaining what MathQuest noticed, where more evidence is needed and what learning step comes next
@@ -67,126 +69,26 @@ The release metadata validator derives the active backend module from the runtim
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
 
+## Targeted Learning Sessions and Skill-Level Progression
+
+MathQuest v0.44.0 turns the existing Best Next Step recommendation into an explicit session-learning plan before worksheet composition. The plan reuses outcome mastery, prerequisites, review scheduling and the existing adaptive progression thresholds; it does not add a second mastery score, global grade or parallel learning history.
+
+A targeted plan identifies the primary outcome and instructional skill, the reason it was selected, whether it is current learning, consolidation, review or prerequisite work, and a learner-safe purpose. Recommended worksheets are then composed around that target while keeping enough variation for useful transfer evidence. Short sessions use a purposeful sequence that can reconnect prior knowledge, make support readily available, provide repeated core practice, vary representation and finish with independent-check opportunities.
+
+Support remains available throughout the worksheet. MathQuest does not punish hint, worked-example or Math Mentor use. Targeted completion evidence can instead recognise the more useful pattern where support was needed earlier and a similar later question was completed independently.
+
+Progression remains skill-specific. The existing challenge-readiness contract is unchanged: at least six relevant recent questions, at least 82% independent success and no more than 25% support dependency. Strong evidence in one mathematical pathway does not promote every skill to Level 6, and diagnostic evidence remains a starting signal rather than a curriculum-wide grade judgement.
+
+Targeted follow-up is the preferred way to replace diagnostic uncertainty with authentic learning evidence. The six-question Level 5/6 diagnostic remains deliberately short; MathQuest should gather the next evidence through normal learning rather than repeatedly retesting the learner.
+
 ## Diagnostic Interpretation, Placement and Learning Path
 
 MathQuest v0.43.0 turns the focused Level 5/6 diagnostic into meaningful placement evidence without creating another mastery system.
 
 The diagnostic remains intentionally short: three Level 5 questions and three Level 6 questions. It samples Level 5 efficient calculation through multiplication and Level 6 fraction-to-decimal place-value conversion. Those six questions are not treated as proof that a student has mastered an entire curriculum level, nor as evidence that the student is globally a Grade 5 or Grade 6 learner.
 
-Diagnostic attempts now contribute through the same outcome-mastery and adaptive evidence architecture used by normal learning. Level 5/6 diagnostic outcome identifiers are mapped into the existing outcome model, ordinary historical practice remains preserved, and the adaptive engine still owns Best Next Step, prerequisite routing, review scheduling and challenge decisions.
+Diagnostic attempts contribute through the same outcome-mastery and adaptive evidence architecture used by normal learning. Level 5/6 diagnostic outcome identifiers are mapped into the existing outcome model, ordinary historical practice remains preserved, and the adaptive engine still owns Best Next Step, prerequisite routing, review scheduling and challenge decisions.
 
 Only the latest diagnostic attempt contributes diagnostic evidence to current mastery and progression. Earlier attempts remain visible in diagnostic history but do not accumulate until they falsely satisfy evidence thresholds. Diagnostic attempts are also excluded from spaced-retention checks. The existing challenge-readiness threshold remains unchanged: at least six relevant recent questions, at least 82% independent success and no more than 25% support dependency.
 
-The diagnostic completion screen now answers three learner questions without turning the experience into an exam result: what MathQuest noticed, what still needs evidence and what to do next. It deliberately avoids pass/fail, raw mastery percentages, curriculum codes and global grade classification. The same Starting Point summary appears in Progress after completion.
-
-Parents receive a more detailed diagnostic evidence panel including the Level 5/6 sample, independent versus eventual success, support use, sampled outcomes, prior evidence and the recommended next learning focus. Previous diagnostic attempts remain separate in history. MathQuest does not automatically schedule periodic diagnostic retesting.
-
-Story Adventure continues to use the existing adaptive worksheet/evidence path. Diagnostic-only skill identifiers are never allowed to become the instructional target, so subsequent sessions continue using established practice generators and prerequisite relationships.
-
-## Student UX, Navigation and Learning Guidance Refinement
-
-MathQuest v0.42.0 completes the information-architecture direction started in v0.40.0 and refined by v0.41.0. Home, Adventure, Worksheets and Progress now behave as distinct student destinations rather than four navigation controls pointing into one long dashboard.
-
-**Home** is the concise learning launchpad. **Adventure** owns the full Story Adventure selector. **Worksheets** owns worksheet history, resume and review actions. **Progress** owns learner-state detail and Weekly Activity.
-
-Untouched worksheets are shown as **Ready to Start** and do not claim saved progress. Once meaningful answers exist, the same work is shown as **Continue Learning**. Historical learning evidence remains preserved; v0.42.0 deliberately does not invent automatic abandonment or archival rules without reliable lifecycle evidence.
-
-Student-facing language translates rather than exposes internal analytics. **Extra Practice** replaces intervention language, **Ready to review** replaces Review due, and raw independent/support percentages, adaptive mode labels and curriculum outcome codes are removed from the primary learner surface. The underlying v0.41 learning-state derivation, progression thresholds, review scheduling, prerequisite routing and recommendation logic remain authoritative and unchanged.
-
-Progress groups skills beneath one concise explanation per learner state and hides zero-value state summaries. Parent Learning Intelligence remains the detailed technical evidence surface.
-
-## Student Learning Progress and Guidance
-
-MathQuest v0.41.0 adds a learner-facing interpretation layer over the existing Learning Intelligence system. It does not create another mastery score and does not change adaptive thresholds.
-
-Student Progress can present **Not enough evidence yet**, **Practising**, **Building confidence**, **Getting stronger**, **Ready for a challenge** and the internal review-due state. These states reuse the existing outcome mastery and Adaptive Daily Learning evidence, including repeated question evidence, independent versus supported success and spaced-retrieval scheduling. v0.42.0 presents review-due evidence to the learner as **Ready to review**.
-
-**Ready for a challenge** is only shown when the existing adaptive progression state is already `ready_to_progress`. Review scheduling comes from the existing spaced-retrieval schedule. **Building confidence** recognises successful work with support without treating it as equivalent to repeated independent success. Limited evidence is explicitly treated as limited evidence rather than failure.
-
-The student's Best Next Step also receives an evidence-grounded explanation. Diagnostic, prerequisite and spaced-review recommendations are explained according to the reason the adaptive engine actually selected them. Student-facing recommendation text no longer needs to expose technical mastery percentages.
-
-Progress deliberately avoids unsupported historical claims. v0.41.0 does not say that a skill "improved by X" because the current learner evidence does not provide a trustworthy before/after comparison for every skill. It also does not expose internal misconception codes. The complete mapping and conservative omissions are documented in `questmath/STUDENT_LEARNING_STATE_0.41.0.md`.
-
-Detailed technical evidence remains available to parents through Parent Learning Intelligence.
-
-## Student mobile Home and navigation
-
-MathQuest v0.40.0 introduced the responsive student mobile foundation because the existing Home page had become too long for iPhone portrait. v0.42.0 completes that work by moving complete feature experiences into their own destinations instead of retaining one oversized Home document.
-
-The MathQuest header remains compact when the student navigation is present so the Home Assistant ingress header and MathQuest identity do not consume most of the initial viewport. Safe-area padding prevents the bottom navigation covering content on iPhone.
-
-The weekly learning calendar no longer tries to squeeze previous week, previous day, a date range, next day and next week into five narrow phone columns. Mobile keeps previous week, date range, next week and Today, then presents the week as a readable vertical activity list. Tablet and desktop retain the richer controls and seven-day presentation.
-
-## Session learning quality
-
-MathQuest v0.39.0 added a final learning-quality pass after the existing generators and adaptive composition have done their work. This is deliberately not another learning engine. It checks whether the resulting worksheet is educationally balanced as a session.
-
-The policy groups questions by meaningful mathematical structure rather than exact wording. For direct arithmetic it considers the operation, operand digit counts and regrouping demand. This means near-duplicates such as similarly structured three-digit-plus-two-digit calculations can be diversified, while a substantially different three-digit regrouping problem is not treated as identical merely because it is also addition.
-
-Recent answered Daily Practice and Story Adventure questions contribute a small recent-exposure signal. Structures that have appeared repeatedly are deprioritised when a suitable alternative is available. Parent Tests are excluded, and deliberate review, consolidation and retrieval are preserved rather than removed for the sake of variety.
-
-If final session-quality work changes a question, MathQuest refreshes that question's adaptive purpose and evidence annotation so later learning decisions and parent-facing information refer to the mathematics Sienna actually received. The established one-question challenge limit remains in force.
-
-## Number & Algebra question quality
-
-MathQuest v0.38.1 reduced low-value direct arithmetic in Number & Algebra. Straight addition and subtraction questions remain useful for fluency, but examples such as `121 + 22`, `50 + 58`, `14 − 4` and `8 + 8` are no longer allowed to dominate normal learner worksheets. When direct addition or subtraction is selected, smaller examples are upgraded to larger place-value calculations suitable for Grade 5 practice.
-
-Equal-groups modelling also asks for the mathematical result. Instead of asking which operation would find the total, MathQuest asks how many items there are altogether, so Sienna chooses multiplication as part of actually solving the problem.
-
-Worksheet-history clock times are converted from stored UTC timestamps to `Australia/Melbourne` before display, using the correct AEST/AEDT offset for the date.
-
-## iPad landscape worksheet feedback
-
-MathQuest v0.38.0 changed the normal student flow to `Answer → Immediate feedback → Understand → Reflect → Continue` without requiring page scrolling between those steps. Typed answers still submit with Enter. The feedback dialog then receives focus so a second Enter continues after a terminal answer or returns to a clean, focused answer field when another attempt is expected.
-
-The dialog keeps the result and primary action visible while allowing only genuinely long supporting content to scroll internally. Correct answers use restrained, non-blocking celebration and incorrect answers use supportive learning language. Retryable incorrect answers continue to hide terminal working, and Math Mentor remains optional unless the backend explicitly requires support.
-
-The same shared feedback architecture is used by ordinary typed answers, choices, first-class interactive mathematics and Story Adventure questions. Learner confidence reflection remains optional and continues to record the existing learning evidence. Parent Tests remain isolated.
-
-## Interactive mathematics and reasoning
-
-MathQuest keeps interactive questions inside the same backend-authoritative worksheet architecture as conventional questions. The learner's selected mathematical value or grid reference is submitted through the normal answer endpoint, so correctness, attempts, support use and learning evidence remain consistent.
-
-The current interactive models include:
-
-- whole-number number-line positions;
-- fraction-bar part selection;
-- fraction locations between 0 and 1;
-- scaled ruler marks;
-- grid-reference squares.
-
-Where revealing a label would give away the answer, internal targets are intentionally left unlabelled. Reasoning questions add controlled variety such as judging a reasonable estimate, distinguishing perimeter from area, recognising symmetry statements and analysing a plausible mathematical mistake.
-
-## Home Assistant Parent Learning Integration
-
-MathQuest remains authoritative for all educational decisions. Home Assistant consumes the same Parent Learning Intelligence, adaptive-learning purpose, retention, support-dependency and misconception evidence used by MathQuest itself.
-
-Use the existing Home Assistant service token from the parent dashboard with these read-only endpoints:
-
-- `/api/ha/learning` for the complete compact parent-learning state
-- `/api/ha/weekly-summary` for the current seven-day learning summary
-- `/api/ha/stats` and `/api/ha/summary` remain available for compatibility
-
-The learning response uses stable conceptual entities:
-
-- `mathquest_daily_learning`
-- `mathquest_learning_focus`
-- `mathquest_review_status`
-- `mathquest_support_status`
-- `mathquest_weekly_summary`
-
-These are stable unique-ID contracts for Home Assistant dashboards and automations. They do not contain transient worksheet, question, date, skill or adventure IDs.
-
-### Daily learning state
-
-Daily Practice and Story Adventure can satisfy daily learning only when a legitimate learner worksheet is completed with answered question evidence. Simply opening MathQuest, starting a worksheet, abandoning a worksheet without meaningful work, or completing a Parent Test does not satisfy daily learning.
-
-Where MathQuest has actual elapsed session time, `active_minutes` is exposed. Where a completed timed session has a configured 5, 10 or 15-minute target, `planned_minutes_completed` is exposed separately so planned duration is not misrepresented as exact engagement time.
-
-## Security and upgrades
-
-MathQuest generates a secure JWT signing secret on first start and stores it at `/data/jwt-signing-secret`. It also generates a dedicated Home Assistant service token at `/data/ha-service-token`. Both values persist through restart and upgrade with restrictive permissions where supported.
-
-MathQuest login tokens currently retain the existing 24-hour lifetime. When a MathQuest token expires, the learner is returned to the normal login form instead of being left on an `Invalid session` error. Home Assistant ingress authentication failures remain separate and do not automatically clear an otherwise valid MathQuest token.
-
-Parent and student usernames and passwords are managed from the Home Assistant add-on Configuration page. New installs default the student username to `sienna`. Save credential changes and restart the MathQuest add-on to apply them to the existing accounts. Learner evidence and worksheet history are preserved.
+The diagnostic completion screen answers three learner questions without turning the experience into an exam result: what MathQuest noticed, what still needs evidence and what to do next. It deliberately avoids pass/fail, raw mastery percentages, curriculum codes and global grade classification. The same Starting Point summary appears in Progress after completion.
