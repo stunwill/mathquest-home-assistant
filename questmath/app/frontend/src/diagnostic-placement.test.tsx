@@ -1,6 +1,6 @@
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import {vi} from 'vitest';
 import {DiagnosticCompletion, DiagnosticPlacementSummary} from './diagnostic-placement';
 
