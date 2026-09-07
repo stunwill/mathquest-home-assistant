@@ -23,7 +23,7 @@ Status: In release validation
 
 ## v0.43.0 - Diagnostic Interpretation, Placement & Learning Path
 
-Status: In release validation
+Status: Completed
 
 ### Diagnostic interpretation and evidence
 - [x] Feed the six-question Level 5/6 diagnostic into the existing outcome-mastery architecture without a parallel mastery score or table.
