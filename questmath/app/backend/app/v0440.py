@@ -8,7 +8,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0120, v0170, v0230, v0330, v0340, v0410, v0430
+from . import v0120, v0170, v0230, v0330, v0340, v0430
 
 app = v0430.app
 app.version = '0.44.0'
@@ -135,18 +135,30 @@ def compose_targeted_session(session: Session, student_id: int, plan: dict[str, 
         session_kind=session_kind,
         target_minutes=plan['minutes'],
     )
+    # Run the inherited adaptive purpose/quality policy before final target composition.
+    # Later quality replacement must not erase the session's recommended target or stage metadata.
+    v0330.apply_adaptive_daily_learning(session, worksheet, student_id)
+    session.flush()
+    session.refresh(worksheet)
+
     generator = v0170.FOCUS_GENERATORS.get(target['topic'], {}).get(target['skill'])
     questions = sorted(worksheet.questions, key=lambda item: item.position)
+    target_count = max(3, round(len(questions) * 0.72)) if generator else 0
+    target_positions = set(range(target_count))
+
+    # Only non-target positions need to block their existing identities. Target positions are
+    # deliberately being replaced, so their old random identities must not reduce the pool.
     blocked: set[str] = set()
-    for question in questions:
+    for index, question in enumerate(questions):
+        if index in target_positions:
+            continue
         try:
             blocked.add(legacy.question_identity(question.prompt, json.loads(question.payload or '{}')))
         except (TypeError, ValueError):
             blocked.add(legacy.question_identity(question.prompt, {}))
+
     if generator:
-        target_count = max(3, round(len(questions) * 0.72))
-        target_positions = list(range(target_count))
-        for index in target_positions:
+        for index in sorted(target_positions):
             generated = _candidate(generator, f'v0440:{worksheet.id}:{index}', blocked)
             if not generated:
                 continue
@@ -157,10 +169,10 @@ def compose_targeted_session(session: Session, student_id: int, plan: dict[str, 
             questions[index].payload = json.dumps(payload)
             questions[index].correct_answer = str(answer)
             questions[index].working = working
+
+    # Stage metadata is written last so it survives every inherited composition/quality pass.
     for index, question in enumerate(questions):
-        role = plan['stages'][index]
-        _annotate_stage(question, plan, role, index)
-    v0330.apply_adaptive_daily_learning(session, worksheet, student_id)
+        _annotate_stage(question, plan, plan['stages'][index], index)
     session.commit()
     session.refresh(worksheet)
     return worksheet
