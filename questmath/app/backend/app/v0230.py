@@ -45,6 +45,7 @@ STORY_OUTCOME_ALIASES = {
     'VC2M5M03': 'VC2M4M03',
     'VC2M5SP03': 'VC2M4SP03',
     'VC2M5ST01': 'VC2M4ST01',
+    'VC2M6N03': 'VC2M4N03',
 }
 
 STATUS_INTERVAL_DAYS = {
@@ -84,6 +85,7 @@ def outcome_mastery(session: Session, student_id: int, now: datetime | None = No
     current = now or datetime.utcnow()
     rows = list(session.scalars(select(legacy.Question).join(legacy.Worksheet).where(
         legacy.Worksheet.student_id == student_id,
+        legacy.Worksheet.session_kind != 'parent_test',
         legacy.Question.answered_at.is_not(None),
     ).order_by(legacy.Question.answered_at.asc(), legacy.Question.id.asc())).all())
     confidence = _confidence_events(session, student_id)
@@ -108,7 +110,8 @@ def outcome_mastery(session: Session, student_id: int, now: datetime | None = No
             attempts = sorted(question.attempts, key=lambda item: item.attempt_number)
             first = attempts[0] if attempts else None
             supported = any(attempt.correct for attempt in attempts)
-            independent = bool(first and first.correct and not (question.hint_count or 0))
+            help_used = bool((question.hint_count or 0) or question.mentor_started or question.mentor_example_seen)
+            independent = bool(first and first.correct and not help_used)
             supported_correct += int(supported)
             independent_correct += int(independent)
             skill_name = question.skill.split(':', 1)[-1]
@@ -126,7 +129,8 @@ def outcome_mastery(session: Session, student_id: int, now: datetime | None = No
             if question.answered_at - previous.answered_at < timedelta(days=2):
                 continue
             attempts = sorted(question.attempts, key=lambda item: item.attempt_number)
-            retention_checks.append(bool(attempts and attempts[0].correct and not (question.hint_count or 0)))
+            help_used = bool((question.hint_count or 0) or question.mentor_started or question.mentor_example_seen)
+            retention_checks.append(bool(attempts and attempts[0].correct and not help_used))
 
         independent_accuracy = independent_correct / evidence if evidence else 0.0
         supported_accuracy = supported_correct / evidence if evidence else 0.0
@@ -200,7 +204,7 @@ def next_session_recommendation(session: Session, student_id: int,
         return {
             'mode': 'diagnostic', 'minutes': 15, 'topic': 'number_algebra', 'outcome_code': None,
             'target_skill': None, 'title': 'Find the best starting point',
-            'reason': 'Complete the Levels 2–6 diagnostic so MathQuest can recommend the right prerequisite and practice level.',
+            'reason': 'Complete the Level 5 and Level 6 diagnostic so MathQuest can recommend a useful starting point.',
             'prerequisite_for': None,
         }
 
@@ -222,10 +226,13 @@ def next_session_recommendation(session: Session, student_id: int,
         reason = f"Build {chosen['title'].lower()} first because it supports {target['title'].lower()}."
     elif chosen['review_due']:
         mode = 'review'
-        reason = f"This skill is due for retrieval practice. The last evidence gave {chosen['mastery']}% mastery."
+        reason = f"This skill is due for retrieval practice."
+    elif chosen['questions'] < 6:
+        mode = 'practice'
+        reason = f"MathQuest needs a little more evidence about {chosen['title'].lower()} before increasing difficulty."
     else:
         mode = 'practice'
-        reason = f"This is the most useful current growth area, with {chosen['mastery']}% mastery from {chosen['questions']} recent questions."
+        reason = f"This is the most useful current growth area based on recent evidence."
     minutes = 15 if prerequisite_for or chosen['mastery'] < 55 or len(due) >= 3 else 10 if chosen['mastery'] < 75 or len(due) > 1 else 5
     return {
         'mode': mode, 'minutes': minutes, 'topic': chosen['topic'],
@@ -318,6 +325,3 @@ def capabilities(_: legacy.User = Depends(legacy.current_user)):
         'recommended_sessions': [5, 10, 15],
         'inherits_v0220': True,
     }
-
-
-v0120._move_spa_fallback_to_end()
