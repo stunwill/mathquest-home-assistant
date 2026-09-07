@@ -1,3 +1,12 @@
+## v0.43.0 - Diagnostic Interpretation, Placement & Learning Path
+
+- Level 5/6 diagnostic results now guide the existing adaptive learning evidence instead of producing a global level judgement.
+- Student diagnostic completion now explains Your Starting Point, what MathQuest learned and what to practise next without pass/fail, mastery percentages or curriculum codes.
+- Parent Dashboard now includes detailed Level 5/6 diagnostic evidence and makes the short diagnostic’s limitations explicit.
+- Diagnostic retakes remain in history without artificially inflating challenge readiness or retention evidence.
+- Existing adaptive thresholds, prerequisite routing, spaced review, Story Adventure, Math Mentor, Parent Tests and Home Assistant integration are preserved.
+- Physical iPhone/iPad acceptance remains pending until tested on real devices.
+
 ## v0.42.0 - Student UX, Navigation & Learning Guidance Refinement
 
 - Home, Adventure, Worksheets and Progress now behave as distinct student destinations instead of scroll targets within one long page.
