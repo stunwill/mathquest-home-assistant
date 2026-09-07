@@ -81,13 +81,27 @@ def _weighted_score(components: list[tuple[float, float]]) -> int:
     return round(sum(value * item_weight for value, item_weight in components) / weight * 100) if weight else 0
 
 
+def _latest_diagnostic_id(session: Session, student_id: int) -> int | None:
+    return session.scalar(select(legacy.Worksheet.id).where(
+        legacy.Worksheet.student_id == student_id,
+        legacy.Worksheet.session_kind == 'diagnostic',
+    ).order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc()))
+
+
 def outcome_mastery(session: Session, student_id: int, now: datetime | None = None) -> list[dict[str, Any]]:
     current = now or datetime.utcnow()
-    rows = list(session.scalars(select(legacy.Question).join(legacy.Worksheet).where(
+    latest_diagnostic_id = _latest_diagnostic_id(session, student_id)
+    candidates = list(session.scalars(select(legacy.Question).join(legacy.Worksheet).where(
         legacy.Worksheet.student_id == student_id,
         legacy.Worksheet.session_kind != 'parent_test',
         legacy.Question.answered_at.is_not(None),
     ).order_by(legacy.Question.answered_at.asc(), legacy.Question.id.asc())).all())
+    rows = []
+    for question in candidates:
+        worksheet = session.get(legacy.Worksheet, question.worksheet_id)
+        if worksheet and worksheet.session_kind == 'diagnostic' and worksheet.id != latest_diagnostic_id:
+            continue
+        rows.append(question)
     confidence = _confidence_events(session, student_id)
     grouped: dict[str, list[legacy.Question]] = {code: [] for code in legacy.LEVEL4_OUTCOMES}
     for question in rows:
@@ -175,7 +189,8 @@ def outcome_mastery(session: Session, student_id: int, now: datetime | None = No
                 'supported_accuracy': round(sum(supported for supported, _ in values) / len(values) * 100),
             })
         skill_breakdown.sort(key=lambda item: (item['independent_accuracy'], item['skill']))
-        target_skill = skill_breakdown[0]['skill'] if skill_breakdown else OUTCOME_TARGET_SKILLS.get(code)
+        instructional_skills = [item for item in skill_breakdown if not item['skill'].startswith('diagnostic_')]
+        target_skill = instructional_skills[0]['skill'] if instructional_skills else OUTCOME_TARGET_SKILLS.get(code)
         results.append({
             'code': code, 'strand': strand, 'topic': strand.lower(), 'title': title,
             'mastery': mastery, 'status': status, 'questions': evidence,
