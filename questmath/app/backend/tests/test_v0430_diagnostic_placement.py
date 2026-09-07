@@ -50,8 +50,10 @@ def close(session):
 def test_diagnostic_results_feed_existing_outcome_mastery_without_parallel_score():
     client, session, student, _ = make_client(); complete_diagnostic(client, session, student)
     outcomes = {item['code']: item for item in v0230.outcome_mastery(session, student.id)}
-    assert outcomes['VC2M4N06']['questions'] >= 3
-    assert outcomes['VC2M4N03']['questions'] >= 3
+    assert outcomes['VC2M4N06']['questions'] == 3
+    assert outcomes['VC2M4N03']['questions'] == 3
+    assert not outcomes['VC2M4N06']['target_skill'].startswith('diagnostic_')
+    assert not outcomes['VC2M4N03']['target_skill'].startswith('diagnostic_')
     caps = client.get('/api/v0430/capabilities', headers={'Authorization': f'Bearer {legacy.token_for(student)}'}).json()
     assert caps['reuses_outcome_mastery'] is True
     assert caps['no_parallel_mastery_score'] is True
@@ -86,7 +88,8 @@ def test_historical_evidence_is_preserved_and_combined_with_diagnostic():
     complete_diagnostic(client, session, student)
     placement = v0430.diagnostic_placement_snapshot(session, student.id)
     matching = next(item for item in placement['demonstrated'] if item['code']=='VC2M4N06')
-    assert matching['historical_questions'] >= 4
+    assert matching['prior_evidence_questions'] == 1
+    assert matching['current_evidence_questions'] == 4
     close(session)
 
 
@@ -100,16 +103,44 @@ def test_parent_snapshot_keeps_detailed_evidence_while_student_snapshot_hides_co
     close(session)
 
 
-def test_diagnostic_retakes_remain_separate_and_latest_completed_attempt_drives_placement():
+def test_diagnostic_retakes_preserve_history_without_inflating_mastery_or_progression():
     client, session, student, _ = make_client()
-    first = complete_diagnostic(client, session, student, answers=(True, True, True, False, False, False))
-    first.completed_at = datetime.utcnow()-timedelta(days=1); session.commit()
-    second = complete_diagnostic(client, session, student, answers=(True, True, True, True, True, False))
+    first = complete_diagnostic(client, session, student, answers=(True, True, True, True, True, True))
+    first.completed_at = datetime.utcnow()-timedelta(days=3); session.commit()
+    second = complete_diagnostic(client, session, student, answers=(True, True, True, True, True, True))
     placement = v0430.diagnostic_placement_snapshot(session, student.id)
     parent = v0430.parent_diagnostic_snapshot(session, student.id)
+    outcomes = {item['code']: item for item in v0230.outcome_mastery(session, student.id)}
+    level5 = v0330._question_evidence(session, student.id, 'VC2M5N06:diagnostic_operations')
+    level6 = v0330._question_evidence(session, student.id, 'VC2M6N03:diagnostic_fraction_decimal')
     assert placement['worksheet_id'] == second.id
     assert len(parent['attempt_history']) == 2
     assert parent['attempt_history'][0]['worksheet_id'] == second.id
+    assert outcomes['VC2M4N06']['questions'] == 3
+    assert outcomes['VC2M4N03']['questions'] == 3
+    assert outcomes['VC2M4N06']['retention_checks'] == 0
+    assert outcomes['VC2M4N03']['retention_checks'] == 0
+    assert v0330._progression_state(level5) == 'not_ready'
+    assert v0330._progression_state(level6) == 'not_ready'
+    close(session)
+
+
+def test_weak_level6_evidence_can_use_existing_prerequisite_routing():
+    client, session, student, _ = make_client(); complete_diagnostic(client, session, student, answers=(True, True, True, False, False, False))
+    recommendation = v0230.next_session_recommendation(session, student.id)
+    assert recommendation['mode'] in {'guided', 'practice', 'review'}
+    if recommendation['outcome_code'] == 'VC2M4A02':
+        assert recommendation['prerequisite_for'] == 'VC2M4N03'
+    close(session)
+
+
+def test_diagnostic_completion_produces_non_diagnostic_next_learning_recommendation():
+    client, session, student, _ = make_client(); complete_diagnostic(client, session, student)
+    recommendation = v0230.next_session_recommendation(session, student.id)
+    assert recommendation['mode'] != 'diagnostic'
+    assert recommendation['title']
+    assert recommendation['target_skill']
+    assert not recommendation['target_skill'].startswith('diagnostic_')
     close(session)
 
 
