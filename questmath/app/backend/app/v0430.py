@@ -69,6 +69,16 @@ def _diagnostic_question_row(question: legacy.Question) -> dict[str, Any]:
     }
 
 
+def _prior_evidence_count(session: Session, student_id: int, outcome_code: str, current_diagnostic_id: int) -> int:
+    questions = list(session.scalars(select(legacy.Question).join(legacy.Worksheet).where(
+        legacy.Worksheet.student_id == student_id,
+        legacy.Worksheet.session_kind != 'parent_test',
+        legacy.Worksheet.id != current_diagnostic_id,
+        legacy.Question.answered_at.is_not(None),
+    )).all())
+    return sum(1 for question in questions if v0230._outcome_code(question) == outcome_code)
+
+
 def diagnostic_placement_snapshot(session: Session, student_id: int) -> dict[str, Any]:
     worksheet = _latest_completed_diagnostic(session, student_id)
     if not worksheet:
@@ -125,7 +135,8 @@ def diagnostic_placement_snapshot(session: Session, student_id: int) -> dict[str
             'independent_correct': independent,
             'eventual_correct': eventual,
             'support_used': support_count,
-            'historical_questions': int(existing.get('questions', 0) or 0),
+            'prior_evidence_questions': _prior_evidence_count(session, student_id, code, worksheet.id),
+            'current_evidence_questions': int(existing.get('questions', 0) or 0),
             'historical_status': existing.get('status', 'not_assessed'),
             'target_skill': existing.get('target_skill'),
         }
