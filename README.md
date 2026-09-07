@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.42.0`
+Version `0.43.0`
 
 ## Development Metadata
 
@@ -33,6 +33,10 @@ The release metadata validator derives the active backend module from the runtim
 - Learner-safe Extra Practice and Ready to review language backed by the existing adaptive evidence
 - Student Learning Progress that translates existing mastery, adaptive progression, support and spaced-retrieval evidence into age-appropriate learner guidance
 - Evidence-grounded Best Next Step explanations that tell the learner why MathQuest selected the recommendation without exposing mastery percentages, curriculum codes or adaptive mode labels
+- Focused Level 5/6 diagnostic placement using three Level 5 and three Level 6 questions as a starting signal rather than a pass/fail or overall grade classification
+- Diagnostic evidence integrated into the existing outcome-mastery and adaptive learning model, with older retakes retained in history but prevented from inflating current readiness evidence
+- Learner-safe diagnostic completion and Progress summaries explaining what MathQuest noticed, where more evidence is needed and what learning step comes next
+- Parent diagnostic insight showing sampled Level 5/6 evidence, independent versus eventual success, support use, prior evidence and the recommended next learning focus
 - Story Adventure owned by Adventure while retaining adaptive learning selection and theme purpose
 - Worksheet history owned by Worksheets and Weekly Activity owned by Progress
 - Student-only navigation with iPhone safe-area support
@@ -50,7 +54,7 @@ The release metadata validator derives the active backend module from the runtim
 - Worksheet history times are displayed in `Australia/Melbourne`, including daylight-saving transitions
 - Duplicate-safe adaptive question generation and visual learning guardrails
 - Evidence-aware suppression of unnecessarily basic arithmetic while preserving purposeful review and consolidation
-- Victorian Curriculum F–10 Version 2.0 Level 5 pathway, adapting across Levels 2–6 from diagnostic evidence
+- Victorian Curriculum F–10 Version 2.0 Level 5 pathway with skill-sensitive progression informed by ongoing practice and focused Level 5/6 diagnostic evidence
 - Parent Learning Intelligence with independent versus supported success, evidence confidence, recommendations, misconception grouping, retention and difficulty calibration
 - Adaptive Daily Learning with current learning, consolidation, spaced review and limited challenge purposes
 - Story Adventure as a presentation layer over the same adaptive learning plan, answer validation and evidence path as Daily Practice
@@ -62,6 +66,22 @@ The release metadata validator derives the active backend module from the runtim
 - Notification-ready learning alerts based on meaningful accumulated evidence rather than individual wrong answers
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
+
+## Diagnostic Interpretation, Placement and Learning Path
+
+MathQuest v0.43.0 turns the focused Level 5/6 diagnostic into meaningful placement evidence without creating another mastery system.
+
+The diagnostic remains intentionally short: three Level 5 questions and three Level 6 questions. It samples Level 5 efficient calculation through multiplication and Level 6 fraction-to-decimal place-value conversion. Those six questions are not treated as proof that a student has mastered an entire curriculum level, nor as evidence that the student is globally a Grade 5 or Grade 6 learner.
+
+Diagnostic attempts now contribute through the same outcome-mastery and adaptive evidence architecture used by normal learning. Level 5/6 diagnostic outcome identifiers are mapped into the existing outcome model, ordinary historical practice remains preserved, and the adaptive engine still owns Best Next Step, prerequisite routing, review scheduling and challenge decisions.
+
+Only the latest diagnostic attempt contributes diagnostic evidence to current mastery and progression. Earlier attempts remain visible in diagnostic history but do not accumulate until they falsely satisfy evidence thresholds. Diagnostic attempts are also excluded from spaced-retention checks. The existing challenge-readiness threshold remains unchanged: at least six relevant recent questions, at least 82% independent success and no more than 25% support dependency.
+
+The diagnostic completion screen now answers three learner questions without turning the experience into an exam result: what MathQuest noticed, what still needs evidence and what to do next. It deliberately avoids pass/fail, raw mastery percentages, curriculum codes and global grade classification. The same Starting Point summary appears in Progress after completion.
+
+Parents receive a more detailed diagnostic evidence panel including the Level 5/6 sample, independent versus eventual success, support use, sampled outcomes, prior evidence and the recommended next learning focus. Previous diagnostic attempts remain separate in history. MathQuest does not automatically schedule periodic diagnostic retesting.
+
+Story Adventure continues to use the existing adaptive worksheet/evidence path. Diagnostic-only skill identifiers are never allowed to become the instructional target, so subsequent sessions continue using established practice generators and prerequisite relationships.
 
 ## Student UX, Navigation and Learning Guidance Refinement
 

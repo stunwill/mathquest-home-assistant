@@ -1,3 +1,15 @@
+## v0.43.0 - Diagnostic Interpretation, Placement & Learning Path
+
+- Turned the six-question Level 5/6 diagnostic into conservative placement evidence that feeds the existing outcome-mastery and adaptive-learning architecture.
+- Mapped Level 5 operations and Level 6 fraction/decimal diagnostic evidence into existing curriculum outcome evidence without a second mastery score or table.
+- Replaced overall estimated-level classification with learner-safe stronger-evidence, supported-practice and more-evidence-needed interpretation.
+- Kept Best Next Step, prerequisite routing, review scheduling and challenge readiness authoritative; three diagnostic questions cannot bypass the existing six-question, 82% independent-success and 25% support-dependency progression thresholds.
+- Preserved ordinary historical worksheet evidence while using only the latest diagnostic as current diagnostic evidence; older retakes remain in parent history without accumulating readiness or retention.
+- Added learner-safe Your Starting Point after diagnostic completion and in Progress, without pass/fail, overall Grade 5/6 classification, mastery percentages or curriculum codes.
+- Added parent diagnostic insight with Level 5/6 independent/eventual success, support use, sampled outcomes, prior evidence and recommended next focus.
+- Preserved Story Adventure, Math Mentor, hints, worked examples, confidence evidence, Parent Tests, worksheet history/resume and Home Assistant ingress.
+- Added focused backend/frontend regression coverage and real-device acceptance criteria; physical device checks remain pending.
+
 ## v0.42.0 - Student UX, Navigation & Learning Guidance Refinement
 
 - Replaced the student mobile scroll-to-anchor navigation model with real Home, Adventure, Worksheets and Progress destinations.

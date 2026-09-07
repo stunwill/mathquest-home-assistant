@@ -1,3 +1,28 @@
+## v0.43.0 - Diagnostic Interpretation, Placement & Learning Path
+
+Status: In release validation
+
+### Diagnostic interpretation and evidence
+- [x] Feed the six-question Level 5/6 diagnostic into the existing outcome-mastery architecture without a parallel mastery score or table.
+- [x] Treat three Level 5 and three Level 6 questions as placement evidence rather than whole-level mastery or a global grade classification.
+- [x] Distinguish independent first-attempt success, eventual supported success and insufficient evidence.
+- [x] Preserve ordinary historical worksheet evidence while using the latest diagnostic as the active diagnostic placement signal.
+- [x] Preserve earlier diagnostic attempts in parent-visible history without allowing retakes to accumulate challenge-readiness or retention evidence.
+- [x] Preserve existing challenge-readiness thresholds, prerequisite routing and spaced-review behaviour.
+
+### Learner and parent guidance
+- [x] Replace overall estimated-level interpretation with learner-safe Your Starting Point guidance.
+- [x] Keep Best Next Step authoritative and explain the next focus without exposing curriculum codes, mastery percentages or internal adaptive modes.
+- [x] Add the Starting Point summary to student Progress without expanding Home back into a long dashboard.
+- [x] Add detailed parent diagnostic insight covering Level 5/6 independent/eventual success, support use, sampled outcomes, prior evidence and recommended next focus.
+- [x] Preserve Story Adventure as a presentation layer over the normal adaptive learning and evidence path.
+
+### Testing and acceptance
+- [x] Add backend regression coverage for mastery integration, conservative uncertainty, historical evidence, retakes, prerequisites and unchanged challenge thresholds.
+- [x] Add frontend regression coverage for learner-safe diagnostic selection, completion and placement guidance.
+- [ ] Complete backend, frontend, metadata and aarch64 startup/health validation for the final release head.
+- [ ] Complete the physical-device checklist in `questmath/MANUAL_ACCEPTANCE_0.43.0.md` on iPhone and iPad 10th-generation hardware.
+
 ## v0.42.0 - Student UX, Navigation & Learning Guidance Refinement
 
 Status: In release validation

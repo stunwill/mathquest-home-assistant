@@ -45,6 +45,7 @@ STORY_OUTCOME_ALIASES = {
     'VC2M5M03': 'VC2M4M03',
     'VC2M5SP03': 'VC2M4SP03',
     'VC2M5ST01': 'VC2M4ST01',
+    'VC2M6N03': 'VC2M4N03',
 }
 
 STATUS_INTERVAL_DAYS = {
@@ -80,12 +81,27 @@ def _weighted_score(components: list[tuple[float, float]]) -> int:
     return round(sum(value * item_weight for value, item_weight in components) / weight * 100) if weight else 0
 
 
+def _latest_diagnostic_id(session: Session, student_id: int) -> int | None:
+    return session.scalar(select(legacy.Worksheet.id).where(
+        legacy.Worksheet.student_id == student_id,
+        legacy.Worksheet.session_kind == 'diagnostic',
+    ).order_by(legacy.Worksheet.started_at.desc(), legacy.Worksheet.id.desc()))
+
+
 def outcome_mastery(session: Session, student_id: int, now: datetime | None = None) -> list[dict[str, Any]]:
     current = now or datetime.utcnow()
-    rows = list(session.scalars(select(legacy.Question).join(legacy.Worksheet).where(
+    latest_diagnostic_id = _latest_diagnostic_id(session, student_id)
+    candidates = list(session.scalars(select(legacy.Question).join(legacy.Worksheet).where(
         legacy.Worksheet.student_id == student_id,
+        legacy.Worksheet.session_kind != 'parent_test',
         legacy.Question.answered_at.is_not(None),
     ).order_by(legacy.Question.answered_at.asc(), legacy.Question.id.asc())).all())
+    rows = []
+    for question in candidates:
+        worksheet = session.get(legacy.Worksheet, question.worksheet_id)
+        if worksheet and worksheet.session_kind == 'diagnostic' and worksheet.id != latest_diagnostic_id:
+            continue
+        rows.append(question)
     confidence = _confidence_events(session, student_id)
     grouped: dict[str, list[legacy.Question]] = {code: [] for code in legacy.LEVEL4_OUTCOMES}
     for question in rows:
@@ -108,7 +124,8 @@ def outcome_mastery(session: Session, student_id: int, now: datetime | None = No
             attempts = sorted(question.attempts, key=lambda item: item.attempt_number)
             first = attempts[0] if attempts else None
             supported = any(attempt.correct for attempt in attempts)
-            independent = bool(first and first.correct and not (question.hint_count or 0))
+            help_used = bool((question.hint_count or 0) or question.mentor_started or question.mentor_example_seen)
+            independent = bool(first and first.correct and not help_used)
             supported_correct += int(supported)
             independent_correct += int(independent)
             skill_name = question.skill.split(':', 1)[-1]
@@ -121,12 +138,19 @@ def outcome_mastery(session: Session, student_id: int, now: datetime | None = No
 
         retention_checks: list[bool] = []
         for previous, question in zip(questions, questions[1:]):
+            previous_ws = session.get(legacy.Worksheet, previous.worksheet_id)
+            question_ws = session.get(legacy.Worksheet, question.worksheet_id)
+            if previous_ws and previous_ws.session_kind == 'diagnostic':
+                continue
+            if question_ws and question_ws.session_kind == 'diagnostic':
+                continue
             if not previous.answered_at or not question.answered_at:
                 continue
             if question.answered_at - previous.answered_at < timedelta(days=2):
                 continue
             attempts = sorted(question.attempts, key=lambda item: item.attempt_number)
-            retention_checks.append(bool(attempts and attempts[0].correct and not (question.hint_count or 0)))
+            help_used = bool((question.hint_count or 0) or question.mentor_started or question.mentor_example_seen)
+            retention_checks.append(bool(attempts and attempts[0].correct and not help_used))
 
         independent_accuracy = independent_correct / evidence if evidence else 0.0
         supported_accuracy = supported_correct / evidence if evidence else 0.0
@@ -165,7 +189,8 @@ def outcome_mastery(session: Session, student_id: int, now: datetime | None = No
                 'supported_accuracy': round(sum(supported for supported, _ in values) / len(values) * 100),
             })
         skill_breakdown.sort(key=lambda item: (item['independent_accuracy'], item['skill']))
-        target_skill = skill_breakdown[0]['skill'] if skill_breakdown else OUTCOME_TARGET_SKILLS.get(code)
+        instructional_skills = [item for item in skill_breakdown if not item['skill'].startswith('diagnostic_')]
+        target_skill = instructional_skills[0]['skill'] if instructional_skills else OUTCOME_TARGET_SKILLS.get(code)
         results.append({
             'code': code, 'strand': strand, 'topic': strand.lower(), 'title': title,
             'mastery': mastery, 'status': status, 'questions': evidence,
@@ -200,7 +225,7 @@ def next_session_recommendation(session: Session, student_id: int,
         return {
             'mode': 'diagnostic', 'minutes': 15, 'topic': 'number_algebra', 'outcome_code': None,
             'target_skill': None, 'title': 'Find the best starting point',
-            'reason': 'Complete the Levels 2–6 diagnostic so MathQuest can recommend the right prerequisite and practice level.',
+            'reason': 'Complete the Level 5 and Level 6 diagnostic so MathQuest can recommend a useful starting point.',
             'prerequisite_for': None,
         }
 
@@ -222,10 +247,13 @@ def next_session_recommendation(session: Session, student_id: int,
         reason = f"Build {chosen['title'].lower()} first because it supports {target['title'].lower()}."
     elif chosen['review_due']:
         mode = 'review'
-        reason = f"This skill is due for retrieval practice. The last evidence gave {chosen['mastery']}% mastery."
+        reason = "This skill is due for retrieval practice."
+    elif chosen['questions'] < 6:
+        mode = 'practice'
+        reason = f"MathQuest needs a little more evidence about {chosen['title'].lower()} before increasing difficulty."
     else:
         mode = 'practice'
-        reason = f"This is the most useful current growth area, with {chosen['mastery']}% mastery from {chosen['questions']} recent questions."
+        reason = "This is the most useful current growth area based on recent evidence."
     minutes = 15 if prerequisite_for or chosen['mastery'] < 55 or len(due) >= 3 else 10 if chosen['mastery'] < 75 or len(due) > 1 else 5
     return {
         'mode': mode, 'minutes': minutes, 'topic': chosen['topic'],
@@ -318,6 +346,3 @@ def capabilities(_: legacy.User = Depends(legacy.current_user)):
         'recommended_sessions': [5, 10, 15],
         'inherits_v0220': True,
     }
-
-
-v0120._move_spa_fallback_to_end()
