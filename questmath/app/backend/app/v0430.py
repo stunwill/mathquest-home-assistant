@@ -153,7 +153,7 @@ def diagnostic_placement_snapshot(session: Session, student_id: int) -> dict[str
     if demonstrated and supported:
         student_message = 'MathQuest found some strong starting evidence and some skills that need a little more practice together.'
     elif demonstrated:
-        student_message = 'MathQuest found some strong starting evidence. Your next sessions will gather more evidence before increasing difficulty.'
+        student_message = 'MathQuest found some strong starting evidence. Your next sessions will gather a little more evidence before increasing difficulty.'
     else:
         student_message = 'MathQuest has a useful starting point, but needs a little more evidence before making stronger claims.'
 
