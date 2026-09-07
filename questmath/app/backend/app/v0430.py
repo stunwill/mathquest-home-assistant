@@ -2,15 +2,14 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from datetime import datetime
 from typing import Any
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0120, v0190, v0230, v0330, v0410, v0420, v090
+from . import v0120, v0230, v0410, v0420
 
 app = v0420.app
 app.version = '0.43.0'
@@ -206,7 +205,7 @@ def diagnostic_placement(user: legacy.User = Depends(legacy.current_user), sessi
 @app.get('/api/learning/parent-diagnostic-v0430')
 def parent_diagnostic(user: legacy.User = Depends(legacy.current_user), session: Session = Depends(legacy.db)):
     if user.role != 'parent':
-        return {'detail': 'Parent access required'}
+        raise HTTPException(403, 'Parent access required')
     return parent_diagnostic_snapshot(session, v0120.resolve_learner(session).id)
 
 
@@ -221,6 +220,7 @@ def capabilities(_: legacy.User = Depends(legacy.current_user)):
         'no_global_grade_classification': True,
         'diagnostic_levels': [5, 6],
         'diagnostic_question_count': 6,
+        'retake_history_preserved': True,
         'inherits_v0420': True,
     }
 
