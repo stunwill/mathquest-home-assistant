@@ -35,13 +35,14 @@ describe('MathQuest 0.27 learner and parent-test interactions', () => {
     await waitFor(() => expect(start).toHaveBeenCalledWith('number', 15, 'practice'));
   });
 
-  it('presents the diagnostic as Level 5 and Level 6 only', () => {
+  it('presents the diagnostic as Level 5 and Level 6 placement evidence only', () => {
     render(<QuestCategoryPicker start={vi.fn().mockResolvedValue(undefined)} cancel={vi.fn()}/>);
     const diagnostic = screen.getByRole('button', {name: /Level 5 and Level 6 diagnostic/i});
     expect(screen.queryByText(/Levels 2–6 diagnostic/i)).not.toBeInTheDocument();
     fireEvent.click(diagnostic);
     expect(screen.getByText('Six questions')).toBeInTheDocument();
-    expect(screen.getByText(/Three short questions at Level 5 and three at Level 6/i)).toBeInTheDocument();
+    expect(screen.getByText(/Three short Level 5 questions and three Level 6 questions/i)).toBeInTheDocument();
+    expect(screen.getByText(/placement evidence only/i)).toBeInTheDocument();
     expect(screen.queryByText(/level from 2 to 6/i)).not.toBeInTheDocument();
   });
 
