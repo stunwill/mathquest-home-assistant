@@ -153,8 +153,7 @@ def test_story_presentation_preserves_targeted_learning_metadata(monkeypatch):
     monkeypatch.setattr(v0230, 'next_session_recommendation', lambda *_: recommendation)
     worksheet = v0440.compose_targeted_session(session, student.id, v0440.build_learning_plan(session, student.id, 5))
     before = [json.loads(item.payload)['targeted_session']['target_skill'] for item in worksheet.questions]
-    theme = v0340.ADVENTURE_THEMES[0]
-    v0340.apply_adventure_presentation(session, worksheet, theme)
+    v0340.apply_adventure_presentation(session, worksheet, student.id, 'bakery')
     after = [json.loads(item.payload)['targeted_session']['target_skill'] for item in worksheet.questions]
     assert before == after
     assert all(value == 'written_subtraction' for value in after)
