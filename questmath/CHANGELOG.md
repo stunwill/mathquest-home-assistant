@@ -2,7 +2,7 @@
 
 - Best Next Step can now produce a deliberately targeted learning session around the recommended skill or prerequisite instead of only choosing a broad topic.
 - Targeted sessions use learner-safe stages for reconnecting, supported practice, core practice, transfer and independent checking while preserving Math Mentor, hints and worked examples.
-- Existing mastery, prerequisite, spaced-review and challenge-readiness rules remain authoritative; no global Grade 5/6 ability switch has been introduced.
+- Skill-sensitive progression remains independent by outcome or skill pathway, while existing mastery, prerequisite, spaced-review and challenge-readiness rules remain authoritative; no global Grade 5/6 ability switch has been introduced.
 - Student Home gains a concise Today’s Focus preview and targeted completion can explain support-to-independent progress without reducing the session to an accuracy score.
 - Parent Dashboard gains next-plan detail including target outcome/skill, prerequisite relation and planned sequence.
 - Diagnostic uncertainty now feeds subsequent targeted practice rather than requiring a larger or repeated diagnostic.
