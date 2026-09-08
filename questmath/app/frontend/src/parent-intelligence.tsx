@@ -1,9 +1,11 @@
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {AlertTriangle, Brain, CircleHelp, Gauge, RefreshCw, Route, ShieldCheck, Sparkles, Target, TrendingUp} from 'lucide-react';
+import {apiRequest} from './api';
 import './parent-intelligence.css';
 
 const pct = (value:number|null|undefined) => value == null ? 'Not enough evidence' : `${value}%`;
 const pretty = (value:string) => value.replaceAll('_',' ').replace(/\b\w/g, c => c.toUpperCase());
+const stageLabels:Record<string,string>={reconnect:'reconnect',supported:'supported practice',core:'core practice',transfer:'transfer',check:'independent check'};
 
 function StatusPill({status}:{status:string}){
   return <span className={`learning-status ${status}`}>{pretty(status)}</span>;
@@ -16,6 +18,8 @@ function Why({children}:{children:React.ReactNode}){
 
 export function ParentLearningIntelligence({data,onPeriod}:{data:any;onPeriod:(days:number)=>void}){
   const[area,setArea]=useState('all');
+  const[plan,setPlan]=useState<any>(null);
+  useEffect(()=>{apiRequest('/learning/session-plan-v0440').then(setPlan).catch(()=>setPlan(null))},[data?.trend?.days]);
   const skills=useMemo(()=>{
     const items=data?.skills||[];
     return area==='all'?items:items.filter((item:any)=>String(item.skill||'').toLowerCase().includes(area));
@@ -23,6 +27,7 @@ export function ParentLearningIntelligence({data,onPeriod}:{data:any;onPeriod:(d
   if(!data)return null;
   const needs=(data.skills||[]).filter((item:any)=>item.status==='needs_support');
   const secure=(data.skills||[]).filter((item:any)=>item.status==='secure');
+  const stageCounts=(plan?.stages||[]).reduce((acc:Record<string,number>,stage:string)=>{acc[stage]=(acc[stage]||0)+1;return acc},{});
   return <section className="parent-intelligence" aria-label="Parent learning intelligence">
     <section className="panel learning-summary-card">
       <div className="panel-heading"><div><p className="eyebrow">PARENT LEARNING INTELLIGENCE</p><h2><Brain size={23}/> What the learning evidence says</h2></div><div className="period-switch" role="group" aria-label="Reporting period">{[7,30,90].map(days=><button type="button" key={days} className={data.trend?.days===days?'selected':''} onClick={()=>onPeriod(days)}>{days} days</button>)}</div></div>
@@ -33,6 +38,8 @@ export function ParentLearningIntelligence({data,onPeriod}:{data:any;onPeriod:(d
         <article><Gauge/><small>Difficulty</small><strong>{pretty(data.difficulty?.state||'not_enough_evidence')}</strong><span>{data.difficulty?.attempts||0} assessed questions</span></article>
       </div>
     </section>
+
+    {plan?.kind==='targeted'&&plan.primary_target&&<section className="panel practice-plan" aria-label="Targeted learning plan"><div className="panel-heading"><div><p className="eyebrow">NEXT TARGETED LEARNING PLAN</p><h2><Target size={22}/> {plan.primary_target.title}</h2></div></div><p>{plan.student_reason}</p><div className="curriculum-table"><div className="curriculum-row"><span><b>Purpose</b><small>{pretty(plan.purpose)}</small></span><span>{plan.minutes} minutes</span><span>{plan.primary_target.evidence_questions??0} evidence questions</span><span>{pretty(plan.primary_target.status||'not assessed')}</span></div><div className="curriculum-row"><span><b>Outcome</b><small>{plan.primary_target.outcome_code||'—'}</small></span><span>{String(plan.primary_target.skill||'—').replaceAll('_',' ')}</span><span>{plan.primary_target.review_due?'Review due':'Current learning'}</span><span>{plan.primary_target.prerequisite_for?`Prerequisite for ${plan.primary_target.prerequisite_for}`:'Primary target'}</span></div></div><p><strong>Planned sequence:</strong> {Object.entries(stageCounts).map(([stage,count])=>`${stageLabels[stage]||stage} × ${count}`).join(' · ')}</p></section>}
 
     <section className="panel practice-plan"><div className="panel-heading"><div><p className="eyebrow">WHAT TO PRACTISE NEXT</p><h2><Target size={22}/> Prioritised learning plan</h2></div></div>{data.recommendations?.length?<div className="recommendation-list">{data.recommendations.map((item:any)=><article key={`${item.priority}-${item.skill}`} className={`recommendation ${item.priority}`}><div><span className="priority">{pretty(item.priority)}</span><h3>{item.title}</h3><p>{item.reason}</p></div><Route/></article>)}</div>:<p>MathQuest needs more learner evidence before creating a reliable practice priority.</p>}</section>
 

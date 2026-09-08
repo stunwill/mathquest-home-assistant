@@ -22,11 +22,12 @@ def test_release_notes_extract_current_version_section_only():
     current_version = versions['questmath/config.yaml']
     notes = module.release_notes_for(current_version, ROOT / 'questmath/CHANGELOG.md')
     lowered = notes.lower()
+    assert 'best next step' in lowered
+    assert 'targeted learning session' in lowered
+    assert 'skill-sensitive progression' in lowered
     assert 'diagnostic' in lowered
-    assert 'starting point' in lowered
-    assert 'retake' in lowered
+    assert 'diagnostic interpretation, placement & learning path' not in lowered
     assert 'student ux, navigation & learning guidance refinement' not in lowered
-    assert 'student learning progress & guidance' not in lowered
 
 
 def test_required_version_locations_agree():
