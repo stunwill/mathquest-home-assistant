@@ -29,6 +29,6 @@ export function ParentTargetedLearningInsight(){
       <div className="curriculum-row"><span><b>Purpose</b><small>{data.purpose}</small></span><span>{data.minutes} minutes</span><span>{target.evidence_questions ?? 0} evidence questions</span><span>{target.status?.replaceAll('_',' ')||'Not assessed'}</span></div>
       <div className="curriculum-row"><span><b>Outcome</b><small>{target.outcome_code||'—'}</small></span><span>{target.skill?.replaceAll('_',' ')||'—'}</span><span>{target.review_due?'Review due':'Current learning'}</span><span>{target.prerequisite_for?`Prerequisite for ${target.prerequisite_for}`:'Primary target'}</span></div>
     </div>
-    <p><strong>Planned sequence:</strong> {Object.entries(counts).map(([stage,count])=>`${stageLabels[stage]||stage.replaceAll('_',' ')} × ${count}`).join(' · ')}</p>
+    <p><strong>Planned sequence:</strong> {Object.entries(counts).map(([stage,count])=>`${stageLabels[stage]||stage.replaceAll('_',' ')} × ${count}`).join(' · ')}</p>{latest?.available&&<div className="targeted-parent-followthrough"><h3>Latest completed targeted session</h3><p>{latest.title} · {latest.purpose}</p><p><strong>Evidence:</strong> {latest.evidence.answered} answered, {latest.evidence.independent_successes} independent successes, {latest.evidence.support_used_questions} questions with support, {latest.evidence.independent_checks} independent checks.</p><p><strong>Before → after:</strong> {latest.before.questions} → {latest.after.questions} evidence questions.</p></div>}
   </section>;
 }
