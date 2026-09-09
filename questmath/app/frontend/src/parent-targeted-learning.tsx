@@ -7,6 +7,20 @@ type Plan = {
   stages?:string[];
 };
 
+type LatestTargetedSession = {
+  available:boolean;
+  title?:string|null;
+  purpose?:string|null;
+  evidence?:{
+    answered:number;
+    independent_successes:number;
+    support_used_questions:number;
+    independent_checks:number;
+  };
+  before?:{questions:number};
+  after?:{questions:number};
+};
+
 const stageLabels:Record<string,string>={
   reconnect:'reconnect',
   supported:'supported practice',
@@ -17,7 +31,19 @@ const stageLabels:Record<string,string>={
 
 export function ParentTargetedLearningInsight(){
   const[data,setData]=useState<Plan|null>(null);
-  useEffect(()=>{apiRequest<Plan>('/learning/session-plan-v0440').then(setData).catch(()=>setData(null))},[]);
+  const[latest,setLatest]=useState<LatestTargetedSession|null>(null);
+  useEffect(()=>{
+    Promise.all([
+      apiRequest<Plan>('/learning/session-plan-v0440'),
+      apiRequest<LatestTargetedSession>('/learning/targeted-session-detail-v0450').catch(()=>({available:false})),
+    ]).then(([plan,followThrough])=>{
+      setData(plan);
+      setLatest(followThrough);
+    }).catch(()=>{
+      setData(null);
+      setLatest(null);
+    });
+  },[]);
   if(!data||data.kind==='diagnostic'||!data.primary_target)return null;
   const target=data.primary_target;
   const counts=(data.stages||[]).reduce((acc:Record<string,number>,stage)=>{acc[stage]=(acc[stage]||0)+1;return acc},{});
@@ -30,5 +56,11 @@ export function ParentTargetedLearningInsight(){
       <div className="curriculum-row"><span><b>Outcome</b><small>{target.outcome_code||'—'}</small></span><span>{target.skill?.replaceAll('_',' ')||'—'}</span><span>{target.review_due?'Review due':'Current learning'}</span><span>{target.prerequisite_for?`Prerequisite for ${target.prerequisite_for}`:'Primary target'}</span></div>
     </div>
     <p><strong>Planned sequence:</strong> {Object.entries(counts).map(([stage,count])=>`${stageLabels[stage]||stage.replaceAll('_',' ')} × ${count}`).join(' · ')}</p>
+    {latest?.available&&latest.evidence&&latest.before&&latest.after&&<div className="targeted-parent-followthrough">
+      <h3>Latest completed targeted session</h3>
+      <p>{latest.title||target.title} · {latest.purpose||'targeted practice'}</p>
+      <p><strong>Evidence:</strong> {latest.evidence.answered} answered, {latest.evidence.independent_successes} independent successes, {latest.evidence.support_used_questions} questions with support, {latest.evidence.independent_checks} independent checks.</p>
+      <p><strong>Before → after:</strong> {latest.before.questions} → {latest.after.questions} evidence questions.</p>
+    </div>}
   </section>;
 }
