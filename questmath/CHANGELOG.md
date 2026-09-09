@@ -1,6 +1,6 @@
 ## v0.45.0 - Targeted Session Evidence & Adaptive Follow-through
 
-- Added targeted-session follow-through metadata and evidence-aware completion summaries.
+- Best Next Step now launches the targeted learning session selected by the existing recommendation path.\n- Added targeted learning session follow-through metadata and evidence-aware completion summaries.\n- Preserved skill-sensitive progression and Level 5/6 diagnostic interpretation.
 - Integrated targeted learning preview and parent follow-through insight into the active application.
 - Preserved backward-compatible worksheet history and existing learning evidence services.
 

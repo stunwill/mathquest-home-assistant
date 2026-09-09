@@ -24,6 +24,7 @@ def test_targeted_detail_records_before_after_and_real_session_evidence(monkeypa
     outcomes = [{'code':'VC2M4N06','title':'Efficient calculation strategies','topic':'number','questions':4,'status':'developing','review_due':False,'target_skill':'written_subtraction'}]
     recommendation = {'mode':'practice','minutes':5,'topic':'number','outcome_code':'VC2M4N06','title':'Efficient calculation strategies','reason':'Keep practising','prerequisite_for':None,'target_skill':'written_subtraction'}
     monkeypatch.setattr(v0230, 'outcome_mastery', lambda *_: outcomes)
+    monkeypatch.setattr(v0230, 'next_session_recommendation', lambda *_: recommendation)
     plan = v0440.build_learning_plan(session, student.id, 5)
     worksheet = v0450.compose_targeted_session(session, student.id, plan)
     questions = sorted(worksheet.questions, key=lambda item: item.position)
