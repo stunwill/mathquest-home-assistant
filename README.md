@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.44.0`
+Version `0.45.0`
 
 ## Development Metadata
 
@@ -25,6 +25,8 @@ Repository and release tooling, including DevHub, should use these canonical sou
 The release metadata validator derives the active backend module from the runtime script and requires the add-on, frontend package/display, backend, README and changelog versions to agree. The committed frontend lockfile is also checked for dependency metadata compatibility with `package.json`.
 
 ## Features
+
+- Targeted-session follow-through records the planned learning intent and compares evidence before and after completion without exposing parent analytics to the learner
 
 - Student and parent logins, with `sienna` prefilled for the normal student login flow and automatic recovery from expired MathQuest sessions
 - Distinct student Home, Adventure, Worksheets and Progress destinations rather than scroll-to-section navigation
@@ -68,6 +70,10 @@ The release metadata validator derives the active backend module from the runtim
 - Notification-ready learning alerts based on meaningful accumulated evidence rather than individual wrong answers
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
+
+## Targeted Session Evidence and Follow-through
+
+MathQuest v0.45.0 connects the targeted plan to its learning result. Each targeted worksheet records the recommendation-derived purpose, target skill, planned stages and a pre-session evidence snapshot. Completion summaries then report only evidence grounded in the learner's actual session, while the parent view can inspect before/after outcome evidence, support use and independent checks. Existing outcome mastery remains authoritative, and repeated practice does not create a second evidence model.
 
 ## Targeted Learning Sessions and Skill-Level Progression
 

@@ -1,3 +1,19 @@
+## v0.45.0 - Targeted Session Evidence & Adaptive Follow-through
+
+Status: In release validation
+
+### Learning continuity
+- [x] Persist targeted-session intent alongside the existing worksheet so the session can be interpreted after completion.
+- [x] Capture pre-session outcome evidence and compare it with post-session evidence from the existing mastery service.
+- [x] Make learner completion language reflect actual support use and independent checks without exposing technical analytics.
+- [x] Add parent visibility into the latest targeted session's purpose, evidence and before/after question counts.
+- [x] Integrate the existing targeted preview and completion components into the real student and parent application flows.
+
+### Testing and acceptance
+- [x] Add backend regression coverage for follow-through metadata, session evidence and learner-safe summaries.
+- [ ] Complete backend, frontend, metadata and aarch64 startup/health validation for the final release head.
+- [ ] Complete the physical-device checklist in `questmath/MANUAL_ACCEPTANCE_0.45.0.md` on iPhone and iPad 10th-generation hardware.
+
 ## v0.44.0 - Targeted Learning Sessions & Skill-Level Progression
 
 Status: In release validation
