@@ -34,8 +34,8 @@ export function ParentTargetedLearningInsight(){
   const[latest,setLatest]=useState<LatestTargetedSession|null>(null);
   useEffect(()=>{
     Promise.all([
-      apiRequest<Plan>('/learning/session-plan-v0440'),
-      apiRequest<LatestTargetedSession>('/learning/targeted-session-detail-v0450').catch(()=>({available:false})),
+      apiRequest<Plan>('/learning/session-plan-v0460'),
+      apiRequest<LatestTargetedSession>('/learning/targeted-session-detail-v0460').catch(()=>({available:false})),
     ]).then(([plan,followThrough])=>{
       setData(plan);
       setLatest(followThrough);

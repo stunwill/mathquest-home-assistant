@@ -1,3 +1,14 @@
+## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
+
+MathQuest now interprets what happened during a targeted learning session and uses that evidence to shape the next learning experience. Existing outcome mastery, support evidence, challenge thresholds, prerequisite routing and spaced review and skill-sensitive progression remain authoritative.
+
+- Recent targeted sessions produce explicit internal follow-through decisions such as reteach, check independence, transfer, review later and challenge.
+- Supported success is distinguished from later independent success, with learner-safe next-action language.
+- Best Next Step and targeted session planning reuse recent evidence without introducing a global grade or second mastery model.
+- Parent Learning Intelligence can inspect the evidence and resulting next action.
+- Diagnostic placement remains six-question, conservative and unchanged; normal targeted sessions gather follow-up evidence.
+- Physical iPhone/iPad acceptance remains pending until tested on real devices.
+
 ## v0.45.0 - Targeted Session Evidence & Adaptive Follow-through
 
 - Best Next Step now launches the targeted learning session selected by the existing recommendation path.\n- Added targeted learning session follow-through metadata and evidence-aware completion summaries.\n- Preserved skill-sensitive progression and Level 5/6 diagnostic interpretation.
