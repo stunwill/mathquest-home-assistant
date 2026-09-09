@@ -130,7 +130,8 @@ function Student({user,logout}:{user:User;logout:()=>void}){
         <p>{hasProgress?(untouched?'Start when you are ready.':`${answered} of ${worksheet!.total} questions completed. Your progress is saved.`):'MathQuest will choose useful practice from your current learning plan.'}</p>
         <button className="primary" onClick={()=>{if(hasProgress&&worksheet){setWorking(true)}else{setChoosing(true)}}}><Play size={20}/>{primaryLabel}</button>
       </div></section>
-      {!hasProgress&&<AdaptiveRecommendation data={adaptive} busy={recommendationBusy} onStart={startRecommended}/>}\n      {!hasProgress&&<TargetedLearningPreview/>}
+      {!hasProgress&&<AdaptiveRecommendation data={adaptive} busy={recommendationBusy} onStart={startRecommended}/>}
+      {!hasProgress&&<TargetedLearningPreview/>}
       {!hasProgress&&<InterventionCard onOpen={openWorksheet}/>}
       <StudentDestination section="home" onOpen={openWorksheet} onCreate={()=>setChoosing(true)} onSelect={selectSection}/>
       <section className="panel mq-home-progress-preview"><p className="eyebrow">YOUR PROGRESS</p><h2>See what MathQuest is noticing</h2><p>Find skills that are getting stronger, ready for a challenge or ready to review.</p><button type="button" onClick={()=>selectSection('progress')}>View progress →</button></section>
