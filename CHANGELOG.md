@@ -1,6 +1,6 @@
 ## v0.45.0 - Targeted Session Evidence & Adaptive Follow-through
 
-- Targeted worksheets now retain purpose, target skill, planned stages and a pre-session evidence snapshot using the existing worksheet payload contract.
+- Best Next Step now has live student and parent follow-through from the targeted worksheet it creates.\n- Targeted worksheets now retain purpose, target skill, planned stages and a pre-session evidence snapshot using the existing worksheet payload contract.
 - Completion summaries derive support-to-independence messages and independent-check counts from actual attempts.
 - Parent Dashboard can inspect the latest targeted session's purpose, target, support use, independent checks and before/after evidence.
 - Student Home and completion now use the targeted learning components in the live application path.

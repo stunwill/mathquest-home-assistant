@@ -114,7 +114,7 @@ def _detail(session: Session, worksheet: legacy.Worksheet, student_id: int) -> d
                   if isinstance(_payload(question).get('targeted_session_plan'), dict)), None)
     plan = _payload(first).get('targeted_session_plan') if first else {}
     post_outcomes = v0230.outcome_mastery(session, student_id)
-    target = plan.get('target') or {}
+    target = plan.get('target') or {}\n    if not target and first:\n        targeted = _payload(first).get('targeted_session') or {}\n        target = {'outcome_code': targeted.get('outcome_code'), 'skill': targeted.get('target_skill'), 'prerequisite_for': targeted.get('prerequisite_for')}
     post = next((item for item in post_outcomes if item.get('code') == target.get('outcome_code')), {})
     evidence = _session_evidence(worksheet)
     pre = plan.get('pre_session') or {}
