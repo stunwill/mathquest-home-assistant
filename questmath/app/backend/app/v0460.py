@@ -125,7 +125,7 @@ def compose_targeted_session(session: Session, student_id: int, plan: dict[str, 
         payload = v0450._payload(questions[0])
         metadata = payload.get('targeted_session_plan') or {}
         metadata['follow_through_context'] = {
-            'previous_decision': plan.get('previous_follow_through', {}).get('decision'),
+            'previous_decision': (plan.get('previous_follow_through') or {}).get('decision'),
             'same_target': bool(plan.get('previous_follow_through')),
         }
         payload['targeted_session_plan'] = metadata
