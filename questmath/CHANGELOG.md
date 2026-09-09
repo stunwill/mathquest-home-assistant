@@ -6,6 +6,7 @@ MathQuest now interprets what happened during a targeted learning session and us
 - Supported success is distinguished from later independent success, with learner-safe next-action language.
 - Best Next Step and targeted session planning reuse recent evidence without introducing a global grade or second mastery model.
 - Parent Learning Intelligence can inspect the evidence and resulting next action.
+- Diagnostic placement remains six-question, conservative and unchanged; normal targeted sessions gather follow-up evidence.
 - Physical iPhone/iPad acceptance remains pending until tested on real devices.
 
 ## v0.45.0 - Targeted Session Evidence & Adaptive Follow-through
