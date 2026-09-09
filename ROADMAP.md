@@ -1,3 +1,24 @@
+## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
+
+### Learning continuity
+- [x] Interpret completed targeted sessions into explicit follow-through decisions using existing evidence.
+- [x] Feed recent session memory into the existing targeted plan and Best Next Step path.
+- [x] Distinguish supported success from later independent success and provide learner-safe next actions.
+- [x] Extend parent insight with follow-through and next-action detail.
+
+### Validation
+- [x] Add backend regression coverage for conservative, support-aware follow-through.
+- [ ] Complete full backend, frontend, metadata and container validation on the final PR head.
+- [ ] Complete physical iPhone/iPad acceptance.
+
+
+
+- Recent targeted sessions produce explicit internal follow-through decisions such as reteach, check independence, transfer, review later and challenge.
+- Supported success is distinguished from later independent success, with learner-safe next-action language.
+- Best Next Step and targeted session planning reuse recent evidence without introducing a global grade or second mastery model.
+- Parent Learning Intelligence can inspect the evidence and resulting next action.
+- Physical iPhone/iPad acceptance remains pending until tested on real devices.
+
 ## v0.45.0 - Targeted Session Evidence & Adaptive Follow-through
 
 Status: In release validation

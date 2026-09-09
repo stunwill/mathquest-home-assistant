@@ -6,7 +6,17 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.45.0`
+Version `0.46.0`
+
+## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
+
+MathQuest now interprets what happened during a targeted session and uses that evidence to shape the next learning experience. Existing outcome mastery, support evidence, challenge thresholds, prerequisite routing and spaced review remain authoritative.
+
+- Recent targeted sessions produce explicit internal follow-through decisions such as reteach, check independence, transfer, review later and challenge.
+- Supported success is distinguished from later independent success, with learner-safe next-action language.
+- Best Next Step and targeted session planning reuse recent evidence without introducing a global grade or second mastery model.
+- Parent Learning Intelligence can inspect the evidence and resulting next action.
+- Physical iPhone/iPad acceptance remains pending until tested on real devices.
 
 ## Development Metadata
 
@@ -71,7 +81,7 @@ The release metadata validator derives the active backend module from the runtim
 - Parent Dashboard bootstrap that surfaces required-data failures and lets optional backups and intelligence sections degrade independently
 - Local-first operation with no third-party learner analytics or telemetry
 
-## Targeted Session Evidence and Follow-through
+## Adaptive Learning Loop and Next-Session Intelligence
 
 MathQuest v0.45.0 connects the targeted plan to its learning result. Each targeted worksheet records the recommendation-derived purpose, target skill, planned stages and a pre-session evidence snapshot. Completion summaries then report only evidence grounded in the learner's actual session, while the parent view can inspect before/after outcome evidence, support use and independent checks. Existing outcome mastery remains authoritative, and repeated practice does not create a second evidence model.
 
