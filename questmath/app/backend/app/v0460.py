@@ -50,14 +50,14 @@ def _decision_from_evidence(evidence: dict[str, Any], purpose: str | None = None
         return 'reteach'
     if support >= max(2, round(answered * 0.55)) and independent == 0:
         return 'reteach'
+    if purpose == 'review':
+        return 'review_later' if independent else 'continue'
     if prerequisite_for and checks:
         return 'return_to_original_target'
     if support and independent:
         return 'transfer' if checks else 'check_independence'
     if checks and independent >= 2:
         return 'challenge' if check_questions >= 2 else 'progress_to_related_skill'
-    if purpose == 'review':
-        return 'review_later' if independent else 'continue'
     if independent >= max(3, round(answered * 0.82)):
         return 'review_later'
     return 'consolidate'
