@@ -1,3 +1,9 @@
+## v0.45.0 - Targeted Session Evidence & Adaptive Follow-through
+
+- Added targeted-session follow-through metadata and evidence-aware completion summaries.
+- Integrated targeted learning preview and parent follow-through insight into the active application.
+- Preserved backward-compatible worksheet history and existing learning evidence services.
+
 ## v0.44.0 - Targeted Learning Sessions & Skill-Level Progression
 
 - Best Next Step can now produce a deliberately targeted learning session around the recommended skill or prerequisite instead of only choosing a broad topic.
