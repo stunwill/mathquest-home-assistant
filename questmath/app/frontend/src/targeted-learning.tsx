@@ -4,7 +4,7 @@ import {apiRequest} from './api';
 import './targeted-learning.css';
 
 type Plan = {kind:string;minutes:number;purpose:string;title:string;reason:string;target_skill?:string|null};
-type Summary = {available:boolean;purpose?:string;target_skill?:string|null;message?:string};
+type Summary = {available:boolean;purpose?:string;target_skill?:string|null;message?:string;evidence_added?:number;independent_checks?:number};
 
 function friendly(value?:string|null){return value ? value.replaceAll('_',' ') : ''}
 
@@ -23,13 +23,13 @@ export function TargetedLearningPreview(){
 
 export function TargetedCompletion({worksheetId,back}:{worksheetId:number;back:()=>void}){
   const[data,setData]=useState<Summary|null>(null);
-  useEffect(()=>{apiRequest<Summary>(`/worksheets/${worksheetId}/targeted-summary-v0440`).then(setData).catch(()=>setData({available:false}))},[worksheetId]);
+  useEffect(()=>{apiRequest<Summary>(`/worksheets/${worksheetId}/targeted-summary-v0450`).then(setData).catch(()=>setData({available:false}))},[worksheetId]);
   return <main className="result-page targeted-result"><section className="result-card">
     <p className="eyebrow">SESSION COMPLETE</p>
     <h1><Sparkles size={28}/> Nice work</h1>
     <h2>What this session added</h2>
     <p>{data?.available ? data.message : 'Your practice has been added to MathQuest’s learning evidence.'}</p>
-    {data?.target_skill&&<p><strong>Focus:</strong> {friendly(data.target_skill)}</p>}
+    {data?.target_skill&&<p><strong>Focus:</strong> {friendly(data.target_skill)}</p>}\n    {data?.available&&<p className="targeted-evidence-note">{data.evidence_added ? `${data.evidence_added} new evidence question${data.evidence_added===1?'':'s'} added.` : 'This session added useful evidence.'} {data.independent_checks ? `${data.independent_checks} independent check${data.independent_checks===1?'':'s'} completed.` : 'MathQuest will keep gathering evidence.'}</p>}
     <button className="primary" type="button" onClick={back}>Continue to MathQuest</button>
   </section></main>;
 }

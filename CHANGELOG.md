@@ -1,3 +1,12 @@
+## v0.45.0 - Targeted Session Evidence & Adaptive Follow-through
+
+- Best Next Step now has live student and parent follow-through from the targeted worksheet it creates.\n- Targeted worksheets now retain purpose, target skill, planned stages and a pre-session evidence snapshot using the existing worksheet payload contract.
+- Completion summaries derive support-to-independence messages and independent-check counts from actual attempts.
+- Parent Dashboard can inspect the latest targeted session's purpose, target, support use, independent checks and before/after evidence.
+- Student Home and completion now use the targeted learning components in the live application path.
+- Existing mastery, progression, diagnostic, review, prerequisite, Story Adventure and Home Assistant contracts remain authoritative.
+- Physical iPhone/iPad acceptance remains pending until tested on real devices.
+
 ## v0.44.0 - Targeted Learning Sessions & Skill-Level Progression
 
 - Added an explicit targeted-learning session plan derived from the existing outcome mastery, Best Next Step, prerequisite and review evidence rather than introducing a second mastery model.
