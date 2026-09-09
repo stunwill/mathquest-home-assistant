@@ -78,7 +78,7 @@ def _detail(session: Session, worksheet: legacy.Worksheet, student_id: int) -> d
     return detail
 
 def _plan_with_memory(session: Session, student_id: int, minutes: int | None = None) -> dict[str, Any]:
-    plan = v0440.build_learning_plan(session, student_id, minutes)
+    plan = _original_build(session, student_id, minutes)
     previous = _latest_targeted(session, student_id)
     if not previous or plan.get('kind') != 'targeted':
         plan['previous_follow_through'] = None

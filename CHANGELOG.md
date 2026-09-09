@@ -1,6 +1,6 @@
 ## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
 
-MathQuest now interprets what happened during a targeted session and uses that evidence to shape the next learning experience. Existing outcome mastery, support evidence, challenge thresholds, prerequisite routing and spaced review remain authoritative.
+MathQuest now interprets what happened during a targeted learning session and uses that evidence to shape the next learning experience. Existing outcome mastery, support evidence, challenge thresholds, prerequisite routing and spaced review remain authoritative.
 
 - Recent targeted sessions produce explicit internal follow-through decisions such as reteach, check independence, transfer, review later and challenge.
 - Supported success is distinguished from later independent success, with learner-safe next-action language.
