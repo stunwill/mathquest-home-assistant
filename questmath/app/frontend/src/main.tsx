@@ -24,6 +24,8 @@ import {ConfidenceCheck, QuestionTools} from './question-tools';
 import {FractionBarAnswer, FractionNumberLineAnswer, GridSelectAnswer, RulerAnswer} from './interactive-math';
 import {PostAnswerFeedbackModal} from './post-answer-feedback';
 import {speakText} from './speech';
+import {TargetedCompletion, TargetedLearningPreview} from './targeted-learning';
+import {ParentTargetedLearningInsight} from './parent-targeted-learning';
 
 const API = 'api';
 
@@ -114,8 +116,8 @@ function Student({user,logout}:{user:User;logout:()=>void}){
   const selectSection=(next:StudentSection)=>{setSection(next);window.scrollTo({top:0,behavior:'auto'})};
   if(!dashboard&&error)return <><Header user={user} logout={logout}/><main className="page"><ErrorNotice message={error} retry={load}/></main></>;
   if(!dashboard)return <div className="splash"><Brand/></div>;
-  if(working&&worksheet&&!worksheet.completed_at&&!summary)return <Worksheet ws={worksheet} onUpdate={setWorksheet} onExit={()=>{setWorking(false);load()}} onDone={x=>{setSummary({...x,session_kind:worksheet.session_kind});setWorking(false);load()}}/>;
-  if(summary)return summary.session_kind==='diagnostic'?<DiagnosticCompletion back={()=>{setSummary(null);load()}}/>:<Result data={summary} back={()=>{setSummary(null);load()}}/>;
+  if(working&&worksheet&&!worksheet.completed_at&&!summary)return <Worksheet ws={worksheet} onUpdate={setWorksheet} onExit={()=>{setWorking(false);load()}} onDone={x=>{setSummary({...x,session_kind:x.learning_plan?'targeted':worksheet.session_kind});setWorking(false);load()}}/>;
+  if(summary)return summary.session_kind==='diagnostic'?<DiagnosticCompletion back={()=>{setSummary(null);load()}}/>:summary.session_kind==='targeted'?<TargetedCompletion worksheetId={summary.worksheet_id} back={()=>{setSummary(null);load()}}/>:<Result data={summary} back={()=>{setSummary(null);load()}}/>;
   if(choosing)return <QuestCategoryPicker cancel={()=>setChoosing(false)} start={startWorksheet}/>;
   const hasProgress=!!worksheet&&!worksheet.completed_at;
   const answered=worksheet ? worksheet.counts.correct+worksheet.counts.incorrect : 0;
@@ -128,7 +130,7 @@ function Student({user,logout}:{user:User;logout:()=>void}){
         <p>{hasProgress?(untouched?'Start when you are ready.':`${answered} of ${worksheet!.total} questions completed. Your progress is saved.`):'MathQuest will choose useful practice from your current learning plan.'}</p>
         <button className="primary" onClick={()=>{if(hasProgress&&worksheet){setWorking(true)}else{setChoosing(true)}}}><Play size={20}/>{primaryLabel}</button>
       </div></section>
-      {!hasProgress&&<AdaptiveRecommendation data={adaptive} busy={recommendationBusy} onStart={startRecommended}/>}
+      {!hasProgress&&<AdaptiveRecommendation data={adaptive} busy={recommendationBusy} onStart={startRecommended}/>}\n      {!hasProgress&&<TargetedLearningPreview/>}
       {!hasProgress&&<InterventionCard onOpen={openWorksheet}/>}
       <StudentDestination section="home" onOpen={openWorksheet} onCreate={()=>setChoosing(true)} onSelect={selectSection}/>
       <section className="panel mq-home-progress-preview"><p className="eyebrow">YOUR PROGRESS</p><h2>See what MathQuest is noticing</h2><p>Find skills that are getting stronger, ready for a challenge or ready to review.</p><button type="button" onClick={()=>selectSection('progress')}>View progress →</button></section>
@@ -205,7 +207,7 @@ function Parent({user,logout}:{user:User;logout:()=>void}){
   async function backup(){await req('/backups',{method:'POST'});void load()}
   const statusText=(value:string)=>value==='secure'?'Secure':value==='developing'?'Developing':value==='concern'?'Needs support':value.replaceAll('_',' ');
   const openWorksheet=(next:any)=>setWorksheet(next);
-  return <><Header user={user} logout={logout}/><main className="page parent-page">{error&&<ErrorNotice message={error} retry={()=>void load()} dismiss={()=>setError('')}/>} {intelligenceError&&<ErrorNotice message={`Learning intelligence is temporarily unavailable. ${intelligenceError}`} retry={()=>void load()} dismiss={()=>setIntelligenceError('')}/>}<ParentLearningIntelligence data={intelligence} onPeriod={setPeriod}/><ParentDiagnosticInsight/>{d.legacyInsight&&<ParentLearningInsight data={d.legacyInsight}/>}<ParentTestWorksheets onOpen={openWorksheet}/>
+  return <><Header user={user} logout={logout}/><main className="page parent-page">{error&&<ErrorNotice message={error} retry={()=>void load()} dismiss={()=>setError('')}/>} {intelligenceError&&<ErrorNotice message={`Learning intelligence is temporarily unavailable. ${intelligenceError}`} retry={()=>void load()} dismiss={()=>setIntelligenceError('')}/>}<ParentLearningIntelligence data={intelligence} onPeriod={setPeriod}/><ParentTargetedLearningInsight/><ParentDiagnosticInsight/>{d.legacyInsight&&<ParentLearningInsight data={d.legacyInsight}/>}<ParentTestWorksheets onOpen={openWorksheet}/>
   {d.concerns?.length>0&&<section className="panel concern-panel"><h2>⚑ Areas to review</h2><p>These outcomes currently have less than 70% first-attempt accuracy, or limited successful evidence.</p><div className="concern-grid">{d.concerns.map((x:any)=><div key={x.code}><b>{x.code}</b><span>{x.title}</span><strong>{x.accuracy}%</strong><small>{x.attempts} recent attempts</small></div>)}</div></section>}
   <section className="panel"><h2>MathQuest evidence by Victorian Curriculum outcome</h2><p>MathQuest reports observed learning evidence and does not formally certify curriculum achievement.</p><div className="curriculum-table"><div className="curriculum-head"><b>Outcome</b><b>Evidence</b><b>Accuracy</b><b>Status</b></div>{d.curriculum.map((x:any)=><div className="curriculum-row" key={x.code}><span><b>{x.code}</b><small>{x.strand} · {x.title}</small></span><span>{x.attempts} attempts</span><span>{x.attempts?`${x.accuracy}%`:'—'}</span><span className={'status-pill '+x.status}>{statusText(x.status)}</span></div>)}</div></section>
   <section className="grid2"><div className="panel"><h2>Strand performance</h2>{d.skills.map((s:any)=><div className="skill" key={s.topic}><div><b>{s.topic}</b><span>Adaptive level {s.level}</span></div><div className="bar"><i style={{width:`${s.accuracy}%`}}/></div><small>{s.accuracy}% · {s.avg_seconds}s average</small></div>)}</div><div className="panel"><h2><Settings size={20}/> Worksheet settings</h2><label>Questions per day<input type="number" min="5" max="50" value={settings.question_count} onChange={e=>setSettings({...settings,question_count:+e.target.value})}/></label><label className="toggle"><input type="checkbox" checked={settings.adaptive_mode} onChange={e=>setSettings({...settings,adaptive_mode:e.target.checked})}/> Adaptive learning</label><div className="topic-checks">{['number','algebra','measurement','space','statistics','probability'].map(t=><label key={t}><input type="checkbox" checked={settings.enabled_topics.includes(t)} onChange={e=>setSettings({...settings,enabled_topics:e.target.checked?[...settings.enabled_topics,t]:settings.enabled_topics.filter((x:string)=>x!==t)})}/>{t}</label>)}</div><button className="primary" onClick={save}>Save settings</button></div></section>
