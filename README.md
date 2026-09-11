@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.46.0`
+Version `0.47.0`
 
 ## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
 
@@ -16,6 +16,16 @@ MathQuest now interprets what happened during a targeted session and uses that e
 - Supported success is distinguished from later independent success, with learner-safe next-action language.
 - Best Next Step and targeted session planning reuse recent evidence without introducing a global grade or second mastery model.
 - Parent Learning Intelligence can inspect the evidence and resulting next action.
+- Physical iPhone/iPad acceptance remains pending until tested on real devices.
+
+## v0.47.0 - Grade 5 Curriculum Depth, Question Families & Representation
+
+MathQuest now expands the mathematical content available to its adaptive engine. High-value Level 5 targets use reusable question families with meaningful variation, including equivalent fractions, multiplication and division relationships, number patterns, and perimeter and area.
+
+- Targeted sessions can route these skills to dedicated generators rather than loosely related generic practice.
+- Family metadata records representation and evidence characteristics on the existing question payload without creating a second mastery model.
+- A Level 5 coverage matrix records strong, adequate and limited areas and names deferred gaps.
+- Diagnostic integrity, Level 5/6 progression, Story Adventure, Extra Practice, hints, worked examples, Parent Tests and existing worksheet history remain preserved.
 - Physical iPhone/iPad acceptance remains pending until tested on real devices.
 
 ## Development Metadata
