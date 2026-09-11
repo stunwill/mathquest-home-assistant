@@ -6,6 +6,7 @@ MathQuest now expands the mathematical content available to its adaptive engine.
 - Family metadata records representation and evidence characteristics on the existing question payload without creating a second mastery model.
 - A Level 5 coverage matrix records strong, adequate and limited areas and names deferred gaps.
 - Diagnostic integrity, Level 5/6 progression, Story Adventure, Extra Practice, hints, worked examples, Parent Tests and existing worksheet history remain preserved.
+- Best Next Step can now route high-value Level 5 targets to dedicated question families.
 - Physical iPhone/iPad acceptance remains pending until tested on real devices.
 
 ## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
