@@ -1,3 +1,13 @@
+## v0.47.0 - Grade 5 Curriculum Depth, Question Families & Representation
+
+MathQuest now expands the mathematical content available to its adaptive engine. High-value Level 5 targets use reusable question families with meaningful variation, including equivalent fractions, multiplication and division relationships, number patterns, and perimeter and area.
+
+- Targeted sessions can route these skills to dedicated generators rather than loosely related generic practice.
+- Family metadata records representation and evidence characteristics on the existing question payload without creating a second mastery model.
+- A Level 5 coverage matrix records strong, adequate and limited areas and names deferred gaps.
+- Diagnostic integrity, Level 5/6 progression, Story Adventure, Extra Practice, hints, worked examples, Parent Tests and existing worksheet history remain preserved.
+- Physical iPhone/iPad acceptance remains pending until tested on real devices.
+
 ## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
 
 ### Learning continuity
