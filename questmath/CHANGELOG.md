@@ -1,6 +1,6 @@
 ## v0.47.0 - Grade 5 Curriculum Depth, Question Families & Representation
 
-MathQuest now expands the mathematical content available to its adaptive engine through targeted learning sessions. High-value Level 5 targets use reusable question families with meaningful variation, including equivalent fractions, multiplication and division relationships, number patterns, and perimeter and area.
+MathQuest now expands the mathematical content available to its adaptive engine through targeted learning sessions, while preserving skill-sensitive progression. High-value Level 5 targets use reusable question families with meaningful variation, including equivalent fractions, multiplication and division relationships, number patterns, and perimeter and area.
 
 - Targeted sessions can route these skills to dedicated generators rather than loosely related generic practice.
 - Family metadata records representation and evidence characteristics on the existing question payload without creating a second mastery model.
