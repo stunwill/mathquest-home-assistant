@@ -8,7 +8,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from . import main as legacy
-from . import v0170, v0460
+from . import v0120, v0170, v0460
 
 app = v0460.app
 app.version = '0.47.0'
