@@ -125,16 +125,6 @@ def coverage_report() -> dict[str, Any]:
                        'multi-step statistics interpretation', 'equally-likely probability representation'],
     }
 
-_original_make_question = legacy.make_question
-def make_question_v0470(topic: str, level: int, rng: random.Random):
-    target = getattr(v0170, '_focus_targets', None)
-    target = target.get().get(topic) if target else None
-    generator = FAMILY_GENERATORS.get(topic, {}).get(target)
-    if generator and rng.random() < .85:
-        return generator(rng)
-    return _original_make_question(topic, level, rng)
-legacy.make_question = make_question_v0470
-
 @app.get('/api/v0470/curriculum-coverage')
 def curriculum_coverage(_: legacy.User = Depends(legacy.current_user)):
     return coverage_report()
