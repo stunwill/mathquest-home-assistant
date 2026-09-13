@@ -1,6 +1,6 @@
 ## v0.47.1 - iPad Keyboard Answer Visibility
 
-This corrective release keeps the active worksheet question, answer field and primary Check answer action visible together when the iPadOS software keyboard reduces the visual viewport in landscape orientation. It preserves the targeted learning session, Best Next Step and skill-sensitive progression architecture.
+This corrective release keeps the active worksheet question, answer field and primary Check answer action visible together when the iPadOS software keyboard reduces the visual viewport in landscape orientation. It preserves the targeted learning session, Best Next Step and skill-sensitive progression architecture. The existing Level 5/6 diagnostic remains unchanged and continues to provide conservative starting evidence.
 
 - Groups the answer field and primary action as one responsive interaction so tablet landscape can use its available width.
 - Uses dynamic viewport sizing and defensive Visual Viewport detection to compact only while the software keyboard actually reduces the viewport.
