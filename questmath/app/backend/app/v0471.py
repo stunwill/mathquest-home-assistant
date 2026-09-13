@@ -11,8 +11,8 @@ from . import main as legacy
 from . import v0120, v0170, v0460
 
 app = v0460.app
-app.version = '0.47.1'
-legacy.APP_VERSION = '0.47.1'
+app.version = '0.47.2'
+legacy.APP_VERSION = '0.47.2'
 
 def _tag(payload: dict[str, Any], family: str, representation: str, evidence_type: str) -> dict[str, Any]:
     return {**payload, 'question_family': family, 'representation': representation, 'evidence_type': evidence_type, 'grade_band': 5}
@@ -119,7 +119,7 @@ for topic, generators in FAMILY_GENERATORS.items():
 
 def coverage_report() -> dict[str, Any]:
     return {
-        'version': '0.47.1',
+        'version': '0.47.2',
         'families': sorted(f'{topic}:{skill}' for topic, values in FAMILY_GENERATORS.items() for skill in values),
         'known_gaps': ['place-value ordering', 'fraction ordering and visual comparison', 'area/perimeter diagrams',
                        'multi-step statistics interpretation', 'equally-likely probability representation'],
@@ -131,7 +131,7 @@ def curriculum_coverage(_: legacy.User = Depends(legacy.current_user)):
 
 @app.get('/api/v0470/capabilities')
 def capabilities(_: legacy.User = Depends(legacy.current_user)):
-    return {'version': '0.47.1', 'question_families': True, 'level5_coverage_report': True,
+    return {'version': '0.47.2', 'question_families': True, 'level5_coverage_report': True,
             'targeted_generator_routing': True, 'representation_metadata': True, 'inherits_v0460': True}
 
 v0460.app.router.routes[:] = [route for route in v0460.app.router.routes if not (

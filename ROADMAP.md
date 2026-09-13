@@ -1,3 +1,13 @@
+## v0.47.2 - Mathematics-first Worksheet UX
+
+Status: Completed
+
+- Reorder worksheet hierarchy so the question, answer and Check answer receive primary attention.
+- Compact secondary tools without removing Read aloud, Scratchpad, Maths tools, Show another way, Hint or Math Mentor.
+- Remove student-facing internal difficulty metadata and reduce Skip for now visual competition.
+- Keep keyboard-aware iPad landscape behaviour, phone stacking, accessibility and ingress support.
+- Physical-device acceptance remains pending.
+
 ## v0.47.1 - iPad Keyboard Answer Visibility
 
 Status: Completed

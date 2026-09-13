@@ -1,3 +1,13 @@
+## v0.47.2 - Mathematics-first Worksheet UX
+
+This focused corrective release uses production worksheet evidence to reduce vertical competition around the active mathematics, keep the answer interaction coherent and make small-screen support easier to reach.
+
+- Moves Read aloud, Scratchpad, Maths tools and Show another way below the question and answer interaction, while preserving their functionality and labels.
+- Removes raw internal topic/difficulty metadata from the student worksheet and retains the underlying adaptive difficulty model.
+- Keeps Check answer beside the answer control on suitable tablet landscape widths, stacks it on phones, and retains keyboard-aware compact viewport behaviour.
+- Reduces Skip for now visual weight, keeps diagnostic selection concise and preserves the feedback, confidence, support, Story Adventure and Home Assistant ingress flows.
+- Physical iPhone/iPad acceptance remains pending until real-device testing.
+
 ## v0.47.1 - iPad Keyboard Answer Visibility
 
 This corrective release keeps the active worksheet question, answer field and primary Check answer action visible together when the iPadOS software keyboard reduces the visual viewport in landscape orientation. It preserves the targeted learning session, Best Next Step and skill-sensitive progression architecture.

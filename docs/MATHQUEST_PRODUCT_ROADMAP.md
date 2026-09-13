@@ -1,5 +1,13 @@
 # MathQuest Product Roadmap
 
+## v0.47.2 corrective worksheet hierarchy
+
+Status: Completed
+
+Production worksheet evidence led to a focused hierarchy correction: the question and answer interaction now precede secondary tools, tablet landscape uses horizontal answer space, phones remain stacked, raw student difficulty metadata is removed, and support remains available in a compact secondary area. Real-device acceptance remains pending.
+
+
+
 ## v0.47.1 corrective worksheet UX
 
 Status: Completed
