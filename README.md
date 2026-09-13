@@ -6,7 +6,7 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.47.0`
+Version `0.47.1`
 
 ## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
 
@@ -17,6 +17,14 @@ MathQuest now interprets what happened during a targeted session and uses that e
 - Best Next Step and targeted session planning reuse recent evidence without introducing a global grade or second mastery model.
 - Parent Learning Intelligence can inspect the evidence and resulting next action.
 - Physical iPhone/iPad acceptance remains pending until tested on real devices.
+
+## v0.47.1 - iPad Keyboard Answer Visibility
+
+The active worksheet now keeps the question, answer field and Check answer action together above a reduced iPadOS visual viewport. Tablet landscape uses the available width, while phone stacking and physical-keyboard behaviour remain unchanged.
+
+- Keyboard-aware compact mode activates only when Visual Viewport reports a substantial reduction while an answer control is focused.
+- Hints, worked examples, Math Mentor, Enter submission, feedback flow and safe-area handling remain available.
+- Physical iPhone/iPad validation remains pending until tested on real devices.
 
 ## v0.47.0 - Grade 5 Curriculum Depth, Question Families & Representation
 

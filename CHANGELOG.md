@@ -1,3 +1,12 @@
+## v0.47.1 - iPad Keyboard Answer Visibility
+
+This corrective release keeps the active worksheet question, answer field and primary Check answer action visible together when the iPadOS software keyboard reduces the visual viewport in landscape orientation.
+
+- Groups the answer field and primary action as one responsive interaction so tablet landscape can use its available width.
+- Uses dynamic viewport sizing and defensive Visual Viewport detection to compact only while the software keyboard actually reduces the viewport.
+- Preserves stacked phone layouts, physical-keyboard spacing, Enter submission, hints, worked examples, Math Mentor, feedback and Home Assistant ingress safe-area handling.
+- Adds reduced-viewport responsive regression contracts and keeps physical iPhone/iPad acceptance pending until real-device testing.
+
 ## v0.47.0 - Grade 5 Curriculum Depth, Question Families & Representation
 
 MathQuest now expands the mathematical content available to its adaptive engine. High-value Level 5 targets use reusable question families with meaningful variation, including equivalent fractions, multiplication and division relationships, number patterns, and perimeter and area.
