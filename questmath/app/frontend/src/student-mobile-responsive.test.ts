@@ -55,3 +55,23 @@ describe('v0.40 student responsive layout contracts', () => {
     expect(mobileCss).toContain('@media(min-width:761px)');
   });
 });
+
+
+describe('v0.47.1 keyboard-aware worksheet contracts', () => {
+  it('groups the answer field and primary submit action for responsive layout', () => {
+    const source = readFileSync(resolve(sourceDir, 'main.tsx'), 'utf8');
+    expect(source).toContain('answer-action-group');
+    expect(source).toContain('aria-label="Answer and submit"');
+    expect(source).toContain('className="primary answer-submit"');
+  });
+  it('uses dynamic viewport sizing and a reduced-visual-viewport state', () => {
+    expect(worksheetCss).toContain('100dvh');
+    expect(worksheetCss).toContain('data-mq-keyboard=open');
+    expect(worksheetCss).toContain('env(safe-area-inset-bottom)');
+  });
+  it('uses landscape width for the answer and submit group while stacking on phones', () => {
+    expect(worksheetCss).toContain('@media (min-width:900px) and (max-width:1200px) and (orientation:landscape)');
+    expect(worksheetCss).toContain('@media (max-width:760px)');
+    expect(worksheetCss).toContain('grid-template-columns:1fr');
+  });
+});

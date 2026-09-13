@@ -1,3 +1,12 @@
+## v0.47.1 - iPad Keyboard Answer Visibility
+
+Status: Completed
+
+- Keep the active question, answer field and primary answer action visible together in iPad landscape with the software keyboard open.
+- Use dynamic viewport state only for a genuinely reduced visual viewport, preserving physical-keyboard and phone layouts.
+- Preserve learning support, feedback, accessibility, safe-area and Home Assistant ingress behaviour.
+- Physical-device acceptance remains pending.
+
 ## v0.47.0 - Grade 5 Curriculum Depth, Question Families & Representation
 
 MathQuest now expands the mathematical content available to its adaptive engine. High-value Level 5 targets use reusable question families with meaningful variation, including equivalent fractions, multiplication and division relationships, number patterns, and perimeter and area.

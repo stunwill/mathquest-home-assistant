@@ -1,5 +1,13 @@
 # MathQuest Product Roadmap
 
+## v0.47.1 corrective worksheet UX
+
+Status: Completed
+
+The worksheet answer interaction now treats the answer field and primary action as one responsive group. CSS dynamic viewport sizing plus defensive Visual Viewport state compact the worksheet only while a software keyboard reduces the viewport. Tablet landscape uses horizontal space; phone and physical-keyboard layouts remain distinct. Real-device acceptance remains pending.
+
+
+
 ## Product objective
 
 MathQuest should help Sienna, a Grade 5 learner currently needing targeted Number and Algebra support, improve through short daily tutoring sessions. It should align to Victorian Curriculum Level 5 while adapting across Levels 2–6 from a diagnostic baseline.
