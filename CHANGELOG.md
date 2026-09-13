@@ -6,6 +6,7 @@ This focused corrective release uses the v0.47.2 production recording as real-wo
 - Makes the active question and close action explicit, standardises learner-facing status language and keeps the worksheet header compact.
 - Removes generic unsupported praise from feedback while preserving specific mathematical insight and the Why explanation.
 - Preserves v0.47.2 keyboard visibility, answer and Check answer grouping, support tools, confidence, feedback, resume, Story Adventure and ingress behaviour.
+- Keeps the existing Best Next Step, targeted learning session, skill-sensitive progression, diagnostic, learner-state and adaptive evidence contracts unchanged.
 - Physical iPhone/iPad acceptance remains pending until real-device testing.
 
 ## v0.47.2 - Mathematics-first Worksheet UX

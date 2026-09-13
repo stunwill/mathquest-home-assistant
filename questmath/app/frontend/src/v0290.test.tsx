@@ -38,7 +38,7 @@ describe('v0.29 optional tutoring', () => {
     fireEvent.change(input, {target: {value: '222'}});
     fireEvent.click(screen.getByRole('button', {name: 'Check answer'}));
     expect(await screen.findByRole('dialog', {name: 'Correct answer'})).toBeInTheDocument();
-    expect(screen.getByText('Great job!')).toBeInTheDocument();
+    expect(screen.queryByText('Great job!')).not.toBeInTheDocument();
     expect(attempts).toBe(2);
   });
 });
