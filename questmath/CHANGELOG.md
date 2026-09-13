@@ -1,6 +1,6 @@
 ## v0.47.2 - Mathematics-first Worksheet UX
 
-This focused corrective release uses production worksheet evidence to reduce vertical competition around the active mathematics, keep the answer interaction coherent and make small-screen support easier to reach.
+This focused corrective release uses production worksheet evidence to reduce vertical competition around the active mathematics, keep the answer interaction coherent and make small-screen support easier to reach. Best Next Step remains the learner-safe expression of the targeted learning session, and the existing diagnostic and skill-sensitive progression contracts are preserved.
 
 - Moves Read aloud, Scratchpad, Maths tools and Show another way below the question and answer interaction, while preserving their functionality and labels.
 - Removes raw internal topic/difficulty metadata from the student worksheet and retains the underlying adaptive difficulty model.
