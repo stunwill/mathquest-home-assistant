@@ -1,3 +1,13 @@
+## v0.47.3 - Post-release Worksheet UX Polish
+
+Status: Completed
+
+- Remove curriculum codes, raw skill identifiers and internal difficulty metadata from student worksheet surfaces.
+- Improve worksheet-map status language, active-state visibility, close semantics and compact header presentation.
+- Suppress generic unsupported feedback while preserving specific mathematical feedback and explanations.
+- Preserve v0.47.2 keyboard, support, accessibility and ingress behaviour.
+- Physical-device acceptance remains pending.
+
 ## v0.47.2 - Mathematics-first Worksheet UX
 
 Status: Completed

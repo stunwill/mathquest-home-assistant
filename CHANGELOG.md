@@ -1,3 +1,13 @@
+## v0.47.3 - Post-release Worksheet UX Polish
+
+This focused corrective release uses the v0.47.2 production recording as real-world UX evidence to keep the student worksheet mathematics-first and learner-safe.
+
+- Replaces curriculum codes, raw skill identifiers and internal difficulty labels in the student worksheet map with readable mathematical descriptions.
+- Makes the active question and close action explicit, standardises learner-facing status language and keeps the worksheet header compact.
+- Removes generic unsupported praise from feedback while preserving specific mathematical insight and the Why explanation.
+- Preserves v0.47.2 keyboard visibility, answer and Check answer grouping, support tools, confidence, feedback, resume, Story Adventure and ingress behaviour.
+- Physical iPhone/iPad acceptance remains pending until real-device testing.
+
 ## v0.47.2 - Mathematics-first Worksheet UX
 
 This focused corrective release uses production worksheet evidence to reduce vertical competition around the active mathematics, keep the answer interaction coherent and make small-screen support easier to reach.

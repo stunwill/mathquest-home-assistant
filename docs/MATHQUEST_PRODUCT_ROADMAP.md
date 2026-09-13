@@ -1,5 +1,13 @@
 # MathQuest Product Roadmap
 
+## v0.47.3 post-release worksheet polish
+
+Status: Completed
+
+The v0.47.2 recording showed the need for one further narrow refinement: student worksheet maps must translate technical question metadata into mathematical language, and feedback should not spend space on generic praise without evidence. Keyboard visibility and mathematics-first ordering remain preserved. Real-device acceptance remains pending.
+
+
+
 ## v0.47.2 corrective worksheet hierarchy
 
 Status: Completed
