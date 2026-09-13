@@ -1,8 +1,15 @@
-# MathQuest 0.47.1
+# MathQuest 0.47.2
 
 **Sienna’s daily adventure in maths.**
 
 MathQuest is a local Home Assistant app providing daily adaptive mathematics practice, interactive mathematical models, reasoning, worksheet navigation, learner guidance and a parent dashboard aligned to a Victorian Curriculum Level 5 pathway. The focused Level 5/6 diagnostic supplies conservative placement evidence, and v0.44.0 turns that evidence and Best Next Step into deliberately targeted learning sessions.
+
+## v0.47.2 mathematics-first worksheet UX
+
+- The active question and answer interaction now appear before secondary worksheet tools.
+- Internal topic/difficulty text is no longer exposed on the student worksheet.
+- Skip for now has secondary visual weight, diagnostic selection is concise, and iPad keyboard-aware layout remains available.
+- Physical iPhone/iPad acceptance remains pending until tested on real devices.
 
 ## v0.47.1 iPad keyboard answer visibility
 

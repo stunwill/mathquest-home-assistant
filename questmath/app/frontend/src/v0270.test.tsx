@@ -40,9 +40,9 @@ describe('MathQuest 0.27 learner and parent-test interactions', () => {
     const diagnostic = screen.getByRole('button', {name: /Level 5 and Level 6 diagnostic/i});
     expect(screen.queryByText(/Levels 2–6 diagnostic/i)).not.toBeInTheDocument();
     fireEvent.click(diagnostic);
-    expect(screen.getByText('Six questions')).toBeInTheDocument();
-    expect(screen.getByText(/Three short Level 5 questions and three Level 6 questions/i)).toBeInTheDocument();
-    expect(screen.getByText(/placement evidence only/i)).toBeInTheDocument();
+    expect(screen.getByText('Six quick questions')).toBeInTheDocument();
+    expect(screen.getByText(/This short, no-pressure check helps MathQuest choose useful practice/i)).toBeInTheDocument();
+    expect(screen.getByText(/not an exam/i)).toBeInTheDocument();
     expect(screen.queryByText(/level from 2 to 6/i)).not.toBeInTheDocument();
   });
 

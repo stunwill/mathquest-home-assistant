@@ -75,3 +75,30 @@ describe('v0.47.1 keyboard-aware worksheet contracts', () => {
     expect(worksheetCss).toContain('grid-template-columns:1fr');
   });
 });
+
+
+describe('v0.47.2 mathematics-first worksheet contracts', () => {
+  it('places the question before supporting tools and removes raw student difficulty metadata', () => {
+    const source = readFileSync(resolve(sourceDir, 'main.tsx'), 'utf8');
+    expect(source.indexOf('<h1>{q.prompt}</h1>')).toBeLessThan(source.indexOf('<QuestionTools question={q}'));
+    expect(source).not.toContain('{q.topic} · level {q.level}');
+  });
+  it('keeps the answer and primary action grouped while treating skip as secondary', () => {
+    const source = readFileSync(resolve(sourceDir, 'main.tsx'), 'utf8');
+    expect(source).toContain('aria-label="Answer and submit"');
+    expect(worksheetCss).toContain('.question-actions{display:flex;justify-content:flex-end');
+    expect(worksheetCss).toContain('background:transparent;color:#7b5d16');
+  });
+  it('uses compact, labelled worksheet tools without removing support', () => {
+    expect(worksheetCss).toContain('.react-question-tools>div:first-child button{min-height:44px');
+    expect(worksheetCss).toContain('html[data-mq-keyboard=open] .react-question-tools');
+    expect(readFileSync(resolve(sourceDir, 'question-tools.tsx'), 'utf8')).toContain('Read aloud');
+    expect(readFileSync(resolve(sourceDir, 'question-tools.tsx'), 'utf8')).toContain('Scratchpad');
+  });
+  it('keeps diagnostic wording short and learner-safe', () => {
+    const source = readFileSync(resolve(sourceDir, 'main.tsx'), 'utf8');
+    expect(source).toContain('Six quick questions');
+    expect(source).toContain('It is not an exam.');
+    expect(source).not.toContain('placement evidence only');
+  });
+});
