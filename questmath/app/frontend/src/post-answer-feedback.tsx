@@ -12,6 +12,8 @@ type PostAnswerFeedbackModalProps = {
   primaryBusy?: boolean;
 };
 
+export function meaningfulFeedback(message: unknown): boolean { const value=String(message||'').trim().toLowerCase().replace(/[.!]/g,''); return Boolean(value)&&!['correct','correct answer','great job','nice work','well done','try again','keep going'].includes(value); }
+
 export function PostAnswerFeedbackModal({feedback, working, reflection, testFeedback, primaryLabel, onPrimary, onOpenMentor, primaryBusy=false}: PostAnswerFeedbackModalProps) {
   const titleId = useId();
   const descriptionId = useId();
@@ -60,7 +62,7 @@ export function PostAnswerFeedbackModal({feedback, working, reflection, testFeed
       </header>
 
       <div className="post-answer-scroll">
-        {feedback?.message&&<section className="post-answer-message" aria-label="Result message"><b>{correct?'What went well':'What to notice'}</b><p>{feedback.message}</p></section>}
+        {meaningfulFeedback(feedback?.message)&&<section className="post-answer-message" aria-label="Result message"><b>{correct?'What went well':'What to notice'}</b><p>{feedback.message}</p></section>}
         {!retry&&working&&<section className="post-answer-explanation" aria-label="Mathematical explanation"><b>Why</b><p>{working}</p></section>}
         {retry&&onOpenMentor&&<section className="post-answer-mentor"><div><b>Want another way to think about it?</b><span>Math Mentor can guide you without making help a required step.</span></div><button type="button" onClick={onOpenMentor}>Math Mentor</button></section>}
         {testFeedback}

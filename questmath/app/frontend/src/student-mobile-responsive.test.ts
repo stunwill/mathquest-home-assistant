@@ -102,3 +102,30 @@ describe('v0.47.2 mathematics-first worksheet contracts', () => {
     expect(source).not.toContain('placement evidence only');
   });
 });
+
+
+describe('v0.47.3 learner-safe worksheet polish contracts', () => {
+  it('maps worksheet-map entries to learner-safe labels and marks the active question', () => {
+    const source = readFileSync(resolve(sourceDir, 'main.tsx'), 'utf8');
+    expect(source).toContain('learnerQuestionSummary(q)');
+    expect(source).toContain('learnerSkillLabel(q.skill,q.topic)');
+    expect(source).toContain('aria-current={q.id===activeId?\'true\':undefined}');
+    expect(source).not.toContain('{q.topic} · {q.skill.replaceAll(\'_\',\' \')}');
+  });
+  it('uses consistent learner-safe status names and a labelled close control', () => {
+    const source = readFileSync(resolve(sourceDir, 'main.tsx'), 'utf8');
+    expect(source).toContain("not_started:'Ready'");
+    expect(source).toContain("retry_available:'Try again'");
+    expect(source).toContain('aria-label="Close all questions"');
+  });
+  it('keeps the quest header compact without removing the progress action', () => {
+    expect(worksheetCss).toContain('.worksheet-status{padding:16px 18px}');
+    expect(worksheetCss).toContain('.worksheet-status .wide{min-height:44px}');
+    expect(worksheetCss).toContain('.overview-modal{max-width:760px');
+  });
+  it('keeps keyboard-visible answer controls and support contracts intact', () => {
+    expect(worksheetCss).toContain('html[data-mq-keyboard=open]');
+    expect(worksheetCss).toContain('.answer-action-group');
+    expect(worksheetCss).toContain('.react-question-tools');
+  });
+});
