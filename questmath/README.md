@@ -1,8 +1,15 @@
-# MathQuest 0.47.3
+# MathQuest 0.47.4
 
 **Sienna’s daily adventure in maths.**
 
 MathQuest is a local Home Assistant app providing daily adaptive mathematics practice, interactive mathematical models, reasoning, worksheet navigation, learner guidance and a parent dashboard aligned to a Victorian Curriculum Level 5 pathway. The focused Level 5/6 diagnostic supplies conservative placement evidence, and v0.44.0 turns that evidence and Best Next Step into deliberately targeted learning sessions.
+
+## v0.47.4 return to answer
+
+- Answer focus and re-tap restore question and Check answer context after reading lower support content with the software keyboard open.
+- Viewport-offset-aware positioning works without a repeated scroll while reading Visual idea, Scratchpad or Math Mentor; physical keyboard and multiple-choice layouts remain unchanged.
+- No support accordion is introduced: Visual idea is a recommendation, Maths Lab is a modal, and closing unsaved Scratchpad or Math Mentor content would discard useful context.
+- PENDING PHYSICAL DEVICE VALIDATION for iPhone, iPad and Home Assistant ingress.
 
 ## v0.47.3 post-release worksheet UX polish
 

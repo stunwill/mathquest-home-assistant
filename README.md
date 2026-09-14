@@ -6,7 +6,11 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.47.3`
+Version `0.47.4`
+
+## v0.47.4 - Return to Answer
+
+The v0.47.3 production recording shows that the question, answer and Check answer remain usable when the iOS keyboard opens, but a learner can remain scrolled into support content after returning to a typed answer. Answer focus and re-tap now restore the answer context once the visual viewport settles, without interrupting deliberate support reading. Existing support, feedback, Home and multiple-choice interactions remain unchanged. Physical-device validation remains pending.
 
 ## v0.46.0 - Adaptive Learning Loop & Next-Session Intelligence
 

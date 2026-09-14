@@ -1,3 +1,12 @@
+## v0.47.4 - Return to Answer After Support
+
+The latest installed v0.47.3 production recording confirms the keyboard-first answer layout, compact quest header, learner-safe worksheet map, mathematical feedback and active-work Home hierarchy. It also shows a typed-answer worksheet scrolled into Visual idea and Math Mentor while the software keyboard is open.
+
+- Restore the question and answer group on actual answer focus or re-tap after support reading, using the visual viewport offset and height. Do not scroll on every render or while support is being read.
+- Keep support disclosure unchanged because the expanded Visual idea is a small recommendation, the model is modal, and Scratchpad/Math Mentor content should not be automatically discarded or collapsed.
+- Preserve Best Next Step, targeted learning session, skill-sensitive progression and diagnostic evidence architecture without backend learning changes.
+- Physical iPhone, iPad and Home Assistant ingress validation remains pending.
+
 ## v0.47.3 - Post-release Worksheet UX Polish
 
 This focused corrective release uses the v0.47.2 production recording as real-world UX evidence to keep the student worksheet mathematics-first and learner-safe.
