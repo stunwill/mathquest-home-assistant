@@ -1,3 +1,7 @@
+## v0.47.4 - Return to Answer After Support
+
+Focused worksheet correction based on the installed v0.47.3 recording: restore keyboard-visible answer context when the learner returns from lower support content, while retaining deliberate support scrolling and existing adaptive learning.
+
 ## v0.47.3 - Post-release Worksheet UX Polish
 
 Status: Completed

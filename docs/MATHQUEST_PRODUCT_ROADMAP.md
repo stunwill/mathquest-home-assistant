@@ -1,5 +1,9 @@
 # MathQuest Product Roadmap
 
+## v0.47.4 return to answer
+
+The installed v0.47.3 recording shows the keyboard-first worksheet working initially, with a remaining scroll-restoration issue after reading support. Restore answer context only on answer/resume transitions. Support disclosure, navigation and Home remain unchanged where the recording does not justify additional UI.
+
 ## v0.47.3 post-release worksheet polish
 
 Status: Completed
