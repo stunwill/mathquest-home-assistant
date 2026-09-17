@@ -9,6 +9,7 @@ export function ParentLearningInsight({data}: {data: any}) {
   if (!data) return null;
   const week = data.weekly?.current || {};
   const level = data.estimated_level || {};
+  const outcomes = Array.isArray(data.outcomes) ? data.outcomes : [];
   return <>
     <section className="panel parent-learning-insight">
       <div className="panel-heading">
@@ -31,7 +32,7 @@ export function ParentLearningInsight({data}: {data: any}) {
         <div><h3>Strategies practised</h3>{data.strategies_used?.length ? data.strategies_used.map((item:any)=><p key={item.strategy}><span>{item.strategy}</span><b>{item.questions}</b></p>) : <p>No strategy-card practice recorded this week.</p>}</div>
       </div>
     </section>
-    <section className="panel outcome-insight"><h2>Outcome mastery and retention</h2><p>Independent accuracy excludes hinted answers. Supported accuracy includes questions completed after help.</p><div className="outcome-insight-table"><div className="outcome-insight-head"><b>Outcome</b><b>Independent</b><b>Supported</b><b>Mastery</b><b>Retention</b><b>Review</b></div>{data.outcomes.map((item:any)=><div className="outcome-insight-row" key={item.code}><span><b>{item.code}</b><small>{item.title}</small></span><span>{value(item.independent_accuracy, '%')}</span><span>{value(item.supported_accuracy, '%')}</span><span>{item.questions ? `${item.mastery}%` : 'Not assessed'}</span><span>{value(item.retention_accuracy, '%')}</span><span className={item.review_due?'review-due':''}>{item.review_due ? 'Due now' : item.questions ? item.next_review_due : 'Not scheduled'}</span></div>)}</div></section>
+    <section className="panel outcome-insight"><h2>Outcome mastery and retention</h2><p>Independent accuracy excludes hinted answers. Supported accuracy includes questions completed after help.</p>{outcomes.length ? <div className="outcome-insight-table"><div className="outcome-insight-head"><b>Outcome</b><b>Independent</b><b>Supported</b><b>Mastery</b><b>Retention</b><b>Review</b></div>{outcomes.map((item:any)=><div className="outcome-insight-row" key={item.code}><span><b>{item.code}</b><small>{item.title}</small></span><span>{value(item.independent_accuracy, '%')}</span><span>{value(item.supported_accuracy, '%')}</span><span>{item.questions ? `${item.mastery}%` : 'Not assessed'}</span><span>{value(item.retention_accuracy, '%')}</span><span className={item.review_due?'review-due':''}>{item.review_due ? 'Due now' : item.questions ? item.next_review_due : 'Not scheduled'}</span></div>)}</div> : <p>No curriculum outcome evidence is available yet. Complete more learning activity to populate this section.</p>}</section>
   </>;
 }
 
