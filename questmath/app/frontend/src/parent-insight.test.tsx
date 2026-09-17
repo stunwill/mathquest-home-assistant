@@ -27,6 +27,21 @@ describe('parent and Home Assistant insight', () => {
     expect(screen.getByText('Due now')).toBeTruthy();
   });
 
+  it('renders partial legacy insight payloads without crashing', () => {
+    render(<ParentLearningInsight data={{weekly: {narrative: 'Learning evidence is still building.'}}}/>);
+    expect(screen.getByText('Learning evidence is still building.')).toBeTruthy();
+    expect(screen.getByText('No comparable growth window yet.')).toBeTruthy();
+    expect(screen.getByText('No persistent gaps currently identified.')).toBeTruthy();
+    expect(screen.getByText('No strategy-card practice recorded this week.')).toBeTruthy();
+    expect(screen.getByText('No outcome mastery evidence is available from this insight yet.')).toBeTruthy();
+  });
+
+  it('treats malformed collection fields as unavailable evidence', () => {
+    render(<ParentLearningInsight data={{gains: {}, persistent_gaps: null, strategies_used: 'legacy', outcomes: undefined}}/>);
+    expect(screen.getByText('No comparable growth window yet.')).toBeTruthy();
+    expect(screen.getByText('No outcome mastery evidence is available from this insight yet.')).toBeTruthy();
+  });
+
   it('reveals the parent-protected long-lived Home Assistant token on demand', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
