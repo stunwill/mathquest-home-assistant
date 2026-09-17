@@ -5,7 +5,7 @@ This focused corrective release publishes the Parent Dashboard resilience fix al
 - Prevent Parent Learning Insight from crashing when a legacy or partial insight payload omits the `outcomes` collection.
 - Render a clear no-evidence state instead of blanking the Parent Dashboard.
 - Add regression coverage for the legacy payload shape that reproduced the production failure.
-- Preserve Best Next Step, targeted learning session behaviour, worksheets, adaptive progression, diagnostics, Math Mentor and stored learner evidence unchanged.
+- Preserve Best Next Step, targeted learning session behaviour, skill-sensitive progression, worksheets, adaptive progression, diagnostics, Math Mentor and stored learner evidence unchanged.
 
 ## v0.47.4 - Return to Answer After Support
 
