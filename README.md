@@ -6,7 +6,11 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.47.4`
+Version `0.47.5`
+
+## v0.47.5 - Parent Dashboard Crash Fix
+
+MathQuest now safely handles legacy or partial Parent Learning Insight responses that do not contain curriculum outcome evidence. Instead of the Parent Dashboard blanking after the asynchronous insight request loads, the insight section renders a clear no-evidence state. Student learning behaviour is unchanged.
 
 ## v0.47.4 - Return to Answer
 
