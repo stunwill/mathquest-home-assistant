@@ -1,3 +1,12 @@
+## v0.47.5 - Parent Dashboard Crash Fix
+
+Status: Completed
+
+- Publish the already-merged Parent Learning Insight legacy-payload guard as Home Assistant add-on v0.47.5.
+- Prevent a missing `outcomes` collection from blanking the Parent Dashboard after asynchronous insight loading.
+- Preserve student worksheets, targeted learning, adaptive progression, diagnostics and stored learner evidence.
+- Retain focused regression coverage for the production failure shape.
+
 ## v0.47.4 - Return to Answer After Support
 
 Focused worksheet correction based on the installed v0.47.3 recording: restore keyboard-visible answer context when the learner returns from lower support content, while retaining deliberate support scrolling and existing adaptive learning.
@@ -53,8 +62,6 @@ MathQuest now expands the mathematical content available to its adaptive engine.
 - [x] Add backend regression coverage for conservative, support-aware follow-through.
 - [ ] Complete full backend, frontend, metadata and container validation on the final PR head.
 - [ ] Complete physical iPhone/iPad acceptance.
-
-
 
 - Recent targeted sessions produce explicit internal follow-through decisions such as reteach, check independence, transfer, review later and challenge.
 - Supported success is distinguished from later independent success, with learner-safe next-action language.
