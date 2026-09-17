@@ -27,6 +27,13 @@ describe('parent and Home Assistant insight', () => {
     expect(screen.getByText('Due now')).toBeTruthy();
   });
 
+  it('keeps the parent insight usable when a legacy payload omits outcomes', () => {
+    const {outcomes: _outcomes, ...legacyInsight} = insight;
+    render(<ParentLearningInsight data={legacyInsight}/>);
+    expect(screen.getByText('Review efficient calculation strategies')).toBeTruthy();
+    expect(screen.getByText(/No curriculum outcome evidence is available yet/i)).toBeTruthy();
+  });
+
   it('reveals the parent-protected long-lived Home Assistant token on demand', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
