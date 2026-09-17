@@ -1,3 +1,12 @@
+## v0.47.5 - Parent Dashboard Crash Fix
+
+This focused corrective release publishes the Parent Dashboard resilience fix already merged in PR #81 as an installable Home Assistant add-on update.
+
+- Prevent Parent Learning Insight from crashing when a legacy or partial insight payload omits the `outcomes` collection.
+- Render a clear no-evidence state instead of blanking the Parent Dashboard.
+- Add regression coverage for the legacy payload shape that reproduced the production failure.
+- Preserve worksheets, targeted learning, adaptive progression, diagnostics, Math Mentor and stored learner evidence unchanged.
+
 ## v0.47.4 - Return to Answer After Support
 
 The latest installed v0.47.3 production recording confirms the keyboard-first answer layout, compact quest header, learner-safe worksheet map, mathematical feedback and active-work Home hierarchy. It also shows a typed-answer worksheet scrolled into Visual idea and Math Mentor while the software keyboard is open.
