@@ -1,3 +1,13 @@
+## v0.47.6 - Worksheet History & Review
+
+MathQuest makes completed learner worksheets easy to find and review from both student and parent views.
+
+- Worksheets now offer All, In progress and Completed filters while preserving active-work continuation.
+- Completed worksheets open the existing read-only review with questions, student answers, correct answers and working.
+- Completed worksheet links in the Learning Calendar now open review instead of attempting to reopen an active worksheet.
+- The Parent Dashboard now exposes the learner worksheet history without allowing the parent view to resume or alter student work.
+- Preserve Best Next Step, targeted learning session behaviour, skill-sensitive progression and diagnostic evidence unchanged.
+
 ## v0.47.5 - Parent Dashboard Crash Fix
 
 This focused corrective release publishes the Parent Dashboard resilience fix already merged in PR #81 as Home Assistant add-on v0.47.5.
