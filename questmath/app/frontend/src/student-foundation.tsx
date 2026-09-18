@@ -44,9 +44,17 @@ export function StudentMobileNavigation({selected, onSelect}:{selected:StudentSe
   </nav>;
 }
 
-export function WorksheetHistory({onCreate, onOpen, compact = false}:{onCreate: () => void; onOpen: (worksheet: any) => void; compact?: boolean}) {
+type WorksheetFilter = 'all' | 'incomplete' | 'completed';
+
+function WorksheetReview({review, onClose}:{review:any; onClose:()=>void}) {
+  if (!review) return null;
+  return <div className="mq-v0160-review" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}><section role="dialog" aria-modal="true" aria-labelledby="worksheet-review-title"><button className="close" type="button" aria-label="Close review" onClick={onClose}>×</button><p className="eyebrow">WORKSHEET REVIEW</p><h2 id="worksheet-review-title">{review.selected_topic?.replaceAll('_', ' ')} · {dateLabel(review.date)}</h2><p><strong>{review.score}/{review.total}</strong> · {review.counts?.hints || 0} hints</p>{review.questions?.map((question: any) => <details key={question.id}><summary>{question.position + 1}. {question.prompt}</summary><div className="question-card review-question-visual"><QuestionVisual question={question}/></div><p>Your answer: <strong>{question.student_answers?.map((answer: any) => answer.answer).join(' → ') || 'No answer'}</strong></p><p>Correct answer: <strong>{question.correct_answer}</strong></p><p>{question.working}</p></details>)}</section></div>;
+}
+
+export function WorksheetHistory({onCreate, onOpen, compact = false, allowResume = true}:{onCreate?: () => void; onOpen?: (worksheet: any) => void; compact?: boolean; allowResume?: boolean}) {
   const [rows, setRows] = useState<WorksheetSummary[] | null>(null);
   const [error, setError] = useState('');
+  const [filter, setFilter] = useState<WorksheetFilter>('all');
   const [review, setReview] = useState<any>(null);
   const reviewOpener = useRef<HTMLElement|null>(null);
   const load = () => { setError(''); apiRequest<WorksheetSummary[]>('/worksheets/history-v0160').then(setRows).catch((e: Error) => setError(e.message)); };
@@ -57,7 +65,7 @@ export function WorksheetHistory({onCreate, onOpen, compact = false}:{onCreate: 
     try {
       const worksheet = await apiRequest(`/worksheets/${id}/view`);
       rememberActiveWorksheet(id);
-      onOpen(worksheet);
+      onOpen?.(worksheet);
     } catch (e: any) { setError(e.message); }
   }
   async function restart(id: number) {
@@ -65,7 +73,7 @@ export function WorksheetHistory({onCreate, onOpen, compact = false}:{onCreate: 
     try {
       const worksheet: any = await apiRequest(`/worksheets/${id}/restart-skipped`, {method: 'POST'});
       rememberActiveWorksheet(worksheet.id);
-      onOpen(worksheet);
+      onOpen?.(worksheet);
     } catch (e: any) { setError(e.message); }
   }
   async function view(id: number) {
@@ -85,19 +93,20 @@ export function WorksheetHistory({onCreate, onOpen, compact = false}:{onCreate: 
   const orderedRows = useMemo(() => [...(rows || [])].sort((a,b) => Number(Boolean(a.completed_at)) - Number(Boolean(b.completed_at))), [rows]);
   const incomplete = orderedRows.find(row => !row.completed_at);
   const skippedRecovery = !incomplete ? orderedRows.find(row => row.restartable_skipped && row.skipped > 0) : undefined;
-  const continuation = incomplete || skippedRecovery;
+  const continuation = allowResume ? (incomplete || skippedRecovery) : undefined;
   const historyRows = continuation ? orderedRows.filter(row => row.id !== continuation.id) : orderedRows;
-  const visibleRows = compact ? historyRows.slice(0, 1) : historyRows.slice(0, 20);
+  const filteredRows = historyRows.filter(row => filter === 'all' || (filter === 'completed' ? !!row.completed_at : !row.completed_at));
+  const visibleRows = compact ? filteredRows.slice(0, 1) : filteredRows.slice(0, 20);
   const isUntouched = !!incomplete && incomplete.answered === 0 && incomplete.progress <= 0;
 
   return <section id="mq-worksheet-history" className={`panel mq-v0160-history${continuation ? ' mq-has-continue' : ''}${compact ? ' mq-history-compact' : ''}`} aria-label="Worksheet history">
-    {continuation && <article className="mq-continue-learning" aria-label={isUntouched ? 'Ready to start' : 'Continue learning'}><div><p className="eyebrow">{isUntouched ? 'READY TO START' : 'CONTINUE LEARNING'}</p><h2>{incomplete ? continuation.display_title : `${continuation.skipped} questions need another try`}</h2><p>{incomplete ? (isUntouched ? 'Your worksheet is ready when you are.' : `${continuation.answered} of ${continuation.total} answered. Your progress is saved.`) : 'Finish the skipped questions when you are ready.'}</p></div><button type="button" className="primary" onClick={() => incomplete ? open(continuation.id) : restart(continuation.id)}><Play size={18}/>{incomplete ? (isUntouched ? 'Start' : 'Continue') : 'Finish worksheet'}</button></article>}
+    {continuation && filter !== 'completed' && <article className="mq-continue-learning" aria-label={isUntouched ? 'Ready to start' : 'Continue learning'}><div><p className="eyebrow">{isUntouched ? 'READY TO START' : 'CONTINUE LEARNING'}</p><h2>{incomplete ? continuation.display_title : `${continuation.skipped} questions need another try`}</h2><p>{incomplete ? (isUntouched ? 'Your worksheet is ready when you are.' : `${continuation.answered} of ${continuation.total} answered. Your progress is saved.`) : 'Finish the skipped questions when you are ready.'}</p></div><button type="button" className="primary" onClick={() => incomplete ? open(continuation.id) : restart(continuation.id)}><Play size={18}/>{incomplete ? (isUntouched ? 'Start' : 'Continue') : 'Finish worksheet'}</button></article>}
     {!compact && <div id="mq-worksheet-history-secondary" className="mq-history-secondary">
-      <div className="mq-v0160-head"><div><p className="eyebrow">WORKSHEETS</p><h2>Your worksheets</h2><p>Resume recent work or revisit completed practice.</p></div><button className="primary" type="button" onClick={onCreate}>+ New worksheet</button></div>
-      {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>} {rows === null && !error ? <p>Loading worksheet history…</p> : <div className="mq-v0160-list">{visibleRows.map(row => <article className="mq-v0160-row" key={row.id}><div className="meta"><b>{row.display_title}{row.display_time ? ` · ${row.display_time}` : ''}</b><small>{dateLabel(row.date)} · {row.answered}/{row.total} answered · {row.skipped || 0} skipped · {minutes(row.elapsed_seconds)}</small></div><span className="status">{row.completed_at ? `Completed · ${row.score}/${row.total}` : row.answered === 0 ? 'Ready to start' : `In progress · ${Math.round(row.progress)}%`}</span><div className="mq-v0160-row-actions"><button type="button" onClick={() => row.completed_at ? view(row.id) : open(row.id)}>{row.completed_at ? 'Review' : row.answered === 0 ? 'Start' : 'Continue'}</button>{row.restartable_skipped && <button type="button" onClick={() => restart(row.id)}>Finish {row.skipped} skipped</button>}</div></article>)}</div>}
+      <div className="mq-v0160-head"><div><p className="eyebrow">WORKSHEETS</p><h2>Your worksheets</h2><p>{allowResume ? 'Resume recent work or revisit completed practice.' : 'See in-progress learning and review completed worksheets.'}</p></div>{onCreate && <button className="primary" type="button" onClick={onCreate}>+ New worksheet</button>}</div><div className="mq-worksheet-filters" role="group" aria-label="Filter worksheets">{([['all','All'],['incomplete','In progress'],['completed','Completed']] as const).map(([value,label]) => <button type="button" key={value} aria-pressed={filter === value} className={filter === value ? 'selected' : ''} onClick={() => setFilter(value)}>{label}</button>)}</div>
+      {error && <ErrorNotice message={error} retry={load} dismiss={() => setError('')}/>} {rows === null && !error ? <p>Loading worksheet history…</p> : <div className="mq-v0160-list">{visibleRows.map(row => <article className="mq-v0160-row" key={row.id}><div className="meta"><b>{row.display_title}{row.display_time ? ` · ${row.display_time}` : ''}</b><small>{dateLabel(row.date)} · {row.answered}/{row.total} answered · {row.skipped || 0} skipped · {minutes(row.elapsed_seconds)}</small></div><span className="status">{row.completed_at ? `Completed · ${row.score}/${row.total}` : row.answered === 0 ? 'Ready to start' : `In progress · ${Math.round(row.progress)}%`}</span><div className="mq-v0160-row-actions">{row.completed_at ? <button type="button" onClick={() => view(row.id)}>Review</button> : allowResume ? <button type="button" onClick={() => open(row.id)}>{row.answered === 0 ? 'Start' : 'Continue'}</button> : <span className="status">Available to continue in the student view</span>}{allowResume && row.restartable_skipped && <button type="button" onClick={() => restart(row.id)}>Finish {row.skipped} skipped</button>}</div></article>)}</div>}
     </div>}
     {compact && !continuation && visibleRows.length > 0 && <div className="mq-home-recent"><p className="eyebrow">RECENT LEARNING</p><b>{visibleRows[0].display_title}</b><span>{visibleRows[0].completed_at ? 'Completed' : 'In progress'}</span></div>}
-    {review && <div className="mq-v0160-review" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) closeReview(); }}><section role="dialog" aria-modal="true" aria-labelledby="worksheet-review-title"><button className="close" type="button" aria-label="Close review" onClick={closeReview}>×</button><p className="eyebrow">WORKSHEET REVIEW</p><h2 id="worksheet-review-title">{review.selected_topic?.replaceAll('_', ' ')} · {dateLabel(review.date)}</h2><p><strong>{review.score}/{review.total}</strong> · {review.counts?.hints || 0} hints</p>{review.questions?.map((question: any) => <details key={question.id}><summary>{question.position + 1}. {question.prompt}</summary><div className="question-card review-question-visual"><QuestionVisual question={question}/></div><p>Your answer: <strong>{question.student_answers?.map((answer: any) => answer.answer).join(' → ') || 'No answer'}</strong></p><p>Correct answer: <strong>{question.correct_answer}</strong></p><p>{question.working}</p></details>)}</section></div>}
+    <WorksheetReview review={review} onClose={closeReview}/>
   </section>;
 }
 
@@ -105,16 +114,36 @@ export function LearningCalendar({onOpen}:{onOpen: (worksheet: any) => void}) {
   const [rangeStart, setRangeStart] = useState(monday());
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState('');
+  const [review, setReview] = useState<any>(null);
   const start = localDate(rangeStart);
   const load = () => { setError(''); setData(null); apiRequest(`/learning/week-v0160?start=${start}`).then(setData).catch((e: Error) => setError(e.message)); };
   useEffect(load, [start]);
   const currentMonday = monday();
   const shift = (days: number) => { const next = addDays(rangeStart, days); setRangeStart(next > currentMonday ? currentMonday : next); };
   const goToday = () => setRangeStart(currentMonday);
-  const open = async (id: number) => { try { const worksheet = await apiRequest(`/worksheets/${id}/view`); rememberActiveWorksheet(id); onOpen(worksheet); } catch (e: any) { setError(e.message); } };
+  const open = async (worksheetSummary: any) => {
+    setError('');
+    try {
+      if (worksheetSummary.completed_at) {
+        setReview(await apiRequest(`/worksheets/${worksheetSummary.id}/review`));
+        return;
+      }
+      const worksheet = await apiRequest(`/worksheets/${worksheetSummary.id}/view`);
+      rememberActiveWorksheet(worksheetSummary.id);
+      onOpen(worksheet);
+    } catch (e: any) { setError(e.message); }
+  };
+  const closeReview = () => setReview(null);
+  useEffect(() => {
+    if (!review) return;
+    const keydown = (event: KeyboardEvent) => { if (event.key === 'Escape') closeReview(); };
+    window.addEventListener('keydown', keydown);
+    return () => window.removeEventListener('keydown', keydown);
+  }, [review]);
 
   return <section id="mq-learning-calendar" className="panel completion-calendar mq-v0160-calendar"><div className="mq-cal-head"><button type="button" aria-label="Previous week" onClick={() => shift(-7)}>‹ Week</button><button className="day-shift" type="button" onClick={() => shift(-1)}>‹ 1 day</button><h2>{data ? `${dateLabel(data.start)} – ${dateLabel(data.end)}` : 'This week'}</h2><button className="day-shift" type="button" disabled={rangeStart >= currentMonday} onClick={() => shift(1)}>1 day ›</button><button type="button" aria-label="Next week" disabled={rangeStart >= currentMonday} onClick={() => shift(7)}>Week ›</button><button className="mq-cal-today" type="button" disabled={rangeStart >= currentMonday} onClick={goToday}>Today</button></div>
-    {error && <ErrorNotice message={error} retry={load}/>} {!data && !error ? <p>Loading learning activity…</p> : <div className="mq-cal-days">{data?.days.map((day: any) => { const any = day.worksheets.length > 0; const complete = any && day.worksheets.every((worksheet: any) => worksheet.completed_at); return <article key={day.date} className={`mq-cal-day${day.is_today ? ' today' : ''}${complete ? ' complete' : ''}${any && !complete ? ' in-progress' : ''}${day.is_future ? ' future' : ''}`}><h3>{dateLabel(day.date)}</h3><div className="mq-cal-stats">{day.questions ? <><span>{day.questions} questions practised</span><span>{day.correct} correct · {day.incorrect} to revisit</span><span>💡 {day.hints} hints · {minutes(day.elapsed_seconds)}</span></> : <span>No learning activity</span>}</div><div className="mq-cal-ws">{day.worksheets.map((worksheet: any) => <button type="button" key={worksheet.id} onClick={() => open(worksheet.id)} aria-label={`${worksheet.display_title}, ${worksheet.completed_at ? 'completed' : 'in progress'}`}>{worksheet.display_title} · {worksheet.answered}/{worksheet.total} {worksheet.completed_at ? '✓' : '→'}</button>)}</div></article>; })}</div>}
+    {error && <ErrorNotice message={error} retry={load}/>} {!data && !error ? <p>Loading learning activity…</p> : <div className="mq-cal-days">{data?.days.map((day: any) => { const any = day.worksheets.length > 0; const complete = any && day.worksheets.every((worksheet: any) => worksheet.completed_at); return <article key={day.date} className={`mq-cal-day${day.is_today ? ' today' : ''}${complete ? ' complete' : ''}${any && !complete ? ' in-progress' : ''}${day.is_future ? ' future' : ''}`}><h3>{dateLabel(day.date)}</h3><div className="mq-cal-stats">{day.questions ? <><span>{day.questions} questions practised</span><span>{day.correct} correct · {day.incorrect} to revisit</span><span>💡 {day.hints} hints · {minutes(day.elapsed_seconds)}</span></> : <span>No learning activity</span>}</div><div className="mq-cal-ws">{day.worksheets.map((worksheet: any) => <button type="button" key={worksheet.id} onClick={() => open(worksheet)} aria-label={`${worksheet.display_title}, ${worksheet.completed_at ? 'completed' : 'in progress'}`}>{worksheet.display_title} · {worksheet.answered}/{worksheet.total} {worksheet.completed_at ? '✓' : '→'}</button>)}</div></article>; })}</div>}
+    <WorksheetReview review={review} onClose={closeReview}/>
   </section>;
 }
 

@@ -6,7 +6,11 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.47.5`
+Version `0.47.6`
+
+## v0.47.6 - Worksheet History & Review
+
+Students and parents can now find completed learner worksheets, filter worksheet history by status and open completed calendar items in the existing read-only worksheet review.
 
 ## v0.47.5 - Parent Dashboard Crash Fix
 

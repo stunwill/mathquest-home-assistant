@@ -98,6 +98,36 @@ describe('student learning foundation', () => {
     expect(screen.getByText('6 correct · 2 to revisit')).toBeInTheDocument();
   });
 
+  it('filters worksheet history between all, in progress and completed', async () => {
+    const inProgress = {id: 90, date: '2026-09-05', completed_at: null, display_title: 'Measurement practice', answered: 4, total: 10, score: 3, skipped: 0, hints: 1, xp_earned: 0, elapsed_seconds: 180, progress: 40, restartable_skipped: false};
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => response([completedRow(1, 'Completed measurement'), inProgress]));
+    render(<WorksheetHistory onCreate={vi.fn()} onOpen={vi.fn()}/>);
+    expect(await screen.findByRole('group', {name: 'Filter worksheets'})).toBeInTheDocument();
+    expect(screen.getByText('Completed measurement')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', {name: 'Completed'}));
+    expect(screen.getByText('Completed measurement')).toBeInTheDocument();
+    expect(screen.queryByText('Measurement practice')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', {name: 'In progress'}));
+    expect(screen.queryByText('Completed measurement')).not.toBeInTheDocument();
+    expect(screen.getByRole('article', {name: 'Continue learning'})).toHaveTextContent('Measurement practice');
+  });
+
+  it('opens a completed calendar worksheet in read-only review instead of the active worksheet flow', async () => {
+    const onOpen = vi.fn();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(input => {
+      const url = String(input);
+      if (url.includes('api/learning/week-v0160')) return response({start:'2026-08-31',end:'2026-09-06',days:[{date:'2026-09-03',is_today:false,is_future:false,questions:10,correct:8,incorrect:2,hints:1,elapsed_seconds:300,worksheets:[completedRow(7, 'Measurement')]}]});
+      if (url === 'api/worksheets/7/review') return response({id:7,date:'2026-09-03',selected_topic:'measurement',score:8,total:10,counts:{hints:1},questions:[]});
+      return response({detail:'missing'}, false, 404);
+    });
+    render(<LearningCalendar onOpen={onOpen}/>);
+    fireEvent.click(await screen.findByRole('button', {name: /Measurement, completed/i}));
+    expect(await screen.findByRole('dialog', {name: /measurement/i})).toBeInTheDocument();
+    expect(onOpen).not.toHaveBeenCalled();
+    expect(fetchMock.mock.calls.map(call => String(call[0]))).toContain('api/worksheets/7/review');
+    expect(fetchMock.mock.calls.map(call => String(call[0]))).not.toContain('api/worksheets/7/view');
+  });
+
   it('provides an accessible in-page retry instead of a browser alert', () => {
     const retry = vi.fn();
     render(<ErrorNotice message="Try the request again" retry={retry}/>);
