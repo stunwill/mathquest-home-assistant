@@ -1,3 +1,12 @@
+## v0.47.6 - Worksheet History & Review
+
+Status: In review
+
+- Make completed worksheets directly discoverable for students and parents.
+- Add All, In progress and Completed worksheet filters.
+- Route completed Learning Calendar entries to read-only review.
+- Preserve active worksheet continuation and learner evidence.
+
 ## v0.47.5 - Parent Dashboard Crash Fix
 
 Status: Completed
