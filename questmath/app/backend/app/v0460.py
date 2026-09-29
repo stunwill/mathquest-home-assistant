@@ -4,7 +4,7 @@ from typing import Any
 from datetime import datetime
 
 from fastapi import Depends
-from sqlalchemy import select, String, Integer, DateTime, ForeignKey
+from sqlalchemy import select, String, DateTime, ForeignKey
 from sqlalchemy.orm import Session, Mapped, mapped_column
 
 from . import main as legacy
@@ -117,12 +117,12 @@ def _detail(session: Session, worksheet: legacy.Worksheet, student_id: int) -> d
 
 def _plan_with_memory(session: Session, student_id: int, minutes: int | None = None) -> dict[str, Any]:
     plan = _original_build(session, student_id, minutes)
-    pending = _pending_follow_through(session, student_id)
     previous = _latest_targeted(session, student_id)
     if not previous or plan.get('kind') != 'targeted':
         plan['previous_follow_through'] = None
         return plan
     previous_detail = _detail(session, previous, student_id)
+    pending = _pending_follow_through(session, student_id)
     if pending is None:
         pending = _persist_follow_through(session, previous, previous_detail)
     previous_target = (pending.target_skill or previous_detail.get('target_skill'), pending.outcome_code or previous_detail.get('outcome_code'))
@@ -150,8 +150,6 @@ def _plan_with_memory(session: Session, student_id: int, minutes: int | None = N
         elif decision == 'gather_more_evidence':
             plan['purpose'] = 'learn'
             plan['student_reason'] = f'Practise {plan["student_title"].lower()} so MathQuest can learn what to do next.'
-        pending.consumed_at = datetime.utcnow()
-        session.commit()
     return plan
 
 _original_build = v0440.build_learning_plan
@@ -163,6 +161,12 @@ _original_compose = v0450.compose_targeted_session
 def compose_targeted_session(session: Session, student_id: int, plan: dict[str, Any],
                              session_kind: str = 'practice') -> legacy.Worksheet:
     worksheet = _original_compose(session, student_id, plan, session_kind=session_kind)
+    prior = plan.get('previous_follow_through') or {}
+    if prior.get('decision') and prior.get('target_skill') == (plan.get('primary_target') or {}).get('skill') and prior.get('outcome_code') == (plan.get('primary_target') or {}).get('outcome_code'):
+        pending = _pending_follow_through(session, student_id)
+        if pending and pending.decision == prior.get('decision'):
+            pending.consumed_at = datetime.utcnow()
+            session.commit()
     questions = sorted(worksheet.questions, key=lambda item: item.position)
     if questions:
         payload = v0450._payload(questions[0])
