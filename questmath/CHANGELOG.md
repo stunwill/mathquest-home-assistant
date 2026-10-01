@@ -5,6 +5,7 @@ MathQuest now persists completed targeted-session follow-through decisions in lo
 - Persist support-aware follow-through decisions for completed targeted worksheets so they survive application restarts.
 - Keep pending decisions unconsumed while merely previewing Best Next Step or Today’s Focus; consume them only when the matching next session is actually created.
 - Reuse the existing v0.46 decision model and thresholds rather than creating a second mastery system.
+- Preserve Best Next Step, targeted learning session routing, skill-sensitive progression, and diagnostic evidence while carrying follow-through decisions across sessions.
 - Preserve prerequisite routing, spaced review, independent-versus-supported evidence, challenge readiness and learner-safe guidance.
 - Add behavioural coverage for persisted reteach decisions across a reconstructed session and for consumption only when the next targeted session starts.
 
