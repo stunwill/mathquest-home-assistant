@@ -157,23 +157,28 @@ def test_legacy_preview_does_not_backfill_and_start_is_compatible(learning):
     assert session.query(v0460.FollowThroughOutcome).count() == 1
 
 
-def test_transfer_requires_changed_family_and_skips_do_not_confirm_independence(learning):
+@pytest.mark.parametrize('changed_family', [False, True])
+def test_transfer_requires_changed_family_and_skips_do_not_confirm_independence(learning, changed_family):
     session, learner, _ = learning
-    first = start(session, learner); finish(session, learner, first)
+    first = start(session, learner)
+    for q in first.questions:
+        payload = v0450._payload(q); payload['question_family'] = 'familiar'
+        q.payload = json.dumps(payload)
+    sorted(first.questions, key=lambda q: q.position)[0].hint_count = 1
+    finish(session, learner, first)
     source = session.scalar(select(v0460.AdaptiveFollowThrough))
-    source.decision = 'transfer'; session.commit()
+    assert source.decision == 'transfer'
     second = start(session, learner)
     # Familiar forms succeeding again do not confirm transfer.
-    for worksheet in (first, second):
-        for q in worksheet.questions:
-            payload = v0450._payload(q); payload['question_family'] = 'familiar'
-            q.payload = json.dumps(payload)
-    link = session.scalar(select(v0460.FollowThroughOutcome))
-    link.before_evidence = json.dumps(v0450._session_evidence(first)); session.commit()
+    for q in second.questions:
+        payload = v0450._payload(q)
+        payload['question_family'] = 'changed' if changed_family and payload['targeted_session']['stage'] == 'transfer' else 'familiar'
+        q.payload = json.dumps(payload)
+    session.commit()
     finish(session, learner, second)
     detail = v0460._detail(session, second, learner.id)
-    assert detail['follow_through'] == 'consolidate'
-    assert detail['intervention_outcome']['assessment'] == 'transfer_not_confirmed'
+    assert detail['follow_through'] == ('review_later' if changed_family else 'consolidate')
+    assert detail['intervention_outcome']['assessment'] == ('independence_confirmed' if changed_family else 'transfer_not_confirmed')
     third = start(session, learner)
     third.completed_at = datetime.utcnow()
     for q in third.questions: q.state = 'skipped'; q.skipped_count = 1
