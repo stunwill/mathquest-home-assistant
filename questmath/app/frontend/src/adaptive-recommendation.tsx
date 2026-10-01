@@ -18,7 +18,7 @@ const friendly=(value?:string|null)=>value?value.replaceAll('_',' '):'';
 export function AdaptiveRecommendation({data, busy, onStart}: {data: any; busy: boolean; onStart: () => void}) {
   const recommendation: Recommendation | undefined = data?.recommendation;
   const[plan,setPlan]=useState<Plan|null>(null);
-  useEffect(()=>{apiRequest<Plan>('/learning/session-plan-v0440').then(setPlan).catch(()=>setPlan(null))},[recommendation?.outcome_code,recommendation?.mode]);
+  useEffect(()=>{apiRequest<Plan>('/learning/session-plan-v0460').then(setPlan).catch(()=>setPlan(null))},[recommendation?.outcome_code,recommendation?.mode]);
   if (!recommendation) return null;
   const reviewCount = Number(data?.summary?.review_due || 0);
   const targeted=plan?.kind==='targeted';

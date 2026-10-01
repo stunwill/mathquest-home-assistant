@@ -44,6 +44,9 @@ def _session_evidence(worksheet: legacy.Worksheet) -> dict[str, Any]:
     questions = sorted(worksheet.questions, key=lambda item: item.position)
     targeted = [(question, _payload(question).get('targeted_session')) for question in questions]
     targeted = [(question, meta) for question, meta in targeted if isinstance(meta, dict)]
+    # Stage labels describe the whole worksheet, but mixed practice is not target evidence.
+    targeted = [(question, meta) for question, meta in targeted
+                if question.skill == f"{meta.get('outcome_code')}:{meta.get('target_skill')}"]
     support = 0
     eventual = 0
     independent = 0
@@ -66,9 +69,18 @@ def _session_evidence(worksheet: legacy.Worksheet) -> dict[str, Any]:
         'support_used_questions': support,
         'independent_checks': check_independent,
         'check_questions': checks,
+        'unanswered': sum(not question.attempts for question, _ in targeted),
+        'incorrect_questions': sum(bool(question.attempts) and not any(a.correct for a in question.attempts) for question, _ in targeted),
+        'hint_questions': sum(bool(question.hint_count) for question, _ in targeted),
+        'mentor_questions': sum(bool(question.mentor_started or question.mentor_example_seen) for question, _ in targeted),
+        'families': sorted({str(_payload(question).get('question_family') or _payload(question).get('subtraction_case') or question.skill) for question, _ in targeted if question.attempts}),
+        'independent_transfer_families': sorted({str(_payload(question).get('question_family') or _payload(question).get('subtraction_case') or question.skill) for question, meta in targeted
+            if meta.get('stage') == 'transfer' and question.attempts and
+            sorted(question.attempts, key=lambda a: a.attempt_number)[0].correct and
+            not (question.hint_count or question.mentor_started or question.mentor_example_seen)}),
         'support_then_independent': bool(
-            any(bool((_payload(q).get('targeted_session') or {}).get('stage') in ('supported', 'core') and
-                     ((q.hint_count or 0) or q.mentor_started or q.mentor_example_seen)) for q in questions)
+            any(bool(meta.get('stage') in ('reconnect', 'supported', 'core') and
+                     ((q.hint_count or 0) or q.mentor_started or q.mentor_example_seen)) for q, meta in targeted)
             and check_independent
         ),
     }
@@ -81,6 +93,7 @@ def _annotate_follow_through(session: Session, worksheet: legacy.Worksheet, stud
     payload['targeted_session_plan'] = {
         'version': 1,
         'purpose': plan.get('purpose'),
+        'evidence_focus': plan.get('evidence_focus'),
         'student_title': plan.get('student_title'),
         'student_reason': plan.get('student_reason'),
         'target': plan.get('primary_target'),
@@ -129,6 +142,7 @@ def _detail(session: Session, worksheet: legacy.Worksheet, student_id: int) -> d
         'available': True,
         'worksheet_id': worksheet.id,
         'completed': bool(worksheet.completed_at),
+        'evidence_focus': plan.get('evidence_focus'),
         'purpose': plan.get('purpose'),
         'title': plan.get('student_title') or target.get('title'),
         'reason': plan.get('student_reason'),

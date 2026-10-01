@@ -12,6 +12,8 @@ vi.mock('./api', () => ({
       available:true,title:'Equivalent fractions and decimals',purpose:'consolidate',
       evidence:{answered:6,independent_successes:4,support_used_questions:1,independent_checks:2},
       before:{questions:4},after:{questions:10},
+      intervention_outcome:{previous_decision:'reteach',message:'You solved more of this work independently. Next, try it with less help.',completed:true},
+      next_action:{student_message:'Try a similar question independently.'},
     };
     return {
       kind:'targeted',minutes:10,purpose:'consolidate',title:'Equivalent fractions and decimals',reason:'Build confidence with equivalent fractions and decimals and work towards doing it independently.',target_skill:'equivalent_fractions',
@@ -50,4 +52,6 @@ test('parent insight exposes the evidence, prerequisite and latest targeted foll
   expect(await screen.findByRole('heading',{name:'Latest completed targeted session'})).toBeInTheDocument();
   expect(screen.getByText(/6 answered, 4 independent successes, 1 questions with support, 2 independent checks/i)).toBeInTheDocument();
   expect(screen.getByText(/4 → 10 evidence questions/i)).toBeInTheDocument();
+  expect(screen.getByText(/You solved more of this work independently/i)).toBeInTheDocument();
+  expect(screen.getByText(/Try a similar question independently/i)).toBeInTheDocument();
 });

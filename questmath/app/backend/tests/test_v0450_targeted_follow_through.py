@@ -37,7 +37,12 @@ def test_targeted_detail_records_before_after_and_real_session_evidence(monkeypa
     session.commit()
     detail = v0450._detail(session, worksheet, student.id)
     assert detail['before']['questions'] == 4
-    assert detail['evidence']['answered'] == 6
+    # Mixed practice is still completed, but only actual target-skill answers
+    # may be used to reassess this learning target.
+    target_questions = [q for q in questions if q.skill == 'VC2M4N06:written_subtraction']
+    assert len([q for q in questions if q.attempts]) == 6
+    assert detail['evidence']['answered'] == len(target_questions)
+    assert detail['evidence']['independent_successes'] == sum(not q.hint_count for q in target_questions)
     assert detail['evidence']['support_used_questions'] == 1
     assert detail['evidence']['independent_checks'] == 1
     assert detail['evidence_change']['questions_added'] >= 0
