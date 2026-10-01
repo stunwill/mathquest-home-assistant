@@ -19,6 +19,8 @@ type LatestTargetedSession = {
   };
   before?:{questions:number};
   after?:{questions:number};
+  intervention_outcome?:{previous_decision:string;message:string;completed:boolean};
+  next_action?:{student_message:string};
 };
 
 const stageLabels:Record<string,string>={
@@ -27,6 +29,12 @@ const stageLabels:Record<string,string>={
   core:'core practice',
   transfer:'transfer',
   check:'independent check',
+};
+const actionLabels:Record<string,string>={
+  reteach:'revisit the idea with support',check_independence:'try the skill without help',
+  transfer:'use the idea in a different way',consolidate:'build confidence with practice',
+  gather_more_evidence:'check what to work on next',review_later:'return to the skill later',
+  challenge:'try a harder application',continue:'continue practising',
 };
 
 export function ParentTargetedLearningInsight(){
@@ -61,6 +69,11 @@ export function ParentTargetedLearningInsight(){
       <p>{latest.title||target.title} · {latest.purpose||'targeted practice'}</p>
       <p><strong>Evidence:</strong> {latest.evidence.answered} answered, {latest.evidence.independent_successes} independent successes, {latest.evidence.support_used_questions} questions with support, {latest.evidence.independent_checks} independent checks.</p>
       <p><strong>Before → after:</strong> {latest.before.questions} → {latest.after.questions} evidence questions.</p>
+      {latest.intervention_outcome?.completed&&<>
+        <p><strong>What we tried:</strong> {actionLabels[latest.intervention_outcome.previous_decision]||'targeted practice'}.</p>
+        <p><strong>What changed:</strong> {latest.intervention_outcome.message}</p>
+        {latest.next_action?.student_message&&<p><strong>Next:</strong> {latest.next_action.student_message}</p>}
+      </>}
     </div>}
   </section>;
 }

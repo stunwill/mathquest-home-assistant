@@ -1,3 +1,15 @@
+## 0.49.0
+
+MathQuest now links acted-upon follow-through decisions to resulting targeted learning sessions and reassesses what changed after completion.
+
+- Persist source decision, follow-up worksheet and frozen before/after evidence locally without changing existing learner records.
+- Count only the intended skill as target evidence, and keep transfer and independent checks on that skill.
+- Distinguish reduced support from independence; retain hints, Math Mentor, incorrect and incomplete evidence.
+- Require a changed question family before confirming transfer; reconsider repeated unsuccessful reteaching with further evidence and parent insight.
+- Keep Best Next Step and Today's Focus aligned with pending learning intent, resume active follow-up work and prevent consumed decisions from resurfacing.
+- Preserve diagnostic evidence, skill-sensitive progression, prerequisite routing, spaced review, Home Assistant ingress and local operation.
+- Show parents what MathQuest tried, what changed and the subsequent learning direction.
+
 ## v0.48.0 - Persisted Adaptive Follow-through
 
 MathQuest now persists completed targeted-session follow-through decisions in local learner data and carries the pending decision into the next matching targeted session.

@@ -1,6 +1,16 @@
-## v0.48.0 - Persisted Adaptive Follow-through
+## v0.49.0 - Follow-through Outcomes & Evidence Reassessment
 
 Status: In review
+
+- Link the acted-upon decision to the resulting session and freeze completion evidence.
+- Reassess intervention outcomes without replacing mastery or changing progression thresholds.
+- Separate target evidence from mixed practice and require changed families for transfer.
+- Prevent stale decisions and repeated starts; keep previews read-only.
+- Expose concise parent insight and preserve local learner data.
+
+## v0.48.0 - Persisted Adaptive Follow-through
+
+Status: Completed
 
 - Persist completed targeted-session follow-through decisions in local learner data.
 - Carry the pending decision into the next matching targeted session after restart.

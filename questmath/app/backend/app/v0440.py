@@ -142,9 +142,23 @@ def compose_targeted_session(session: Session, student_id: int, plan: dict[str, 
     session.refresh(worksheet)
 
     generator = v0170.FOCUS_GENERATORS.get(target['topic'], {}).get(target['skill'])
+    if generator and target['skill'] == 'written_subtraction' and plan.get('evidence_focus') == 'subtraction_without_regrouping':
+        subtraction_generator = generator
+        def generator(rng):
+            for _ in range(80):
+                generated = subtraction_generator(rng)
+                if generated[3].get('subtraction_case') == 'no_regroup':
+                    return generated
+            return generated
     questions = sorted(worksheet.questions, key=lambda item: item.position)
     target_count = max(3, round(len(questions) * 0.72)) if generator else 0
-    target_positions = set(range(target_count))
+    if generator and plan.get('evidence_focus') == 'subtraction_without_regrouping':
+        # A foundation check must not reintroduce the original blocker through
+        # incidental mixed-practice subtraction questions.
+        target_count = len(questions)
+    # Keep the final transfer and independent check on the intended skill.
+    final_positions = [index for index, role in enumerate(plan['stages']) if role in ('transfer', 'check')]
+    target_positions = set((final_positions + [index for index in range(len(questions)) if index not in final_positions])[:target_count]) if generator else set()
 
     # Only non-target positions need to block their existing identities. Target positions are
     # deliberately being replaced, so their old random identities must not reduce the pool.
