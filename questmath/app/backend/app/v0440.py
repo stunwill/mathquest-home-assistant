@@ -152,6 +152,10 @@ def compose_targeted_session(session: Session, student_id: int, plan: dict[str, 
             return generated
     questions = sorted(worksheet.questions, key=lambda item: item.position)
     target_count = max(3, round(len(questions) * 0.72)) if generator else 0
+    if generator and plan.get('evidence_focus') == 'subtraction_without_regrouping':
+        # A foundation check must not reintroduce the original blocker through
+        # incidental mixed-practice subtraction questions.
+        target_count = len(questions)
     # Keep the final transfer and independent check on the intended skill.
     final_positions = [index for index, role in enumerate(plan['stages']) if role in ('transfer', 'check')]
     target_positions = set((final_positions + [index for index in range(len(questions)) if index not in final_positions])[:target_count]) if generator else set()
