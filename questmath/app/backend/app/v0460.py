@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from typing import Any
+from datetime import datetime
 
 from fastapi import Depends
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy import select, String, DateTime, ForeignKey
+from sqlalchemy.orm import Session, Mapped, mapped_column
 
 from . import main as legacy
 from . import v0120, v0440, v0450
@@ -12,6 +13,19 @@ from . import v0120, v0440, v0450
 app = v0450.app
 app.version = '0.46.0'
 legacy.APP_VERSION = '0.46.0'
+
+class AdaptiveFollowThrough(legacy.Base):
+    __tablename__ = 'adaptive_follow_through'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    student_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    worksheet_id: Mapped[int] = mapped_column(ForeignKey('worksheets.id'), unique=True, index=True)
+    outcome_code: Mapped[str | None] = mapped_column(String(40), nullable=True, index=True)
+    target_skill: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
+    decision: Mapped[str] = mapped_column(String(40), index=True)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+legacy.Base.metadata.create_all(legacy.engine)
 
 FOLLOW_THROUGH = {
     'continue': 'Continue practising this skill.',
@@ -25,6 +39,28 @@ FOLLOW_THROUGH = {
     'challenge': 'Try a slightly harder application.',
     'gather_more_evidence': 'Gather a little more evidence before deciding what comes next.',
 }
+
+def _persist_follow_through(session: Session, worksheet: legacy.Worksheet, detail: dict[str, Any]) -> AdaptiveFollowThrough:
+    existing = session.scalar(select(AdaptiveFollowThrough).where(AdaptiveFollowThrough.worksheet_id == worksheet.id))
+    if existing:
+        return existing
+    row = AdaptiveFollowThrough(
+        student_id=worksheet.student_id,
+        worksheet_id=worksheet.id,
+        outcome_code=detail.get('outcome_code'),
+        target_skill=detail.get('target_skill'),
+        decision=detail['follow_through'],
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    return row
+
+def _pending_follow_through(session: Session, student_id: int) -> AdaptiveFollowThrough | None:
+    return session.scalar(select(AdaptiveFollowThrough).where(
+        AdaptiveFollowThrough.student_id == student_id,
+        AdaptiveFollowThrough.consumed_at.is_(None),
+    ).order_by(AdaptiveFollowThrough.created_at.desc(), AdaptiveFollowThrough.id.desc()))
 
 def _latest_targeted(session: Session, student_id: int) -> legacy.Worksheet | None:
     worksheets = list(session.scalars(select(legacy.Worksheet).where(
@@ -75,6 +111,8 @@ def _detail(session: Session, worksheet: legacy.Worksheet, student_id: int) -> d
         'student_message': FOLLOW_THROUGH[detail['follow_through']],
         'same_target': detail['follow_through'] in ('continue', 'consolidate', 'reteach', 'check_independence'),
     }
+    if detail.get('completed'):
+        _persist_follow_through(session, worksheet, detail)
     return detail
 
 def _plan_with_memory(session: Session, student_id: int, minutes: int | None = None) -> dict[str, Any]:
@@ -84,9 +122,12 @@ def _plan_with_memory(session: Session, student_id: int, minutes: int | None = N
         plan['previous_follow_through'] = None
         return plan
     previous_detail = _detail(session, previous, student_id)
-    previous_target = (previous_detail.get('target_skill'), previous_detail.get('outcome_code'))
+    pending = _pending_follow_through(session, student_id)
+    if pending is None:
+        pending = _persist_follow_through(session, previous, previous_detail)
+    previous_target = (pending.target_skill or previous_detail.get('target_skill'), pending.outcome_code or previous_detail.get('outcome_code'))
     current_target = ((plan.get('primary_target') or {}).get('skill'), (plan.get('primary_target') or {}).get('outcome_code'))
-    decision = previous_detail['follow_through']
+    decision = pending.decision
     plan['previous_follow_through'] = {
         'decision': decision,
         'target_skill': previous_target[0],
@@ -120,6 +161,12 @@ _original_compose = v0450.compose_targeted_session
 def compose_targeted_session(session: Session, student_id: int, plan: dict[str, Any],
                              session_kind: str = 'practice') -> legacy.Worksheet:
     worksheet = _original_compose(session, student_id, plan, session_kind=session_kind)
+    prior = plan.get('previous_follow_through') or {}
+    if prior.get('decision') and prior.get('target_skill') == (plan.get('primary_target') or {}).get('skill') and prior.get('outcome_code') == (plan.get('primary_target') or {}).get('outcome_code'):
+        pending = _pending_follow_through(session, student_id)
+        if pending and pending.decision == prior.get('decision'):
+            pending.consumed_at = datetime.utcnow()
+            session.commit()
     questions = sorted(worksheet.questions, key=lambda item: item.position)
     if questions:
         payload = v0450._payload(questions[0])

@@ -1,3 +1,13 @@
+## v0.48.0 - Persisted Adaptive Follow-through
+
+MathQuest now persists completed targeted-session follow-through decisions in local learner data and carries the pending decision into the next matching targeted session.
+
+- Persist support-aware follow-through decisions for completed targeted worksheets so they survive application restarts.
+- Keep pending decisions unconsumed while merely previewing Best Next Step or Today’s Focus; consume them only when the matching next session is actually created.
+- Reuse the existing v0.46 decision model and thresholds rather than creating a second mastery system.
+- Preserve prerequisite routing, spaced review, independent-versus-supported evidence, challenge readiness and learner-safe guidance.
+- Add behavioural coverage for persisted reteach decisions across a reconstructed session and for consumption only when the next targeted session starts.
+
 ## v0.47.6 - Worksheet History & Review
 
 MathQuest makes completed learner worksheets easy to find and review from both student and parent views.

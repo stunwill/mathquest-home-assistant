@@ -1,6 +1,16 @@
-## v0.47.6 - Worksheet History & Review
+## v0.48.0 - Persisted Adaptive Follow-through
 
 Status: In review
+
+- Persist completed targeted-session follow-through decisions in local learner data.
+- Carry the pending decision into the next matching targeted session after restart.
+- Do not consume a pending decision during plan previews.
+- Consume it only when the matching next session is created.
+- Preserve the existing v0.46 decision model, mastery evidence, prerequisite routing and review schedule.
+
+## v0.47.6 - Worksheet History & Review
+
+Status: Completed
 
 - Make completed worksheets directly discoverable for students and parents.
 - Add All, In progress and Completed worksheet filters.

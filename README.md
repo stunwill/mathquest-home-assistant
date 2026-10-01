@@ -6,7 +6,11 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.47.6`
+Version `0.48.0`
+
+## v0.48.0 - Persisted Adaptive Follow-through
+
+MathQuest now persists completed targeted-session follow-through decisions and carries them into the next matching session without treating a preview as completion.
 
 ## v0.47.6 - Worksheet History & Review
 
