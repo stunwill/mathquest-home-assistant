@@ -1,6 +1,16 @@
-## v0.49.0 - Follow-through Outcomes & Evidence Reassessment
+## v0.50.0 - Dashboard Rewards, Worksheet Completion & Adaptive Arithmetic
 
 Status: In review
+
+- Restore persisted XP, level and next-level progress without resetting rewards.
+- Use the actual final question for worksheet completion controls.
+- Introduce skill-readiness-gated arithmetic families after final composition.
+- Preserve diagnostic, prerequisite, reteach, review and supported-learning paths.
+- Preserve historical evidence and verify completion/reward idempotence.
+
+## v0.49.0 - Follow-through Outcomes & Evidence Reassessment
+
+Status: Completed
 
 - Link the acted-upon decision to the resulting session and freeze completion evidence.
 - Reassess intervention outcomes without replacing mastery or changing progression thresholds.

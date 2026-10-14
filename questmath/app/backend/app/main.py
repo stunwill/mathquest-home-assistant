@@ -284,7 +284,13 @@ def login(request:Request, form:OAuth2PasswordRequestForm=Depends(), s:Session=D
 @app.get('/api/me')
 def me(u:User=Depends(current_user)): return user_view(u)
 
-def user_view(u): return {'id':u.id,'username':u.username,'role':u.role,'display_name':u.display_name,'xp':u.xp,'level':u.xp//250+1,'highest_level':u.highest_level}
+def user_view(u):
+    level = u.xp // 250 + 1
+    progress = u.xp % 250
+    return {'id':u.id,'username':u.username,'role':u.role,'display_name':u.display_name,
+            'xp':u.xp,'level':level,'highest_level':u.highest_level,
+            'xp_per_level':250,'level_progress':progress,'next_level':level+1,
+            'xp_until_next_level':250-progress}
 
 def frac(n,d):
     from math import gcd
