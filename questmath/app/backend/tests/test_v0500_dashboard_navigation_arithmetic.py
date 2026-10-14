@@ -130,7 +130,7 @@ def test_difficulty_uses_independent_skill_evidence_not_supported_success(learni
     assert v0330.THRESHOLDS.minimum_questions==6 and v0330.THRESHOLDS.ready_accuracy==.82
 
 
-@pytest.mark.parametrize('protected',[{'purpose':'learn'},{'purpose':'prerequisite'},{'purpose':'review'},{'follow_through':'reteach'},{'follow_through':'gather_more_evidence'},{'evidence_focus':'subtraction_without_regrouping'}])
+@pytest.mark.parametrize('protected',[{'purpose':'learn'},{'purpose':'prerequisite'},{'purpose':'review'},{'follow_through':'reteach'},{'follow_through':'gather_more_evidence'},{'follow_through':'check_independence'},{'evidence_focus':'subtraction_without_regrouping'}])
 def test_foundational_targeted_sessions_are_not_forced_harder(learning,protected):
     session,learner,_,_,_=learning;evidence(session,learner)
     ws=worksheet(session,learner)
@@ -222,3 +222,20 @@ def test_missing_factor_and_dividend_hints_use_the_correct_inverse_operation():
     divide=maths.generate('division',random.Random(3),family='missing')['payload']['grade5_support']
     assert 'Divide the product' in multiply['hints'][1]
     assert 'Multiply the quotient' in divide['hints'][1]
+
+
+def test_fact_readiness_does_not_manufacture_computation_mastery(learning):
+    session,learner,_,_,_=learning
+    skill='VC2M4A02:fact_recall_multiplication'
+    evidence(session,learner,skill)
+    ws=worksheet(session,learner,6,skill)
+    maths.improve_worksheet(session,ws,learner.id)
+    upgraded=[q for q in ws.questions if v0330._payload(q).get('arithmetic_extension')]
+    assert upgraded
+    for q in upgraded:
+        payload=v0330._payload(q)
+        assert q.skill=='VC2M4N06:efficient_multiply_divide'
+        assert payload['difficulty_band']=='instructional'
+        assert payload['progression_state']=='not_ready'
+        assert payload['adaptive_evidence']['questions']==0
+        assert payload['readiness_basis']['skill']==skill

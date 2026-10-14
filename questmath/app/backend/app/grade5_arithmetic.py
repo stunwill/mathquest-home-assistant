@@ -163,7 +163,7 @@ def improve_worksheet(session: Session, worksheet: legacy.Worksheet, student_id:
         return worksheet
     if any(q.attempts or q.hint_count or q.mentor_started or q.mentor_example_seen for q in worksheet.questions):
         return worksheet  # Resumed work retains its original mathematical content.
-    if plan and (plan.get('purpose') in ('learn','prerequisite','review') or plan.get('evidence_focus') or plan.get('follow_through') in ('reteach','gather_more_evidence')):
+    if plan and (plan.get('purpose') in ('learn','prerequisite','review') or plan.get('evidence_focus') or plan.get('follow_through') in ('reteach','gather_more_evidence','check_independence')):
         return worksheet
     cache: dict[str, dict[str, Any]] = {}
     family_counts: dict[str, int] = defaultdict(int)
@@ -203,11 +203,15 @@ def improve_worksheet(session: Session, worksheet: legacy.Worksheet, student_id:
         retained = {k:v for k,v in payload.items() if k in ('targeted_session','targeted_session_plan','adventure','story','mission','visual_key')}
         question.prompt = generated['prompt']; question.answer_type = generated['answer_type']
         question.correct_answer = generated['answer']; question.working = generated['working']
+        readiness_skill = question.skill
         if 'fact_recall' in question.skill:
             question.skill = 'VC2M4N06:written_subtraction' if operation == 'subtraction' else 'VC2M4N06:efficient_multiply_divide'
+        recorded_evidence = evidence if question.skill == readiness_skill else v0330._question_evidence(session,student_id,question.skill)
+        recorded_state = state if question.skill == readiness_skill else v0330._progression_state(recorded_evidence)
         question.payload = json.dumps({**retained,**generated['payload'],
             'learning_purpose':'challenge' if challenge else 'current','learning_purpose_label':'Today’s challenge' if challenge else 'Practising this skill',
-            'progression_state':state,'adaptive_evidence':{'questions':evidence['questions'],'independent_accuracy':round(evidence['independent']*100),'support_dependency':round(evidence['support']*100)}})
+            'readiness_basis':{'skill':readiness_skill,'state':state},
+            'progression_state':recorded_state,'adaptive_evidence':{'questions':recorded_evidence['questions'],'independent_accuracy':round(recorded_evidence['independent']*100),'support_dependency':round(recorded_evidence['support']*100)}})
         v0321._restore_runtime_annotations(question,worksheet)
         refreshed = v0330._payload(question)
         refreshed['mentor_context'] = v0310._question_context(question)
