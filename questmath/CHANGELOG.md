@@ -1,3 +1,16 @@
+## 0.50.0
+
+MathQuest restores learner rewards, fixes the worksheet final action and improves evidence-gated Number and Algebra practice.
+
+- Restore accumulated XP, current level and an accessible next-level progress indicator on the student dashboard using persisted rewards and the existing 250-XP threshold.
+- Show Finish worksheet only on the actual final question; preserve skipped review, resume and the existing completion validation and reward idempotence.
+- Add varied four-digit subtraction, regrouping across zero, larger multiplication/division, missing values, applied problems, estimation and reasoning for skill-ready learners.
+- Apply difficulty after final targeted learning session composition so easier focus generators do not erase adaptive arithmetic.
+- Preserve Best Next Step, diagnostic placement, skill-sensitive progression, support-aware evidence, reteaching and follow-through outcomes.
+- Preserve historical worksheets and learner rewards; scope dashboard progression to the authenticated learner.
+- Keep question-specific hints, worked examples and curriculum alignment alongside stable learning-evidence keys.
+- Preserve local SQLite persistence, Home Assistant ingress and ARM64 startup.
+
 ## 0.49.0
 
 MathQuest now links acted-upon follow-through decisions to resulting targeted learning sessions and reassesses what changed after completion.

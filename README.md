@@ -6,7 +6,11 @@ MathQuest is a local, adaptive mathematics learning application designed for Sie
 
 ## Current release
 
-Version `0.49.0`
+Version `0.50.0`
+
+## v0.50.0 - Dashboard Rewards, Worksheet Completion & Adaptive Arithmetic
+
+The student dashboard again displays persisted XP, current level and progress towards the next level. Worksheet completion controls follow the actual ordered question sequence. Skill-ready learners receive richer arithmetic families while foundational, diagnostic and reteach work remain protected.
 
 ## v0.49.0 - Follow-through Outcomes & Evidence Reassessment
 
